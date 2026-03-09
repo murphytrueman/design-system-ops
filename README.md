@@ -3,10 +3,6 @@
 ![Design System Ops](og-image.png)
 
 Claude Code skills for the work that keeps a design system alive.
-
-38 skills. 4 agents. 13 commands. 11 knowledge notes.
-Built from 14 years of production design systems work.
-
 [designsystemops.com](https://designsystemops.com)
 
 ---
@@ -68,17 +64,17 @@ See [1-INSTALL.md](1-INSTALL.md) for the full guide with entry points by use cas
 
 ## What's included
 
-### Skills (38)
+### Skills
 
 | Category | Skills | What they do |
 |----------|--------|-------------|
-| **Audit** (8) | token-audit, component-audit, system-health, drift-detection, naming-audit, figma-variable-audit, codebase-index, system-benchmark | Understand what you actually have |
-| **Govern** (11) | contribution-workflow, deprecation-process, decision-record, change-communication, backlog-generator, version-bump-advisor, release-retrospective, governance-encoder, session-memory, codemod-generator, triage | Run the system as infrastructure |
-| **Document** (7) | ai-component-description, pattern-documentation, token-documentation, usage-guidelines, component-decision-tree, context-engine-builder, metadata-schema-generator | Make the system legible to humans and machines |
-| **Validate** (6) | design-to-code-check, accessibility-per-component, token-compliance, schema-validator, component-api-validator, cicd-integration | Verify quality before it ships |
-| **Communicate** (6) | adoption-report, stakeholder-brief, system-pitch, designer-onboarding, engineering-onboarding, visual-report | Move people and decisions |
+| **Audit** | token-audit, component-audit, system-health, drift-detection, naming-audit, figma-variable-audit, codebase-index, system-benchmark | Understand what you actually have |
+| **Govern** | contribution-workflow, deprecation-process, decision-record, change-communication, backlog-generator, version-bump-advisor, release-retrospective, governance-encoder, session-memory, codemod-generator, triage | Run the system as infrastructure |
+| **Document** | ai-component-description, pattern-documentation, token-documentation, usage-guidelines, component-decision-tree, context-engine-builder, metadata-schema-generator | Make the system legible to humans and machines |
+| **Validate** | design-to-code-check, accessibility-per-component, token-compliance, schema-validator, component-api-validator, cicd-integration | Verify quality before it ships |
+| **Communicate** | adoption-report, stakeholder-brief, system-pitch, designer-onboarding, engineering-onboarding, visual-report | Move people and decisions |
 
-### Agents (4)
+### Agents
 
 | Agent | What it chains | When to use it |
 |-------|---------------|----------------|
