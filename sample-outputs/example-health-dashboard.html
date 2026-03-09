@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Helix — Design System Health Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #2563EB;
+      --critical: #DC2626;
+      --high: #D97706;
+      --medium: #2563EB;
+      --low: #6B7280;
+      --strong: #16A34A;
+      --functional: #2563EB;
+      --weak: #D97706;
+      --absent: #DC2626;
+      --bg: #F9FAFB;
+      --card-bg: #FFFFFF;
+      --text: #111827;
+      --text-muted: #6B7280;
+      --border: #E5E7EB;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* === HEADER === */
+    header {
+      background: linear-gradient(135deg, #1E3A5F 0%, #2563EB 100%);
+      color: white;
+      padding: 32px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header .subtitle {
+      font-size: 14px;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+
+    .status-badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      padding: 14px 24px;
+      text-align: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .status-badge .status-value {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .status-badge .status-label {
+      font-size: 12px;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    /* === LAYOUT === */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* === HEADLINE === */
+    .headline {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .headline strong { color: var(--text); }
+
+    /* === METRIC CARDS === */
+    .metrics-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .metric-card .metric-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+
+    .metric-card .metric-value {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 4px 0;
+      line-height: 1.2;
+    }
+
+    .metric-card .metric-tag {
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 6px;
+    }
+
+    .metric-card .metric-context {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .tag-strong { color: #166534; background: #F0FDF4; }
+    .tag-functional { color: #1E40AF; background: #DBEAFE; }
+    .tag-weak { color: #92400E; background: #FEF3C7; }
+    .tag-needs-attention { color: #991B1B; background: #FEE2E2; }
+
+    /* === CHART GRID === */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .chart-card.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .chart-card h2 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .chart-card .chart-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .chart-container.radar-size {
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .chart-summary {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      line-height: 1.6;
+    }
+
+    /* === DIMENSION STATUS CARDS === */
+    .dimension-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .dimension-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dimension-row:last-child { border-bottom: none; }
+
+    .dimension-emoji {
+      font-size: 18px;
+      flex-shrink: 0;
+      width: 24px;
+      text-align: center;
+      padding-top: 1px;
+    }
+
+    .dimension-info { flex: 1; }
+
+    .dimension-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .dimension-status {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 8px;
+    }
+
+    .status-strong { color: #166534; }
+    .status-functional { color: #1E40AF; }
+    .status-weak { color: #92400E; }
+    .status-absent { color: #991B1B; }
+
+    .dimension-finding {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* === FINDINGS TABLE === */
+    .findings-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .findings-table thead th {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--border);
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .findings-table tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .severity-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .severity-critical { background: #FEE2E2; color: #991B1B; }
+    .severity-high { background: #FEF3C7; color: #92400E; }
+    .severity-medium { background: #DBEAFE; color: #1E40AF; }
+    .severity-low { background: #F3F4F6; color: #374151; }
+
+    /* === ACTIONS === */
+    .action-tier {
+      margin-bottom: 16px;
+    }
+
+    .action-tier:last-child { margin-bottom: 0; }
+
+    .action-tier-label {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .tier-immediate { color: #991B1B; border-color: #FCA5A5; }
+    .tier-nearterm { color: #92400E; border-color: #FCD34D; }
+    .tier-longterm { color: #1E40AF; border-color: #93C5FD; }
+
+    .action-item {
+      font-size: 14px;
+      padding: 6px 0;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .action-id {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      min-width: 52px;
+    }
+
+    .action-effort {
+      font-size: 12px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      min-width: 80px;
+      text-align: right;
+    }
+
+    /* === SCOPE === */
+    .scope-note {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-top: 16px;
+      padding: 16px;
+      background: #F9FAFB;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .scope-note strong { color: var(--text); }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      margin-top: 16px;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 768px) {
+      header { padding: 24px 20px; }
+      .container { padding: 16px; }
+      .charts-grid { grid-template-columns: 1fr; }
+      .metrics-cards { grid-template-columns: repeat(2, 1fr); }
+      header h1 { font-size: 20px; }
+      .dimension-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .metrics-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Helix Design System</h1>
+    <div class="subtitle">System Health Dashboard &mdash; 9 March 2026</div>
+  </div>
+  <div class="status-badge">
+    <div class="status-value">2 Critical &middot; 6 High</div>
+    <div class="status-label">19 findings across 7 dimensions</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- HEADLINE -->
+  <div class="headline">
+    <strong>Helix is strong on components and solid on tokens, but governance, AI readiness, and adoption are the weak spots holding the system back.</strong> The two critical findings are both in the token layer &mdash; tier leakage and disconnected feedback colours &mdash; and they affect theme switching for every consuming team. Fix those first, then address the six high-severity items across documentation, adoption, and AI readiness. Here is the dimension-by-dimension picture.
+  </div>
+
+  <!-- METRIC CARDS -->
+  <section class="metrics-cards" aria-label="Key metrics">
+    <div class="metric-card">
+      <div class="metric-label">Components</div>
+      <div class="metric-value">36</div>
+      <span class="metric-tag tag-strong">Strong</span>
+      <div class="metric-context">Shipped, documented, with tests</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Tokens</div>
+      <div class="metric-value">~480</div>
+      <span class="metric-tag tag-functional">Functional</span>
+      <div class="metric-context">Across 42 files (14 primitive, 18 semantic, 10 component)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Consuming Teams</div>
+      <div class="metric-value">6</div>
+      <span class="metric-tag tag-weak">Weak adoption</span>
+      <div class="metric-context">4 active, 2 building parallel solutions</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Total Findings</div>
+      <div class="metric-value">19</div>
+      <span class="metric-tag tag-needs-attention">Needs attention</span>
+      <div class="metric-context">2 critical + 6 high + 7 medium + 4 low</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Maturity Stage</div>
+      <div class="metric-value" style="font-size: 22px;">Managed</div>
+      <span class="metric-tag tag-functional">Stage 2 of 5</span>
+      <div class="metric-context">Next stage: Systematic &mdash; needs governance + adoption tracking</div>
+    </div>
+  </section>
+
+  <!-- CHARTS GRID -->
+  <section class="charts-grid">
+
+    <!-- DIMENSION STATUS RADAR -->
+    <div class="chart-card">
+      <h2>Health by Dimension</h2>
+      <div class="chart-desc">Current status across all seven dimensions (Strong &rarr; Absent)</div>
+      <div class="chart-container radar-size">
+        <canvas id="healthRadar"></canvas>
+      </div>
+      <div class="chart-summary">
+        <strong>Accessible summary:</strong> Components is the only Strong dimension. Tokens, Documentation, Governance, and Platform Maturity are all Functional. Adoption and AI Readiness are both Weak &mdash; these are the dimensions holding the system at the Managed maturity stage.
+      </div>
+    </div>
+
+    <!-- SEVERITY DISTRIBUTION -->
+    <div class="chart-card">
+      <h2>Findings by Severity</h2>
+      <div class="chart-desc">Distribution of 19 findings across the system</div>
+      <div class="chart-container">
+        <canvas id="severityDonut"></canvas>
+      </div>
+      <div class="chart-summary">
+        <strong>Accessible summary:</strong> Of 19 total findings: 2 are Critical (both in the token layer &mdash; tier leakage and disconnected feedback colours), 6 are High (spanning tokens, documentation, adoption, and AI readiness), 7 are Medium, and 4 are Low.
+      </div>
+    </div>
+
+    <!-- DIMENSION DETAIL -->
+    <div class="chart-card full-width">
+      <h2>Dimension Detail</h2>
+      <div class="chart-desc">Status and key finding for each of the seven health dimensions</div>
+      <div class="dimension-grid">
+        <div>
+          <div class="dimension-row">
+            <div class="dimension-emoji" aria-hidden="true">&#x1F7E2;</div>
+            <div class="dimension-info">
+              <span class="dimension-name">Components</span>
+              <span class="dimension-status status-strong">Strong</span>
+              <div class="dimension-finding">36 components with documented APIs and interactive state coverage. 3 untouched for 18+ months.</div>
+            </div>
+          </div>
+          <div class="dimension-row">
+            <div class="dimension-emoji" aria-hidden="true">&#x1F7E1;</div>
+            <div class="dimension-info">
+              <span class="dimension-name">Tokens</span>
+              <span class="dimension-status status-functional">Functional</span>
+              <div class="dimension-finding">All three tiers present, but 9 component tokens bypass semantic tier (tier leakage). Feedback colours hardcoded.</div>
+            </div>
+          </div>
+          <div class="dimension-row">
+            <div class="dimension-emoji" aria-hidden="true">&#x1F7E1;</div>
+            <div class="dimension-info">
+              <span class="dimension-name">Documentation</span>
+              <span class="dimension-status status-functional">Functional</span>
+              <div class="dimension-finding">Every component has Storybook entries. Only 6 of 36 have documented anti-patterns.</div>
+            </div>
+          </div>
+          <div class="dimension-row">
+            <div class="dimension-emoji" aria-hidden="true">&#x1F7E1;</div>
+            <div class="dimension-info">
+              <span class="dimension-name">Governance</span>
+              <span class="dimension-status status-functional">Functional</span>
+              <div class="dimension-finding">Contribution process exists but no deprecation path documented. Decisions made informally.</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="dimension-row">
+            <div class="dimension-emoji" aria-hidden="true">&#x1F7E1;</div>
+            <div class="dimension-info">
+              <span class="dimension-name">Platform Maturity</span>
+              <span class="dimension-status status-functional">Functional</span>
+              <div class="dimension-finding">Semantic versioning in place. No defined response time for bug reports or release cadence.</div>
+            </div>
+          </div>
+          <div class="dimension-row">
+            <div class="dimension-emoji" aria-hidden="true">&#x1F7E0;</div>
+            <div class="dimension-info">
+              <span class="dimension-name">Adoption</span>
+              <span class="dimension-status status-weak">Weak</span>
+              <div class="dimension-finding">4 of 6 consuming teams active. 2 teams building parallel solutions &mdash; no tracking to understand why.</div>
+            </div>
+          </div>
+          <div class="dimension-row">
+            <div class="dimension-emoji" aria-hidden="true">&#x1F7E0;</div>
+            <div class="dimension-info">
+              <span class="dimension-name">AI Readiness</span>
+              <span class="dimension-status status-weak">Weak</span>
+              <div class="dimension-finding">No structured machine-readable descriptions. Token files parseable (JSON + CSS) but have no $description fields.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTION PRIORITY MATRIX -->
+    <div class="chart-card">
+      <h2>Priority Matrix</h2>
+      <div class="chart-desc">Findings mapped by effort vs. impact &mdash; bubble size = severity</div>
+      <div class="chart-container">
+        <canvas id="priorityMatrix"></canvas>
+      </div>
+      <div class="chart-summary">
+        <strong>Accessible summary:</strong> Quick wins (low effort, high impact): connect feedback tokens (TA-02), add $description fields. Strategic investments (high effort, high impact): resolve tier leakage (TA-01), create interactive state token layer (TA-04), build adoption tracking. Fill-ins: naming consistency, prefix standardisation, orphan cleanup.
+      </div>
+    </div>
+
+    <!-- FINDINGS BY DIMENSION BAR CHART -->
+    <div class="chart-card">
+      <h2>Findings by Dimension</h2>
+      <div class="chart-desc">Where findings are concentrated across the system</div>
+      <div class="chart-container">
+        <canvas id="dimensionBars"></canvas>
+      </div>
+      <div class="chart-summary">
+        <strong>Accessible summary:</strong> Tokens account for 11 of 19 findings (including both criticals). Components has 2 findings, Documentation 2, and Adoption, AI Readiness, Governance, and Platform Maturity each have 1. The token layer is the clear priority.
+      </div>
+    </div>
+
+    <!-- CRITICAL AND HIGH FINDINGS TABLE -->
+    <div class="chart-card full-width">
+      <h2>Critical and High Findings</h2>
+      <div class="chart-desc">Issues requiring immediate or near-term action</div>
+      <table class="findings-table" aria-label="Critical and high severity findings">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Severity</th>
+            <th>Dimension</th>
+            <th>Finding</th>
+            <th>Impact</th>
+            <th>Effort</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>TA-01</strong></td>
+            <td><span class="severity-badge severity-critical">Critical</span></td>
+            <td>Tokens</td>
+            <td>9 component tokens reference primitives directly, bypassing the semantic tier</td>
+            <td>Theme switching breaks these components &mdash; primitive values do not change between themes</td>
+            <td>8&ndash;12 hrs</td>
+          </tr>
+          <tr>
+            <td><strong>TA-02</strong></td>
+            <td><span class="severity-badge severity-critical">Critical</span></td>
+            <td>Tokens</td>
+            <td>Feedback colour tokens hardcode hex values instead of referencing semantic feedback tokens</td>
+            <td>4 toast variants and 3 badge variants cannot adapt to theme changes</td>
+            <td>4&ndash;6 hrs</td>
+          </tr>
+          <tr>
+            <td><strong>TA-03</strong></td>
+            <td><span class="severity-badge severity-high">High</span></td>
+            <td>Tokens</td>
+            <td>8 semantic colour tokens use appearance-based names (e.g., blue-surface) instead of intent-based</td>
+            <td>Names become wrong when themes change the colour &mdash; undermines token trust</td>
+            <td>6&ndash;10 hrs</td>
+          </tr>
+          <tr>
+            <td><strong>TA-04</strong></td>
+            <td><span class="severity-badge severity-high">High</span></td>
+            <td>Tokens</td>
+            <td>No semantic tokens for interactive states (hover, focus, active, disabled)</td>
+            <td>Every new component reinvents state colours instead of using shared tokens</td>
+            <td>12&ndash;16 hrs</td>
+          </tr>
+          <tr>
+            <td><strong>TA-05</strong></td>
+            <td><span class="severity-badge severity-high">High</span></td>
+            <td>Tokens</td>
+            <td>Spacing tokens use px suffix in names (e.g., space-4px, space-8px)</td>
+            <td>Names become lies if the base unit changes to rem &mdash; mechanical rename needed</td>
+            <td>4&ndash;8 hrs</td>
+          </tr>
+          <tr>
+            <td><strong>DOC-01</strong></td>
+            <td><span class="severity-badge severity-high">High</span></td>
+            <td>Documentation</td>
+            <td>Anti-patterns documented for only 6 of 36 components</td>
+            <td>Teams repeat the same misuse patterns with no guidance to prevent them</td>
+            <td>16&ndash;24 hrs</td>
+          </tr>
+          <tr>
+            <td><strong>ADO-01</strong></td>
+            <td><span class="severity-badge severity-high">High</span></td>
+            <td>Adoption</td>
+            <td>2 of 6 consuming teams building parallel UI solutions</td>
+            <td>System investment undercut &mdash; parallel work compounds maintenance cost</td>
+            <td>10&ndash;20 hrs</td>
+          </tr>
+          <tr>
+            <td><strong>AI-01</strong></td>
+            <td><span class="severity-badge severity-high">High</span></td>
+            <td>AI Readiness</td>
+            <td>No components have structured, machine-readable descriptions</td>
+            <td>AI tools cannot reliably select or configure components from documentation alone</td>
+            <td>20&ndash;30 hrs</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="chart-summary">
+        <strong>Accessible summary:</strong> 2 Critical and 6 High findings require action. The two criticals (tier leakage and feedback token disconnection) are both in the token layer and have a combined estimated effort of 12&ndash;18 hours. The highest-effort high-severity item is AI readiness (20&ndash;30 hours to write structured descriptions for all 36 components). Total estimated effort for all 8 items: 80&ndash;126 hours.
+      </div>
+    </div>
+
+    <!-- PRIORITISED ACTIONS -->
+    <div class="chart-card full-width">
+      <h2>Prioritised Actions</h2>
+      <div class="chart-desc">Grouped by urgency &mdash; fix what blocks other improvements first</div>
+
+      <div class="action-tier">
+        <div class="action-tier-label tier-immediate">Immediate (next 4 weeks)</div>
+        <div class="action-item">
+          <span class="action-id">TA-01</span>
+          <span>Route all component-tier tokens through semantic tokens &mdash; the semantic tokens already exist, this is re-pointing references</span>
+          <span class="action-effort">8&ndash;12 hrs</span>
+        </div>
+        <div class="action-item">
+          <span class="action-id">TA-02</span>
+          <span>Connect feedback component tokens to existing semantic feedback tokens (7 variants)</span>
+          <span class="action-effort">4&ndash;6 hrs</span>
+        </div>
+        <div class="action-item">
+          <span class="action-id">ADO-01</span>
+          <span>Interview the two teams building parallel solutions &mdash; understand their gaps before proposing fixes</span>
+          <span class="action-effort">4&ndash;8 hrs</span>
+        </div>
+      </div>
+
+      <div class="action-tier">
+        <div class="action-tier-label tier-nearterm">Near-term (next quarter)</div>
+        <div class="action-item">
+          <span class="action-id">TA-03</span>
+          <span>Rename 8 appearance-based semantic tokens to intent-based names (may surface dependencies)</span>
+          <span class="action-effort">6&ndash;10 hrs</span>
+        </div>
+        <div class="action-item">
+          <span class="action-id">TA-04</span>
+          <span>Create semantic interactive state tokens and re-route component state tokens through them</span>
+          <span class="action-effort">12&ndash;16 hrs</span>
+        </div>
+        <div class="action-item">
+          <span class="action-id">TA-05</span>
+          <span>Rename spacing tokens to drop px suffix (mechanical rename, high confidence)</span>
+          <span class="action-effort">4&ndash;8 hrs</span>
+        </div>
+        <div class="action-item">
+          <span class="action-id">DOC-01</span>
+          <span>Write anti-pattern documentation for the 10 most-used components first, then expand</span>
+          <span class="action-effort">16&ndash;24 hrs</span>
+        </div>
+      </div>
+
+      <div class="action-tier">
+        <div class="action-tier-label tier-longterm">Longer-term (6+ months)</div>
+        <div class="action-item">
+          <span class="action-id">AI-01</span>
+          <span>Add structured machine-readable descriptions to all 36 components (six-section format)</span>
+          <span class="action-effort">20&ndash;30 hrs</span>
+        </div>
+        <div class="action-item">
+          <span class="action-id">TA-06&ndash;11</span>
+          <span>Address remaining medium and low token findings: alias chains, typography gaps, prefix standardisation, focus ring token, z-index naming, orphan cleanup</span>
+          <span class="action-effort">12&ndash;20 hrs</span>
+        </div>
+        <div class="action-item">
+          <span class="action-id">GOV-01</span>
+          <span>Document a deprecation process &mdash; teams need to know how and when components will be retired</span>
+          <span class="action-effort">4&ndash;8 hrs</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- SCOPE NOTE -->
+  <div class="scope-note">
+    <strong>Scope:</strong> This dashboard reflects a system health assessment based on direct inspection of 42 token files (CSS custom properties + JSON source), 36 component source files, Storybook configuration, and package.json publishing config.<br><br>
+    <strong>Not inspected:</strong> Consuming product codebases, Figma variable collections, analytics or usage telemetry, and team-level adoption surveys. Findings in the Adoption dimension are based on reported information rather than measured data.<br><br>
+    <strong>A note on context:</strong> This assessment sees the system&rsquo;s artefacts &mdash; it does not see the history, constraints, or trade-offs behind them. Some findings may flag gaps your team has already considered and accepted. If any finding describes an intentional decision, flag it &mdash; future runs will calibrate to your system&rsquo;s actual priorities rather than a generic ideal.
+  </div>
+
+</div>
+
+<footer>
+  <p>Generated by <a href="https://www.murphytrueman.com" style="color: inherit;">Design System Ops by Murphy Trueman</a> &mdash; system-health + token-audit</p>
+  <p>9 March 2026 &bull; Helix Design System (React 18, TypeScript, Radix UI, Tailwind v3)</p>
+</footer>
+
+<script>
+  // === HEALTH RADAR ===
+  // Maps: Strong=4, Functional=3, Weak=2, Absent=1
+  const radarCtx = document.getElementById('healthRadar').getContext('2d');
+  new Chart(radarCtx, {
+    type: 'radar',
+    data: {
+      labels: ['Tokens', 'Components', 'Documentation', 'Adoption', 'Governance', 'AI Readiness', 'Platform'],
+      datasets: [
+        {
+          label: 'Current Status',
+          data: [3, 4, 3, 2, 3, 2, 3],
+          backgroundColor: 'rgba(37, 99, 235, 0.15)',
+          borderColor: '#2563EB',
+          borderWidth: 2.5,
+          pointBackgroundColor: function(ctx) {
+            const v = ctx.raw;
+            if (v >= 4) return '#16A34A';
+            if (v >= 3) return '#2563EB';
+            if (v >= 2) return '#D97706';
+            return '#DC2626';
+          },
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          beginAtZero: true,
+          min: 0,
+          max: 4,
+          ticks: {
+            stepSize: 1,
+            display: true,
+            font: { size: 10 },
+            callback: function(value) {
+              const labels = ['', 'Absent', 'Weak', 'Functional', 'Strong'];
+              return labels[value] || '';
+            },
+            backdropColor: 'transparent'
+          },
+          grid: { color: '#E5E7EB' },
+          angleLines: { color: '#E5E7EB' },
+          pointLabels: { font: { size: 12, weight: '600' }, color: '#374151' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const statuses = ['', 'Absent', 'Weak', 'Functional', 'Strong'];
+              return statuses[ctx.raw] || '';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // === SEVERITY DONUT ===
+  const donutCtx = document.getElementById('severityDonut').getContext('2d');
+  new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Critical', 'High', 'Medium', 'Low'],
+      datasets: [{
+        data: [2, 6, 7, 4],
+        backgroundColor: ['#DC2626', '#D97706', '#2563EB', '#9CA3AF'],
+        borderColor: '#FFFFFF',
+        borderWidth: 3,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '60%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { padding: 16, font: { size: 12 }, usePointStyle: true, pointStyle: 'rectRounded' }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = Math.round((ctx.raw / total) * 100);
+              return ' ' + ctx.label + ': ' + ctx.raw + ' findings (' + pct + '%)';
+            }
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'centerText',
+      afterDraw: function(chart) {
+        const width = chart.width;
+        const height = chart.height;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = '800 32px -apple-system, sans-serif';
+        ctx.fillStyle = '#111827';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('19', width / 2, height / 2 - 8);
+        ctx.font = '600 12px -apple-system, sans-serif';
+        ctx.fillStyle = '#6B7280';
+        ctx.fillText('FINDINGS', width / 2, height / 2 + 16);
+        ctx.restore();
+      }
+    }]
+  });
+
+  // === PRIORITY MATRIX (Bubble chart) ===
+  const matrixCtx = document.getElementById('priorityMatrix').getContext('2d');
+  new Chart(matrixCtx, {
+    type: 'bubble',
+    data: {
+      datasets: [
+        {
+          label: 'Critical',
+          data: [
+            { x: 55, y: 95, r: 14, label: 'TA-01: Tier leakage (9 tokens)' },
+            { x: 25, y: 90, r: 12, label: 'TA-02: Feedback tokens hardcoded' }
+          ],
+          backgroundColor: 'rgba(220, 38, 38, 0.55)',
+          borderColor: '#DC2626',
+          borderWidth: 1.5
+        },
+        {
+          label: 'High',
+          data: [
+            { x: 45, y: 70, r: 10, label: 'TA-03: Appearance-based naming (8)' },
+            { x: 70, y: 80, r: 10, label: 'TA-04: No interactive state tokens' },
+            { x: 30, y: 65, r: 9, label: 'TA-05: px suffix in spacing names' },
+            { x: 75, y: 75, r: 10, label: 'DOC-01: Anti-patterns missing' },
+            { x: 65, y: 85, r: 11, label: 'ADO-01: Parallel solutions (2 teams)' },
+            { x: 85, y: 70, r: 10, label: 'AI-01: No machine-readable descriptions' }
+          ],
+          backgroundColor: 'rgba(217, 119, 6, 0.45)',
+          borderColor: '#D97706',
+          borderWidth: 1.5
+        },
+        {
+          label: 'Medium / Low',
+          data: [
+            { x: 15, y: 35, r: 7, label: 'TA-06: Deep alias chains (3)' },
+            { x: 20, y: 40, r: 7, label: 'TA-07: Typography gaps' },
+            { x: 25, y: 30, r: 7, label: 'TA-08: Prefix inconsistency' },
+            { x: 35, y: 45, r: 7, label: 'GOV-01: No deprecation process' },
+            { x: 40, y: 38, r: 7, label: 'PLT-01: No bug report SLA' },
+            { x: 10, y: 25, r: 5, label: 'TA-09: Focus ring offset' },
+            { x: 12, y: 20, r: 5, label: 'TA-10: Z-index naming' }
+          ],
+          backgroundColor: 'rgba(37, 99, 235, 0.35)',
+          borderColor: '#2563EB',
+          borderWidth: 1.5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          min: 0, max: 100,
+          title: { display: true, text: 'Effort  \u2192', font: { size: 13, weight: '600' } },
+          grid: { color: '#F3F4F6' },
+          ticks: { display: false }
+        },
+        y: {
+          min: 0, max: 100,
+          title: { display: true, text: 'Impact  \u2192', font: { size: 13, weight: '600' } },
+          grid: { color: '#F3F4F6' },
+          ticks: { display: false }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { padding: 16, font: { size: 12 }, usePointStyle: true, pointStyle: 'circle' }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return ctx.raw.label;
+            }
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'quadrantLabels',
+      afterDraw: function(chart) {
+        var area = chart.chartArea;
+        var left = area.left;
+        var right = area.right;
+        var top = area.top;
+        var bottom = area.bottom;
+        var midX = (left + right) / 2;
+        var midY = (top + bottom) / 2;
+        var ctx = chart.ctx;
+        ctx.save();
+        ctx.font = '600 11px -apple-system, sans-serif';
+        ctx.fillStyle = '#9CA3AF';
+        ctx.textAlign = 'center';
+        ctx.fillText('QUICK WINS', left + (midX - left) / 2, top + 16);
+        ctx.fillText('STRATEGIC INVESTMENTS', midX + (right - midX) / 2, top + 16);
+        ctx.fillText('FILL-INS', left + (midX - left) / 2, bottom - 8);
+        ctx.fillText('CONSIDER CAREFULLY', midX + (right - midX) / 2, bottom - 8);
+        ctx.strokeStyle = '#E5E7EB';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(midX, top);
+        ctx.lineTo(midX, bottom);
+        ctx.moveTo(left, midY);
+        ctx.lineTo(right, midY);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }]
+  });
+
+  // === FINDINGS BY DIMENSION BAR ===
+  const dimCtx = document.getElementById('dimensionBars').getContext('2d');
+  new Chart(dimCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Tokens', 'Components', 'Documentation', 'Adoption', 'AI Readiness', 'Governance', 'Platform'],
+      datasets: [
+        {
+          label: 'Critical',
+          data: [2, 0, 0, 0, 0, 0, 0],
+          backgroundColor: '#DC2626',
+          borderRadius: 2
+        },
+        {
+          label: 'High',
+          data: [3, 0, 1, 1, 1, 0, 0],
+          backgroundColor: '#D97706',
+          borderRadius: 2
+        },
+        {
+          label: 'Medium',
+          data: [3, 1, 1, 0, 0, 1, 1],
+          backgroundColor: '#2563EB',
+          borderRadius: 2
+        },
+        {
+          label: 'Low',
+          data: [3, 1, 0, 0, 0, 0, 0],
+          backgroundColor: '#9CA3AF',
+          borderRadius: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      indexAxis: 'y',
+      scales: {
+        x: {
+          beginAtZero: true,
+          stacked: true,
+          ticks: { stepSize: 1 },
+          grid: { color: '#F3F4F6' },
+          title: { display: true, text: 'Number of findings', font: { size: 12 } }
+        },
+        y: {
+          stacked: true,
+          grid: { display: false },
+          ticks: { font: { size: 12, weight: '600' } }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { padding: 16, font: { size: 12 }, usePointStyle: true, pointStyle: 'rectRounded' }
+        }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

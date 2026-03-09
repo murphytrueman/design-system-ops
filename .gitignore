@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Node (if people clone into a project)
+node_modules/
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Internal docs (reviews, notes, working files)
+.internal/

@@ -1,0 +1,117 @@
+# Design System Ops — Team configuration
+#
+# Place this file in your project root or in the same directory as your
+# design-system-ops/ skill pack. Skills will read it before producing output
+# and calibrate thresholds, integrations, and recurring workflow settings
+# to your team's context.
+#
+# Every field is optional. Skills use sensible defaults when a field is absent.
+# Only set what you need to override.
+
+# ─────────────────────────────────────────────
+# System identity
+# ─────────────────────────────────────────────
+
+system:
+  name: ""                        # Your design system's name (e.g. "Apex", "Polaris", "Carbon")
+  component_count: null           # Approximate count — triggers small-system behaviour when < 5
+  framework: ""                   # Primary framework: react | vue | twig | svelte | web-components
+  styling: ""                     # Primary styling: css-vars | scss | tailwind | emotion | styled-components
+  theming: false                  # Does the system support multiple themes (light/dark, brand variants)?
+
+# ─────────────────────────────────────────────
+# Severity calibration
+# ─────────────────────────────────────────────
+# Override default severity ratings for specific violation types.
+# Skills use these when classifying findings. Values: critical | high | medium | low
+#
+# Example: a team with active theming should treat hardcoded colours as critical,
+# while a team with no theming plans might treat them as medium.
+
+severity:
+  hardcoded_color: high           # Default: high. Set to critical if actively theming.
+  hardcoded_spacing: medium       # Default: medium.
+  hardcoded_typography: medium    # Default: medium.
+  wrong_tier_reference: high      # Default: high. Set to critical for mature token architectures.
+  missing_interaction_state: high # Default: high. Covers hover, focus, active, disabled.
+  missing_aria: critical          # Default: critical. Rarely downgraded.
+  naming_violation: medium        # Default: medium. Set to high if naming conventions are formalised.
+  tier_leakage: high              # Default: high. Component referencing primitive directly.
+  specification_gap: medium       # Default: medium. Design did not define this case.
+
+# ─────────────────────────────────────────────
+# Integration endpoints
+# ─────────────────────────────────────────────
+# When configured, skills auto-pull data from these sources instead of
+# asking the user to provide it manually. Every integration is optional.
+
+integrations:
+
+  figma:
+    enabled: false
+    file_key: ""                  # From your Figma URL: figma.com/design/<file_key>/...
+    library_name: ""              # The published library name (for analytics queries)
+    personal_access_token_env: "FIGMA_ACCESS_TOKEN"  # Env var name holding your PAT
+
+  npm:
+    enabled: false
+    package_name: ""              # e.g. "@yourorg/design-system" or "@yourorg/components"
+    registry_url: ""              # Leave blank for public npm. Set for private registries.
+    scoped_packages: []           # For monorepos: ["@yourorg/button", "@yourorg/card", ...]
+
+  github:
+    enabled: false
+    repo: ""                      # e.g. "yourorg/design-system"
+    token_env: "GITHUB_TOKEN"     # Env var name holding your PAT
+    default_branch: "main"
+
+  style_dictionary:
+    enabled: false
+    config_path: ""               # Path to your Style Dictionary config, e.g. "style-dictionary/config.json"
+    version: "4"                  # "3" or "4" — affects DTCG compatibility checks
+
+  chromatic:
+    enabled: false
+    project_token_env: "CHROMATIC_PROJECT_TOKEN"
+    app_id: ""                    # Your Chromatic app ID
+
+  storybook:
+    enabled: false
+    url: ""                       # Published Storybook URL, e.g. "https://storybook.yourorg.com"
+                                  # Used for component inventory via /index.json endpoint
+
+  documentation:
+    enabled: false
+    platform: ""                  # zeroheight | supernova | storybook | custom
+    url: ""                       # Documentation site URL
+    api_key_env: ""               # Env var name for API key (Zeroheight, Supernova)
+
+# ─────────────────────────────────────────────
+# Recurring workflows
+# ─────────────────────────────────────────────
+# Skills that support recurring runs (adoption-report, governance-review,
+# drift-detection, system-health, full-system-diagnostic) use these settings
+# to store outputs, compare against previous runs, and track trends.
+
+recurring:
+  output_directory: ".ds-ops-reports/"   # Where reports are stored. Relative to project root.
+  naming_pattern: "{skill}-{date}"      # Output file naming. {skill} and {date} are replaced.
+  comparison_mode: "full"               # "full" = side-by-side diff. "summary" = delta summary only.
+  retain_count: 8                       # Number of previous reports to keep. Oldest are removed.
+
+# ─────────────────────────────────────────────
+# Lint and gate overrides
+# ─────────────────────────────────────────────
+# Override release gates in the component-to-release agent.
+# Use when your team has agreed exceptions (e.g. colour contrast WARN
+# is acceptable during a brand transition).
+
+gates:
+  token_compliance:
+    wrong_tier_blocks_release: true       # Default: true
+    hardcoded_color_blocks_release: true  # Default: true when theming is enabled
+  accessibility:
+    keyboard_blocks_release: true         # Default: true. Almost never overridden.
+    contrast_blocks_release: true         # Default: true. Set false during brand transitions with a timeline.
+  design_to_code:
+    critical_blocks_release: true         # Default: true
