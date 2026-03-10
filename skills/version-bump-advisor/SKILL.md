@@ -2,8 +2,8 @@
 name: version-bump-advisor
 description: "Recommend the correct semver bump with reasoning and a generated changelog entry. Trigger when someone says: what version bump, is this a breaking change, semver recommendation, should this be major or minor, version this release, changelog entry, what kind of release is this, or anything about versioning a design system release."
 references:
-  - references/component-governance.md
-  - references/design-to-code-contract.md
+  - ../../knowledge-notes/component-governance.md
+  - ../../knowledge-notes/design-to-code-contract.md
 ---
 
 # Version Bump Advisor

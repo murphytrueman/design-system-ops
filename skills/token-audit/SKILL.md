@@ -2,8 +2,8 @@
 name: token-audit
 description: "Audit a design system's token definitions for naming violations, missing semantic tiers, and structural debt. This audits how tokens are defined and organised, NOT how they are consumed in code. Trigger when someone says: audit my tokens, token naming review, are my tokens consistent, token health check, review my token architecture, or anything involving token quality or structure. Do NOT trigger for checking whether code uses tokens correctly — use token-compliance for that."
 references:
-  - references/token-architecture.md
-  - references/output-discipline.md
+  - ../../knowledge-notes/token-architecture.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Token audit
@@ -17,14 +17,6 @@ This skill draws on the tiered token architecture model: primitives encode raw v
 The audit is not about enforcing a particular naming convention. It's about identifying where the token structure is working against the teams using it.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Token Architecture Principles** (`references/token-architecture.md`) — Three-tier token model, naming conventions, reference rules, and common failure patterns
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Configuration
 

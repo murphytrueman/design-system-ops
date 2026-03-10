@@ -2,8 +2,8 @@
 name: codebase-index
 description: "Generate a pre-computed component index from a design system codebase — YAML infrastructure files containing a component inventory, relationship graph, and summary statistics that AI agents and MCP servers consume. This produces machine-readable index files in .ai/index/, NOT a health report or quality assessment. Trigger when someone says: index my codebase, build a relationship graph, create a component map, codebase index, what depends on what, dependency graph, map component relationships, or anything about producing queryable infrastructure files for AI agents or developer tooling. Do NOT trigger for component health assessments, quality scores, or audit reports — use component-audit for those."
 references:
-  - references/ai-readiness.md
-  - references/component-governance.md
+  - ../../knowledge-notes/ai-readiness.md
+  - ../../knowledge-notes/component-governance.md
 ---
 
 # Codebase index
@@ -21,15 +21,6 @@ A pre-computed index front-loads this cost. The agent loads the index once — t
 This skill generates that index. Run it after adding or removing components, and commit the output alongside the code.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes:
-
-- **AI Readiness Principles** (`references/ai-readiness.md`) — Metadata quality, machine-readable manifest structure, and scoring frameworks
-- **Component Governance Frameworks** (`references/component-governance.md`) — Component lifecycle, maturity model, and categorisation rules
-
-Load and read each reference file listed above before proceeding.
 
 ## Configuration
 

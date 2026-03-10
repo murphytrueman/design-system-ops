@@ -12,7 +12,7 @@ Design System Ops is a toolkit that gives Claude (the AI) deep expertise in desi
 
 Instead of starting from scratch every time you ask Claude for help with your design system, these skills give it the frameworks, mental models, and structured processes that a staff-level design systems practitioner would use.
 
-**What is in the pack:** 38 skills (individual tools that each do one thing well), 4 agents (chained workflows that run multiple skills in sequence), 11 knowledge notes (expert frameworks that power the skills), 3 sample outputs (real examples so you know what to expect), and an optional configuration file.
+**What is in the pack:** 39 skills (individual tools that each do one thing well), 4 agents (chained workflows that run multiple skills in sequence), 11 knowledge notes (expert frameworks that power the skills), 6 sample outputs (real examples so you know what to expect), and an optional configuration file.
 
 ---
 
@@ -44,7 +44,7 @@ Skills are instruction files that teach Claude how to do something specific. A s
 
 When you ask Claude to do something that matches a skill, Claude reads the skill file and follows its process. The result is output that is dramatically more thorough, specific, and production-ready than what you would get from a generic prompt.
 
-**In this pack, there are 38 skills** organised into five categories: Audit, Govern, Document, Validate, and Communicate.
+**In this pack, there are 39 skills** organised into five categories: Audit, Govern, Document, Validate, and Communicate.
 
 ### What are agents?
 
@@ -269,9 +269,9 @@ When a tool is connected, skills pull data automatically. Without connections, y
 
 ---
 
-## The 38 skills — what each one does
+## The 39 skills — what each one does
 
-### Audit skills (8) — assess where you are
+### Audit skills (9) — assess where you are
 
 These skills look at what you have and tell you what is working, what is broken, and what to fix first.
 
@@ -394,6 +394,21 @@ These skills look at what you have and tell you what is working, what is broken,
 - "Score our system across all 12 benchmark dimensions and tell me where we rank."
 
 **Best used with:** Your codebase and Figma (for accurate data), conversation otherwise
+
+---
+
+#### `theme-audit`
+
+**What it does:** Audits how themes are implemented across a design system — token coverage per theme, component-tier propagation, cross-theme visual consistency, and DTCG resolver validation.
+
+**When to use it:** When your system has dark mode, brand themes, or multi-mode token architectures that need to verify complete and consistent theme implementation.
+
+**Example prompts:**
+- "Audit our theme implementation. We have light and dark modes with component-level overrides."
+- "Check our themes for propagation gaps and consistency violations."
+- "Are all our tokens properly themed across all modes?"
+
+**Best used with:** Your codebase (reads token files and component source), Figma (reads token definitions and applied values)
 
 ---
 
@@ -961,13 +976,16 @@ You do not need to ask for staff-level output — the skills assess your system'
 
 ## Sample outputs
 
-The `sample-outputs/` directory contains three real skill outputs. Use these to understand the depth and format of what the skills produce.
+The `sample-outputs/` directory contains six real skill outputs. Use these to understand the depth and format of what the skills produce.
 
 | Sample | Skill used | What it shows |
 |---|---|---|
-| `example-token-audit.md` | token-audit | Full audit of a ~480 token system with CSS custom properties and JSON source |
 | `example-component-description.md` | ai-component-description | Complete six-section description for a React Dialog component |
-| `example-health-dashboard.html` | visual-report | Interactive HTML dashboard with charts, radar, and severity breakdown — open in a browser to see it |
+| `example-token-audit.md` | token-audit | Full audit of a ~480 token system with CSS custom properties and JSON source |
+| `system-health-campusiq.md` | system-health | Complete health assessment for a mid-sized design system with seven dimension ratings |
+| `component-audit-fintech-pulse.md` | component-audit | Full component inventory with complexity scores, duplication analysis, and recommendations |
+| `drift-detection-sparky-consumer-app.md` | drift-detection | Drift analysis showing hardcoded values, local reimplementations, and suggested fixes |
+| `stakeholder-brief-campusiq-q1.md` | stakeholder-brief | One-page executive brief with situation, recommendations, and ROI framing |
 
 ---
 
@@ -1016,71 +1034,116 @@ Say "write a stakeholder brief" with whatever data you have.
 
 ```
 design-system-ops/
+├── .claude-plugin/           ← Plugin manifest
+│   └── plugin.json
 ├── .ds-ops-config.yml        ← Team configuration (optional)
-├── 1-INSTALL.md             ← Quick-start installation guide
-├── 2-WHATS-INCLUDED.md      ← This file
-├── 3-SETUP-AND-CONFIG.md    ← Detailed setup, configuration, and troubleshooting
+├── 1-INSTALL.md              ← Quick-start installation guide
+├── 2-WHATS-INCLUDED.md       ← This file
+├── 3-SETUP-AND-CONFIG.md     ← Detailed setup, configuration, and troubleshooting
+├── CHANGELOG.md              ← Version history
+├── CONTRIBUTING.md           ← Contribution guide
+├── LICENSE                   ← MIT license
 │
-├── audit/                   ← 8 skills + references/
+├── skills/                   ← 39 skills, each in its own directory
+│   ├── token-audit/
+│   │   └── SKILL.md
+│   ├── component-audit/
+│   │   └── SKILL.md
+│   ├── theme-audit/
+│   │   └── SKILL.md
+│   ├── system-health/
+│   │   └── SKILL.md
+│   ├── drift-detection/
+│   │   └── SKILL.md
+│   ├── naming-audit/
+│   │   └── SKILL.md
+│   ├── figma-variable-audit/
+│   │   └── SKILL.md
+│   ├── codebase-index/
+│   │   └── SKILL.md
+│   ├── system-benchmark/
+│   │   └── SKILL.md
+│   ├── contribution-workflow/
+│   │   └── SKILL.md
+│   ├── deprecation-process/
+│   │   └── SKILL.md
+│   ├── decision-record/
+│   │   └── SKILL.md
+│   ├── change-communication/
+│   │   └── SKILL.md
+│   ├── backlog-generator/
+│   │   └── SKILL.md
+│   ├── version-bump-advisor/
+│   │   └── SKILL.md
+│   ├── release-retrospective/
+│   │   └── SKILL.md
+│   ├── governance-encoder/
+│   │   └── SKILL.md
+│   ├── session-memory/
+│   │   └── SKILL.md
+│   ├── codemod-generator/
+│   │   └── SKILL.md
+│   ├── triage/
+│   │   └── SKILL.md
+│   ├── ai-component-description/
+│   │   └── SKILL.md
+│   ├── pattern-documentation/
+│   │   └── SKILL.md
+│   ├── token-documentation/
+│   │   └── SKILL.md
+│   ├── usage-guidelines/
+│   │   └── SKILL.md
+│   ├── component-decision-tree/
+│   │   └── SKILL.md
+│   ├── context-engine-builder/
+│   │   └── SKILL.md
+│   ├── metadata-schema-generator/
+│   │   └── SKILL.md
+│   ├── design-to-code-check/
+│   │   └── SKILL.md
+│   ├── accessibility-per-component/
+│   │   └── SKILL.md
+│   ├── token-compliance/
+│   │   └── SKILL.md
+│   ├── schema-validator/
+│   │   └── SKILL.md
+│   ├── component-api-validator/
+│   │   └── SKILL.md
+│   ├── cicd-integration/
+│   │   └── SKILL.md
+│   ├── adoption-report/
+│   │   └── SKILL.md
+│   ├── stakeholder-brief/
+│   │   └── SKILL.md
+│   ├── system-pitch/
+│   │   └── SKILL.md
+│   ├── designer-onboarding/
+│   │   └── SKILL.md
+│   ├── engineering-onboarding/
+│   │   └── SKILL.md
+│   ├── visual-report/
+│   │   └── SKILL.md
+│   ├── full-system-diagnostic-agent.md    ← Agent chain
+│   ├── component-to-release-agent.md      ← Agent chain
+│   ├── governance-review-agent.md         ← Agent chain
+│   └── migration-agent.md                 ← Agent chain
+│
+├── commands/                 ← 13 slash commands
 │   ├── token-audit.md
 │   ├── component-audit.md
+│   ├── theme-audit.md
 │   ├── system-health.md
 │   ├── drift-detection.md
 │   ├── naming-audit.md
 │   ├── figma-variable-audit.md
 │   ├── codebase-index.md
 │   ├── system-benchmark.md
-│   └── references/          ← Knowledge notes (auto-loaded)
-│
-├── govern/                  ← 11 skills + references/
-│   ├── contribution-workflow.md
-│   ├── deprecation-process.md
-│   ├── decision-record.md
-│   ├── change-communication.md
-│   ├── backlog-generator.md
-│   ├── version-bump-advisor.md
-│   ├── release-retrospective.md
-│   ├── governance-encoder.md
-│   ├── session-memory.md
-│   ├── codemod-generator.md
-│   ├── triage.md
-│   └── references/          ← Knowledge notes (auto-loaded)
-│
-├── document/                ← 7 skills + references/
 │   ├── ai-component-description.md
-│   ├── pattern-documentation.md
-│   ├── token-documentation.md
-│   ├── usage-guidelines.md
-│   ├── component-decision-tree.md
-│   ├── context-engine-builder.md
-│   ├── metadata-schema-generator.md
-│   └── references/          ← Knowledge notes (auto-loaded)
-│
-├── validate/                ← 6 skills + references/
-│   ├── design-to-code-check.md
-│   ├── accessibility-per-component.md
-│   ├── token-compliance.md
-│   ├── schema-validator.md
-│   ├── component-api-validator.md
-│   ├── cicd-integration.md
-│   └── references/          ← Knowledge notes (auto-loaded)
-│
-├── communicate/             ← 6 skills + references/
-│   ├── adoption-report.md
-│   ├── stakeholder-brief.md
 │   ├── system-pitch.md
-│   ├── designer-onboarding.md
-│   ├── engineering-onboarding.md
-│   ├── visual-report.md
-│   └── references/          ← Knowledge notes (auto-loaded)
+│   ├── adoption-report.md
+│   └── visual-report.md
 │
-├── agents/                  ← 4 chained workflows
-│   ├── full-system-diagnostic.md
-│   ├── component-to-release.md
-│   ├── governance-review.md
-│   └── migration.md
-│
-├── knowledge-notes/         ← 11 reference documents (canonical source)
+├── knowledge-notes/          ← 11 reference documents (single canonical source)
 │   ├── token-architecture.md
 │   ├── component-governance.md
 │   ├── ai-readiness.md
@@ -1093,13 +1156,16 @@ design-system-ops/
 │   ├── output-discipline.md
 │   └── adoption-measurement.md
 │
-└── sample-outputs/          ← Real example outputs
-    ├── example-token-audit.md
+└── sample-outputs/           ← 6 calibration examples
     ├── example-component-description.md
-    └── example-health-dashboard.html
+    ├── example-token-audit.md
+    ├── system-health-campusiq.md
+    ├── component-audit-fintech-pulse.md
+    ├── drift-detection-sparky-consumer-app.md
+    └── stakeholder-brief-campusiq-q1.md
 ```
 
-The `references/` folders inside each category contain copies of the knowledge notes those skills need. You do not need to manage these — they load automatically.
+Skills reference the canonical `knowledge-notes/` directory directly through frontmatter paths (e.g., `../../knowledge-notes/filename.md`). The plugin framework auto-loads these files when a skill runs — you do not need to manage separate copies. This keeps knowledge notes in a single, maintainable location.
 
 ---
 

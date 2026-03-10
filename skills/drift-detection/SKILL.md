@@ -2,9 +2,9 @@
 name: drift-detection
 description: "Identify where a design system has diverged from its original intent across the whole system — components implemented differently to spec, tokens overridden locally, patterns forked across teams. This is a system-wide sweep for divergence patterns, NOT a single-component spec comparison. Trigger when someone says: find drift, where has the system diverged, design code inconsistency, what's out of sync, where are teams going off-system, component drift, or anything about identifying gaps between design system intent and actual implementation. Do NOT trigger for checking one specific component against its design spec — use design-to-code-check for that."
 references:
-  - references/token-architecture.md
-  - references/design-to-code-contract.md
-  - references/output-discipline.md
+  - ../../knowledge-notes/token-architecture.md
+  - ../../knowledge-notes/design-to-code-contract.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Drift detection
@@ -20,15 +20,6 @@ Not all drift is bad. A product team that made a deliberate, documented exceptio
 This skill distinguishes between drift types and routes each finding to the appropriate response.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Token Architecture Principles** (`references/token-architecture.md`) — Three-tier token model, naming conventions, reference rules, and common failure patterns
-- **Design-to-Code Contract Definitions** (`references/design-to-code-contract.md`) — Design, build, documentation, and release contract definitions with common gap patterns
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Configuration
 

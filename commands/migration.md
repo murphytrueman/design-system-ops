@@ -1,6 +1,6 @@
 ---
 description: Plan and execute a design system migration
-allowed-tools: Read, Write, Grep, Glob, Bash(find:*), Bash(wc:*), Bash(diff:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(diff:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the migration agent to plan and execute a design system migration.

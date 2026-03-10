@@ -2,7 +2,7 @@
 name: visual-report
 description: "Generate visual output — charts, dashboards, and trend graphs — from audit findings, session history, or system health data. Produces an interactive HTML dashboard or a set of SVG/Mermaid charts that make design system health visible at a glance. Trigger when someone says: visualise the findings, show me a chart, create a dashboard, graph the trends, make this visual, health dashboard, show me the data, I need charts for the stakeholder meeting, turn this into a visual report, or anything about producing visual representations of design system data. Do NOT trigger for producing a written stakeholder brief without visuals — use stakeholder-brief for that. Do NOT trigger for running an audit — run the audit skill first, then use visual-report to visualise the output."
 references:
-  - references/human-oversight-framework.md
+  - ../../knowledge-notes/human-oversight-framework.md
 ---
 
 # Visual Report

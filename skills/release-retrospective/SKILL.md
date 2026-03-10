@@ -2,7 +2,7 @@
 name: release-retrospective
 description: "Produce a structured look-back after a major release or deprecation — capturing what the plan got right, what it missed, and what to do differently. Trigger when someone says: release retrospective, post-release review, what went wrong with the release, how did the deprecation go, release post-mortem, retro on the migration, or anything about reviewing how a release or deprecation actually went compared to the plan."
 references:
-  - references/component-governance.md
+  - ../../knowledge-notes/component-governance.md
 ---
 
 ## Context
@@ -11,7 +11,7 @@ Governance currently looks forward: plan the deprecation, estimate the blast rad
 
 The retrospective is not a blame exercise. It's a learning artifact. The goal is: what changes to our governance process will prevent this specific gap next time? Foreseeable gaps reveal process failures. Unforeseeable gaps become new guardrails.
 
-## Reference Material
+## Key principles
 
 **From component-governance:** Governance owns the release plan: who's affected, when they're affected, what they need to succeed. The plan is a hypothesis. The retrospective tests it. Blast radius, communication, migration path quality, timeline, and support burden are the five surfaces where plans often break. Each surface has a classification: was this predictable with better analysis, or genuinely novel?
 

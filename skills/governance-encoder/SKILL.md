@@ -2,10 +2,10 @@
 name: governance-encoder
 description: "Convert governance policies into machine-executable JSON constraint files that AI agents and CI pipelines validate against automatically. This produces rule engine files in .ai/governance/, NOT narrative decision records or documentation. Trigger when someone says: encode governance rules, governance as code, automate governance, rule engine, machine-executable constraints, enforce rules automatically, constraint definitions, or anything about converting human-readable policies into structured rules that tools check programmatically. Do NOT trigger for documenting why a decision was made or recording the reasoning behind a choice — use decision-record for those."
 references:
-  - references/component-governance.md
-  - references/design-to-code-contract.md
-  - references/human-oversight-framework.md
-  - references/agent-orchestration-guide.md
+  - ../../knowledge-notes/component-governance.md
+  - ../../knowledge-notes/design-to-code-contract.md
+  - ../../knowledge-notes/human-oversight-framework.md
+  - ../../knowledge-notes/agent-orchestration-guide.md
 ---
 
 # Governance encoder
@@ -27,17 +27,6 @@ The distinction between governance documentation and governance encoding:
 Both are necessary. Documentation explains the intent. Encoding enforces the constraint.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes:
-
-- **Component Governance Frameworks** (`references/component-governance.md`) — Decision records, contribution criteria, deprecation triggers, component lifecycle, and the five-level maturity model
-- **Design-to-Code Contract Definitions** (`references/design-to-code-contract.md`) — Design, build, documentation, and release contract definitions with common gap patterns
-- **Human Oversight Framework** (`references/human-oversight-framework.md`) — Four-level autonomy spectrum, error attribution model, and oversight integration patterns for AI-assisted governance
-- **Agent Orchestration Guide** (`references/agent-orchestration-guide.md`) — Multi-agent coordination patterns, context management, and handoff protocols for governance rule enforcement across agent workflows
-
-Load and read each reference file listed above before proceeding. The governance frameworks in these notes inform the rule categories and severity model.
 
 ## Configuration
 

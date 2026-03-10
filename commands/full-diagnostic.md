@@ -1,6 +1,6 @@
 ---
 description: Comprehensive design system health sweep
-allowed-tools: Read, Write, Grep, Glob, Bash(find:*), Bash(wc:*), Bash(sort:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the full system diagnostic — a comprehensive health sweep that chains five audit skills into a unified diagnostic report.

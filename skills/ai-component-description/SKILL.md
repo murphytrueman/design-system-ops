@@ -2,9 +2,9 @@
 name: ai-component-description
 description: "Generate AI-optimised text descriptions for components, formatted for Figma's MCP server and LLM consumption. This produces prose descriptions in a six-section format (purpose, props, anti-patterns, composition, accessibility, examples), NOT JSON schemas or structured data files. Trigger when someone says: write component description for AI, Figma MCP description, write the description for Claude to read, six-section description, describe this component for AI, or anything about writing text that makes components legible to LLMs. Do NOT trigger for JSON metadata schemas, structured constraint files, or programmatic tooling data — use metadata-schema-generator for those."
 references:
-  - references/ai-readiness.md
-  - references/component-bestiary-reference.md
-  - references/mcp-setup-guide.md
+  - ../../knowledge-notes/ai-readiness.md
+  - ../../knowledge-notes/component-bestiary-reference.md
+  - ../../knowledge-notes/mcp-setup-guide.md
 ---
 
 # AI component description
@@ -20,16 +20,6 @@ The problem it solves: most component descriptions are written for human designe
 The six-section format is the product of watching AI agents misuse components that had perfectly fine human documentation. The sections are not arbitrary — each one addresses a specific class of LLM error.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **AI-Readiness Patterns** (`references/ai-readiness.md`) — Six dimensions of component AI readiness, the six-section description format, and Figma MCP integration
-- **Component Bestiary Reference** (`references/component-bestiary-reference.md`) — Challenge Rating system for documentation depth calibration and validation prioritisation
-- **MCP Setup Guide** (`references/mcp-setup-guide.md`) — Three-layer MCP architecture for understanding how component descriptions are served via MCP servers to AI agents
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Configuration
 

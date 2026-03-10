@@ -1,6 +1,6 @@
 ---
 description: Quarterly governance review package
-allowed-tools: Read, Write, Grep, Glob
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the governance review — a quarterly assessment that produces an internal review, adoption analysis, drift summary, and stakeholder-ready brief.

@@ -2,7 +2,7 @@
 name: decision-record
 description: "Create a structured narrative record documenting why a design system decision was made — the context, options considered, trade-offs, and rationale. This produces a human-readable decision document, NOT machine-executable rules or constraint files. Trigger when someone says: document this decision, record why we chose, ADR, architecture decision record, capture this decision, why did we pick, what was the reasoning, or anything about preserving the narrative behind a specific design system choice. Do NOT trigger for encoding governance policies as machine-checkable rules — use governance-encoder for that."
 references:
-  - references/component-governance.md
+  - ../../knowledge-notes/component-governance.md
 ---
 
 # Decision record
@@ -16,14 +16,6 @@ Design systems accumulate decisions faster than they accumulate documentation. T
 A decision record does not need to be formal. It needs to be findable and honest. The format below is lightweight enough to write in under twenty minutes and structured enough to be useful when someone reads it twelve months later.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Component Governance Frameworks** (`references/component-governance.md`) — Contribution criteria, deprecation triggers, component lifecycle, and governance failure patterns
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Step 1: Clarify the decision
 

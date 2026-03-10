@@ -1,6 +1,6 @@
 ---
 description: Generate a CI/CD pipeline for design system quality checks
-allowed-tools: Read, Write, Grep, Glob, Bash(find:*), Bash(wc:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the cicd-integration skill to generate a CI/CD pipeline configuration.

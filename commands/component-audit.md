@@ -1,6 +1,6 @@
 ---
 description: Audit your component library inventory
-allowed-tools: Read, Grep, Glob, Bash(find:*), Bash(wc:*), Bash(sort:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the component-audit skill against the user's design system component library.

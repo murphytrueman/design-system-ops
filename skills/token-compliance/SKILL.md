@@ -2,8 +2,8 @@
 name: token-compliance
 description: "Check a codebase or implementation for token compliance — finding hardcoded values, wrong-tier token references, and inconsistent token application in consuming code. This checks how tokens are used in code, NOT how the tokens themselves are defined or structured. Trigger when someone says: are we using tokens correctly, find hardcoded values, token compliance check, find raw values, token misuse, are there any hex values in the code, checking token usage, or anything about whether tokens are being used consistently and correctly. Do NOT trigger for auditing the token definitions themselves — use token-audit for that."
 references:
-  - references/token-architecture.md
-  - references/output-discipline.md
+  - ../../knowledge-notes/token-architecture.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Token compliance
@@ -17,14 +17,6 @@ Token compliance problems compound quietly. A single hardcoded hex value does no
 The compliance check exists to catch violations before they accumulate, and to understand the pattern of violations when they already have. The pattern matters: if hardcoded values are concentrated in one product area or one team's contribution, the response is different than if they are evenly distributed.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Token Architecture Principles** (`references/token-architecture.md`) — Three-tier token model, naming conventions, reference rules, and common failure patterns
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Configuration
 

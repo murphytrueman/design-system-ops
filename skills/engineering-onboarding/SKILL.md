@@ -2,14 +2,14 @@
 name: engineering-onboarding
 description: "Create an onboarding guide for an engineer joining a team that consumes the design system. Trigger when someone says: onboard new engineer, developer getting started guide, new engineer guide, engineering onboarding, first day for developers, frontend onboarding, or anything about helping an engineer new to the team get up to speed with the design system."
 references:
-  - references/design-to-code-contract.md
+  - ../../knowledge-notes/design-to-code-contract.md
 ---
 
 ## Context
 
 Engineering onboarding is genuinely different from designer onboarding. The mental model is different (consuming an API vs composing with a library), the first tasks are different (install and import vs connect Figma library), the tooling is different (package manager, TypeScript types, test harness vs Figma, documentation platform). Most importantly, engineers are where component drift originates — wrapping system components in local styled wrappers, hardcoding token values, reimplementing components locally. Proper onboarding from day one is the highest-leverage adoption intervention.
 
-## Reference Material
+## Key principles
 
 **From design-to-code-contract:** Engineers and designers operate on opposite sides of the contract. Designers compose with a library (Figma, Storybook). Engineers consume an API (imports, props, types). The contract is the component signature: what props it accepts, what slots it exposes, what variants are possible. Component drift begins when an engineer builds a local wrapper because "the system component is close but not quite right" — escalating to designers too late means the system lost control. Onboarding embeds the contract from day one.
 

@@ -2,13 +2,13 @@
 name: system-health
 description: "Run an overall health assessment across a design system, producing a findings-based summary across seven dimensions. This produces a holistic, cross-cutting health assessment, NOT a deep dive into a single dimension like components or tokens. Trigger when someone says: how healthy is my design system, overall system assessment, system health check, rate my system, design system audit, give me the big picture on my system, or anything asking for a holistic view of system quality rather than a focused audit of one area. Do NOT trigger for a deep component library audit — use component-audit for that."
 references:
-  - references/component-governance.md
-  - references/ai-readiness.md
-  - references/design-to-code-contract.md
-  - references/human-oversight-framework.md
-  - references/agent-orchestration-guide.md
-  - references/mcp-setup-guide.md
-  - references/output-discipline.md
+  - ../../knowledge-notes/component-governance.md
+  - ../../knowledge-notes/ai-readiness.md
+  - ../../knowledge-notes/design-to-code-contract.md
+  - ../../knowledge-notes/human-oversight-framework.md
+  - ../../knowledge-notes/agent-orchestration-guide.md
+  - ../../knowledge-notes/mcp-setup-guide.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # System health
@@ -24,19 +24,6 @@ This assessment is designed to give a snapshot of the whole system, not a deep d
 For deeper work on any individual dimension, route to the relevant specialist skill (token-audit, component-audit, etc.).
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Component Governance Frameworks** (`references/component-governance.md`) — Contribution criteria, deprecation triggers, component lifecycle, and governance failure patterns
-- **AI-Readiness Patterns** (`references/ai-readiness.md`) — Six dimensions of component AI readiness, the six-section description format, and Figma MCP integration
-- **Design-to-Code Contract Definitions** (`references/design-to-code-contract.md`) — Design, build, documentation, and release contract definitions with common gap patterns
-- **Human Oversight Framework** (`references/human-oversight-framework.md`) — Four-level autonomy spectrum, error attribution model, and review cadences for assessing oversight maturity
-- **Agent Orchestration Guide** (`references/agent-orchestration-guide.md`) — Multi-agent coordination patterns and context management for assessing orchestration readiness
-- **MCP Setup Guide** (`references/mcp-setup-guide.md`) — Three-layer MCP architecture and integration patterns for assessing infrastructure maturity
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Configuration
 

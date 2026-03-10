@@ -2,9 +2,9 @@
 name: component-audit
 description: "Audit a design system's component library for health, producing a findings-based assessment of usage, complexity, duplication, and coverage gaps with actionable recommendations. This produces a deep, single-dimension audit of the component library, NOT a cross-cutting system health assessment. Trigger when someone says: audit my components, component health, what components do I have, unused components, component coverage, component review, assess my library, or anything about evaluating the quality and health of a component library. Do NOT trigger for building machine-readable index files or dependency graphs for AI agents — use codebase-index for those. Do NOT trigger for a holistic health summary — use system-health for that."
 references:
-  - references/component-governance.md
-  - references/component-bestiary-reference.md
-  - references/output-discipline.md
+  - ../../knowledge-notes/component-governance.md
+  - ../../knowledge-notes/component-bestiary-reference.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Component audit
@@ -18,15 +18,6 @@ Component libraries accumulate silently. New components arrive through contribut
 A component audit brings the library back into focus: what is there, what is used, what duplicates what, and what is missing that teams have been building around. It is the maintenance work that makes the next year of development faster.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Component Governance Frameworks** (`references/component-governance.md`) — Contribution criteria, deprecation triggers, component lifecycle, and governance failure patterns
-- **Component Bestiary Reference** (`references/component-bestiary-reference.md`) — Challenge Rating system for documentation depth calibration and validation prioritisation
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Configuration
 

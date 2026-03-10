@@ -1,6 +1,6 @@
 ---
 description: Generate a visual dashboard from audit findings
-allowed-tools: Read, Write, Grep, Glob
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the visual-report skill to generate visual output from audit data.

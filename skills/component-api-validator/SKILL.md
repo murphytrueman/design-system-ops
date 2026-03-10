@@ -2,8 +2,8 @@
 name: component-api-validator
 description: "Audit component APIs for consistency, breaking changes, TypeScript coverage, and contract compliance across a component library. Trigger when someone says: component prop review, verify component types are exported, component API audit, check our component interfaces, are our props consistent, API consistency check, prop naming review, breaking change detection, or anything about checking whether component APIs are structurally sound and consistent across the library."
 references:
-  - references/design-to-code-contract.md
-  - references/component-governance.md
+  - ../../knowledge-notes/design-to-code-contract.md
+  - ../../knowledge-notes/component-governance.md
 ---
 
 # Component API validator
@@ -19,15 +19,6 @@ API validation is not about enforcing a single naming convention. It is about de
 This skill evaluates the API surface as a whole — not one component at a time, but the patterns that emerge across the library. Individual component reviews are useful but miss the cross-library inconsistencies that frustrate consumers most.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes:
-
-- **Design-to-Code Contract Definitions** (`references/design-to-code-contract.md`) — What "done" means at each lifecycle stage, API contract requirements, common gap patterns
-- **Component Governance Principles** (`references/component-governance.md`) — Contribution criteria, deprecation triggers, lifecycle stages, governance patterns
-
-Load and read each reference file before proceeding.
 
 ## Configuration
 

@@ -3,6 +3,7 @@
 ![Design System Ops](og-image.png)
 
 Claude Code skills for the work that keeps a design system alive.
+
 [designsystemops.com](https://designsystemops.com)
 
 ---
@@ -68,7 +69,7 @@ See [1-INSTALL.md](1-INSTALL.md) for the full guide with entry points by use cas
 
 | Category | Skills | What they do |
 |----------|--------|-------------|
-| **Audit** | token-audit, component-audit, system-health, drift-detection, naming-audit, figma-variable-audit, codebase-index, system-benchmark | Understand what you actually have |
+| **Audit** | token-audit, component-audit, system-health, drift-detection, naming-audit, figma-variable-audit, codebase-index, system-benchmark, theme-audit | Understand what you actually have |
 | **Govern** | contribution-workflow, deprecation-process, decision-record, change-communication, backlog-generator, version-bump-advisor, release-retrospective, governance-encoder, session-memory, codemod-generator, triage | Run the system as infrastructure |
 | **Document** | ai-component-description, pattern-documentation, token-documentation, usage-guidelines, component-decision-tree, context-engine-builder, metadata-schema-generator | Make the system legible to humans and machines |
 | **Validate** | design-to-code-check, accessibility-per-component, token-compliance, schema-validator, component-api-validator, cicd-integration | Verify quality before it ships |

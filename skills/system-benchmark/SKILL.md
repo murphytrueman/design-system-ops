@@ -2,11 +2,11 @@
 name: system-benchmark
 description: "Benchmark a design system against industry standards and comparable public systems, producing a qualitative comparison across dimensions with specific, named reference points. Goes beyond an internal health assessment to answer 'how does our system compare to what good looks like out there?' Trigger when someone says: benchmark our system, how do we compare, industry comparison, rate our system against others, where do we stand, compare us to Material Design, how mature is our system, are we behind or ahead, competitive assessment of our design system, or anything about comparing a design system's maturity or quality against external benchmarks. Do NOT trigger for an internal health check without external comparison — use system-health for that. Do NOT trigger for auditing a specific dimension — use the specific audit skill for that."
 references:
-  - references/token-architecture.md
-  - references/component-governance.md
-  - references/ai-readiness.md
-  - references/component-bestiary-reference.md
-  - references/output-discipline.md
+  - ../../knowledge-notes/token-architecture.md
+  - ../../knowledge-notes/component-governance.md
+  - ../../knowledge-notes/ai-readiness.md
+  - ../../knowledge-notes/component-bestiary-reference.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # System Benchmark

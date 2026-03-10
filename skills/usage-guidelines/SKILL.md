@@ -2,8 +2,8 @@
 name: usage-guidelines
 description: "Write usage guidelines for a specific, named component — covering when to use it, when not to, edge cases, and anti-patterns for that one component. This documents HOW to use a component you have already chosen, NOT how to choose between components. Trigger when someone says: write usage guidelines for [component], do's and don'ts for [component], how should [component] be used, usage rules, write the guidelines for [component], or anything about creating prescriptive guidance for a single named component. Do NOT trigger for choosing between components — use component-decision-tree for that. Do NOT trigger for documenting multi-component patterns — use pattern-documentation for that."
 references:
-  - references/ai-readiness.md
-  - references/component-bestiary-reference.md
+  - ../../knowledge-notes/ai-readiness.md
+  - ../../knowledge-notes/component-bestiary-reference.md
 ---
 
 # Usage guidelines
@@ -17,15 +17,6 @@ Most component usage guidelines have the same structural problem: they describe 
 The goal here is the second kind. Guidelines that are worth writing are guidelines that would prevent a real mistake someone on a consuming team could plausibly make.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **AI-Readiness Patterns** (`references/ai-readiness.md`) — Six dimensions of component AI readiness, the six-section description format, and Figma MCP integration
-- **Component Bestiary Reference** (`references/component-bestiary-reference.md`) — Challenge Rating system for documentation depth calibration and validation prioritisation
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Step 1: Gather component information
 

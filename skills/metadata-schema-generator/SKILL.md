@@ -2,8 +2,8 @@
 name: metadata-schema-generator
 description: "Generate structured JSON metadata schemas for design system components — machine-readable constraint definitions that encode props, behavioural rules, composition constraints, prohibited combinations, and accessibility contracts as programmatic data. This produces JSON files for tooling (MCP servers, linters, code generators, test frameworks), NOT text descriptions for humans or Figma. Trigger when someone says: generate metadata schema, JSON schema for components, component contract as JSON, structured metadata for tooling, prop constraints as data, machine-readable component rules, or anything about producing JSON/structured data that tools consume programmatically. Do NOT trigger for Figma descriptions, component documentation, or AI-readable text — use ai-component-description for those."
 references:
-  - references/ai-readiness.md
-  - references/component-bestiary-reference.md
+  - ../../knowledge-notes/ai-readiness.md
+  - ../../knowledge-notes/component-bestiary-reference.md
 ---
 
 # Metadata schema generator
@@ -27,15 +27,6 @@ The `ai-component-description` skill produces text descriptions optimised for LL
 This skill generates structured JSON metadata schemas for tooling consumption — not human-readable documentation (use `usage-guidelines` or `pattern-documentation` for that) or LLM-facing descriptions (use `ai-component-description`). If the system has no component inventory yet, run `component-audit` or `codebase-index` first. If the team has no current need for machine-readable metadata (no MCP server, no code generation, no linting integration), this skill adds overhead without value — discuss the use case before generating.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes:
-
-- **AI-Readiness Patterns** (`references/ai-readiness.md`) — Machine-readable manifest structure, structured JSON metadata for MCP consumption, and the metadata + description pattern
-- **Component Bestiary Reference** (`references/component-bestiary-reference.md`) — Challenge Rating system for calibrating metadata depth to component complexity
-
-Load and read each reference file listed above before proceeding.
 
 ## Configuration
 

@@ -1,6 +1,6 @@
 ---
 description: Score your design system's overall health
-allowed-tools: Read, Grep, Glob
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the system-health skill to produce a scored health assessment of the user's design system.

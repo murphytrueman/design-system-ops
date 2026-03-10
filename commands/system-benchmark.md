@@ -1,6 +1,6 @@
 ---
 description: Benchmark your design system across 12 scored dimensions
-allowed-tools: Read, Grep, Glob, Bash(find:*), Bash(wc:*), Bash(sort:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the system-benchmark skill against the user's design system.

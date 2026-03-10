@@ -1,6 +1,6 @@
 ---
 description: Audit your design token architecture
-allowed-tools: Read, Grep, Glob, Bash(find:*), Bash(wc:*), Bash(sort:*), Bash(head:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the token-audit skill against the user's design system tokens.

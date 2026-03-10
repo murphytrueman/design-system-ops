@@ -1,6 +1,6 @@
 ---
 description: Generate a migration codemod with tests and rollback plan
-allowed-tools: Read, Write, Grep, Glob, Bash(find:*), Bash(node:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(node:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the codemod-generator skill to produce a migration codemod.

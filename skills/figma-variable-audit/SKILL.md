@@ -2,8 +2,8 @@
 name: figma-variable-audit
 description: "Audit Figma variable collections against token architecture best practices. Trigger when someone says: audit my Figma variables, check my Figma tokens, are my variables structured correctly, Figma variable health, review my variable collections, variable naming check, or anything about auditing the quality or structure of Figma variables."
 references:
-  - references/token-architecture.md
-  - references/output-discipline.md
+  - ../../knowledge-notes/token-architecture.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Figma variable audit
@@ -17,14 +17,6 @@ This skill applies the three-tier token architecture model to Figma variables: p
 The audit is not about enforcing a particular naming convention. It's about identifying where the variable structure is working against the teams using it.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Token Architecture Principles** (`references/token-architecture.md`) — Three-tier token model, naming conventions, reference rules, and common failure patterns
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Configuration
 

@@ -2,8 +2,8 @@
 name: contribution-workflow
 description: "Create or document a contribution workflow for a design system — the multi-stage process for evaluating, accepting, and shepherding new contributions through to publication. Trigger when someone says: how should someone contribute, contribution process, adding a new component, contribution guidelines, what's the process for adding something, how do we handle contributions, or anything about the process of bringing new work into the design system. Do NOT trigger for converting audit findings into backlog tickets — use backlog-generator for that."
 references:
-  - references/component-governance.md
-  - references/design-to-code-contract.md
+  - ../../knowledge-notes/component-governance.md
+  - ../../knowledge-notes/design-to-code-contract.md
 ---
 
 # Contribution workflow
@@ -19,15 +19,6 @@ The goal here is a workflow that is lightweight enough to not be a burden, struc
 The six-stage structure below reflects the full lifecycle of a contribution. Not every contribution needs all six stages at the same depth — a small enhancement to an existing component is lighter than a new foundational component. The workflow should scale accordingly, and the output should note where the path diverges by contribution type.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Component Governance Frameworks** (`references/component-governance.md`) — Contribution criteria, deprecation triggers, component lifecycle, and governance failure patterns
-- **Design-to-Code Contract Definitions** (`references/design-to-code-contract.md`) — Design, build, documentation, and release contract definitions with common gap patterns
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Step 1: Understand the current state
 

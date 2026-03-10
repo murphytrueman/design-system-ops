@@ -2,7 +2,7 @@
 name: deprecation-process
 description: "Plan and execute the full deprecation lifecycle for a design system component, token, or pattern — including timeline, migration paths, communication plan, and multi-phase removal. Trigger when someone says: deprecate a component, remove a component, sunset this pattern, phase out these tokens, retire this variant, replace this with, or anything involving removing or replacing something from the design system. Do NOT trigger for communicating non-deprecation changes like new releases or feature updates — use change-communication for those."
 references:
-  - references/component-governance.md
+  - ../../knowledge-notes/component-governance.md
 ---
 
 # Deprecation process
@@ -18,14 +18,6 @@ A deprecation done well is a contract with consumers: clear notice, a migration 
 This skill produces a deprecation plan that is honest about the timeline, specific about migration, and structured to communicate clearly to the teams affected.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Component Governance Frameworks** (`references/component-governance.md`) — Contribution criteria, deprecation triggers, component lifecycle, and governance failure patterns
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Step 1: Identify what is being deprecated
 

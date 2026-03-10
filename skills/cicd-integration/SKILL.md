@@ -2,9 +2,9 @@
 name: cicd-integration
 description: "Generate CI/CD pipeline configurations that automate design system quality checks — token validation, component linting, visual regression, accessibility scanning, and release gating. Produces ready-to-use pipeline files for GitHub Actions, GitLab CI, CircleCI, or Bitbucket Pipelines, configured to enforce the standards that audit skills check manually. Trigger when someone says: set up CI for the design system, automate these checks, add pipeline for tokens, create GitHub Action for design system, CI/CD for components, automate the release process, continuous integration for design system, how do I automate what the audit found, quality gates in CI, or anything about automating design system quality checks in a pipeline. Do NOT trigger for running a manual audit — use the specific audit skill for that. Do NOT trigger for generating a release checklist — use change-communication for that."
 references:
-  - references/component-governance.md
-  - references/token-architecture.md
-  - references/design-to-code-contract.md
+  - ../../knowledge-notes/component-governance.md
+  - ../../knowledge-notes/token-architecture.md
+  - ../../knowledge-notes/design-to-code-contract.md
 ---
 
 # CI/CD Integration

@@ -2,8 +2,8 @@
 name: component-decision-tree
 description: "Build queryable decision trees that help agents and teams choose between components — structured YAML files mapping user intents to the correct component through a sequence of narrowing questions. This produces selection logic for choosing BETWEEN components, NOT usage guidelines for a single component. Trigger when someone says: component decision tree, which component should I use, help me choose between, selection guide, decision framework, modal vs dialog, intent-to-component mapping, or anything about creating structured logic for picking the right component from alternatives. Do NOT trigger for usage guidance on a specific component — use usage-guidelines for that."
 references:
-  - references/ai-readiness.md
-  - references/component-bestiary-reference.md
+  - ../../knowledge-notes/ai-readiness.md
+  - ../../knowledge-notes/component-bestiary-reference.md
 ---
 
 # Component decision tree
@@ -25,15 +25,6 @@ The practical output is a structured file that agents load alongside component m
 This skill produces decision trees for component selection — choosing between components. It does not document how to use a single component once selected (use `usage-guidelines` for that) or generate component metadata schemas (use `metadata-schema-generator`). If the system has fewer than 5 components, a decision tree adds overhead without value — a simple component index is sufficient. If no component inventory exists, run `component-audit` or `codebase-index` first to establish one.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes:
-
-- **AI-Readiness Patterns** (`references/ai-readiness.md`) — The six dimensions of component AI readiness, machine-readable manifest structure, and the context cascade
-- **Component Bestiary Reference** (`references/component-bestiary-reference.md`) — Challenge Rating system and component complexity classification
-
-Load and read each reference file listed above before proceeding.
 
 ## Configuration
 

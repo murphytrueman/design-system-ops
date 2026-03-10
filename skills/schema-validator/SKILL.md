@@ -2,8 +2,8 @@
 name: schema-validator
 description: "Validate token files against DTCG 2025.10, Style Dictionary, or custom schemas. Trigger when someone says: validate token JSON, check my token files for errors, schema validation for tokens, are my token files valid, DTCG compliance check, validate token format, or anything about checking whether token files are structurally correct before they break builds."
 references:
-  - references/token-architecture.md
-  - references/output-discipline.md
+  - ../../knowledge-notes/token-architecture.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Schema validator
@@ -23,14 +23,6 @@ This skill is not about naming conventions or architectural quality — those be
 This skill validates token file structure only. It does not assess naming quality (use `naming-audit`), token architecture health (use `token-audit`), or token usage in code (use `token-compliance`). If the token source format is not recognisable as DTCG, Style Dictionary, Tokens Studio, or a declared custom schema, ask the user to identify the format before proceeding. If no token files are provided or accessible, there is nothing to validate — stop and confirm the file location with the user.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes:
-
-- **Token Architecture Principles** (`references/token-architecture.md`) — Three-tier model, DTCG 2025.10 specification requirements, and format-specific structural rules
-
-Load and read each reference file before proceeding.
 
 ## Configuration
 

@@ -2,8 +2,8 @@
 name: codemod-generator
 description: "Generate codemods (automated code transformation scripts) for design system migrations — token renames, component API changes, prop deprecations, and import path updates. Produces ready-to-run jscodeshift or custom AST transform scripts that safely apply changes across consuming codebases. Trigger when someone says: generate a codemod, automate this migration, write a transform script, bulk rename tokens, auto-migrate components, jscodeshift for this change, create a migration script, update all imports, rename this prop everywhere, or anything about automating code changes across consumers of a design system. Do NOT trigger for planning the deprecation process — use deprecation-process for that. Do NOT trigger for writing release notes about a change — use change-communication for that."
 references:
-  - references/component-governance.md
-  - references/design-to-code-contract.md
+  - ../../knowledge-notes/component-governance.md
+  - ../../knowledge-notes/design-to-code-contract.md
 ---
 
 # Codemod Generator

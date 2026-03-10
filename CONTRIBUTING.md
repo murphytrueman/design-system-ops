@@ -19,7 +19,7 @@ Pull requests welcome. If something in the install guide, setup docs, or skill d
 
 ## Skill structure
 
-Each skill is a markdown file (`SKILL.md`) inside its own folder under `skills/`. Skills may include a `references/` subfolder with copies of the knowledge notes they depend on. If you're adding a new skill, follow the structure of an existing one.
+Each skill is a markdown file (`SKILL.md`) inside its own folder under `skills/`. Skills reference knowledge notes directly from the canonical `knowledge-notes/` directory via their frontmatter `references:` field using relative paths like `../../knowledge-notes/filename.md`. When adding a new skill, include the knowledge note paths in the skill's frontmatter `references:` array. The project structure includes: skills in `skills/skillname/SKILL.md`, commands in `commands/`, knowledge notes in `knowledge-notes/`, and sample outputs in `sample-outputs/`.
 
 ## What to avoid
 

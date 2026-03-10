@@ -1,6 +1,6 @@
 ---
 description: Detect where teams are diverging from the system
-allowed-tools: Read, Grep, Glob, Bash(find:*), Bash(diff:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(diff:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the drift-detection skill to identify where consuming teams are diverging from the design system.

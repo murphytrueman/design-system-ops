@@ -1,6 +1,6 @@
 ---
 description: Pre-release validation pipeline for a component
-allowed-tools: Read, Write, Grep, Glob, Bash(find:*), Bash(wc:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the component-to-release pipeline to validate a component is ready to ship.

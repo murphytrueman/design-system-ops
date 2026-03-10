@@ -2,8 +2,8 @@
 name: pattern-documentation
 description: "Write documentation for a design system pattern — a multi-component recipe covering use cases, anti-patterns, composition, and related patterns. Patterns span multiple components working together (e.g. a form pattern, a data table pattern). Trigger when someone says: document this pattern, write the pattern page, usage pattern, when to use this, pattern guidelines, document how this works, or anything about creating documentation for a reusable UI pattern rather than a single component. Do NOT trigger for writing usage guidelines for a single named component — use usage-guidelines for that."
 references:
-  - references/ai-readiness.md
-  - references/component-bestiary-reference.md
+  - ../../knowledge-notes/ai-readiness.md
+  - ../../knowledge-notes/component-bestiary-reference.md
 ---
 
 # Pattern documentation
@@ -17,15 +17,6 @@ Pattern documentation is systematically underdone in most design systems. Teams 
 Good pattern documentation does two things. It explains the pattern clearly enough that a designer or developer encountering it for the first time can apply it correctly. And it explains the edges: when this pattern is not the right choice, what alternatives exist, and how to handle the cases that do not fit neatly.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **AI-Readiness Patterns** (`references/ai-readiness.md`) — Six dimensions of component AI readiness, the six-section description format, and Figma MCP integration
-- **Component Bestiary Reference** (`references/component-bestiary-reference.md`) — Challenge Rating system for documentation depth calibration and validation prioritisation
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Step 0: Pattern discovery guide
 

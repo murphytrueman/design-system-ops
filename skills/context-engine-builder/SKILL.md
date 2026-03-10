@@ -2,11 +2,11 @@
 name: context-engine-builder
 description: "Generate a context engine — seven structured blueprint files (UX, UI, content, accessibility, ethical, technical, business intelligence) that encode everything an AI agent needs to work with a design system. This produces YAML infrastructure in .ai/context-engine/, NOT a health score or quality assessment. Trigger when someone says: build a context engine, create a system brain, build the seven blueprints, context engine, blueprint stack, encode design system knowledge for AI, make our system AI-navigable, or anything about creating structured knowledge files that AI agents load to understand the system. Do NOT trigger for scoring or assessing system health — use system-health for that."
 references:
-  - references/ai-readiness.md
-  - references/component-bestiary-reference.md
-  - references/agent-orchestration-guide.md
-  - references/mcp-setup-guide.md
-  - references/context-engine-blueprints.md
+  - ../../knowledge-notes/ai-readiness.md
+  - ../../knowledge-notes/component-bestiary-reference.md
+  - ../../knowledge-notes/agent-orchestration-guide.md
+  - ../../knowledge-notes/mcp-setup-guide.md
+  - ../../knowledge-notes/context-engine-blueprints.md
 ---
 
 # Context engine builder
@@ -28,18 +28,6 @@ The practical output is a set of structured files — one per blueprint — that
 This skill builds context infrastructure — it does not assess system health or score quality (use `system-health` for that). If the system has no documented components, tokens, or patterns yet, the context engine has nothing to encode; help the team establish foundations first. If only one or two blueprints are needed (a common case — many teams start with the Technical and UI blueprints only), generate those specifically rather than forcing all seven. The engine is modular; partial generation is a feature, not a gap.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes:
-
-- **AI-Readiness Patterns** (`references/ai-readiness.md`) — Context cascade, six dimensions of component AI readiness, machine-readable manifest structure, and AI-readiness scoring
-- **Component Bestiary Reference** (`references/component-bestiary-reference.md`) — Challenge Rating system for understanding component complexity and documentation depth requirements
-- **Agent Orchestration Guide** (`references/agent-orchestration-guide.md`) — Multi-agent coordination patterns and context management for designing blueprint consumption by orchestrated agent workflows
-- **MCP Setup Guide** (`references/mcp-setup-guide.md`) — Three-layer MCP architecture for understanding how context engine blueprints integrate with MCP server infrastructure
-- **Context Engine Blueprint Templates** (`references/context-engine-blueprints.md`) — YAML output templates for all seven blueprints, the engine manifest, and the usage guide
-
-Load and read each reference file listed above before proceeding.
 
 ## Configuration
 

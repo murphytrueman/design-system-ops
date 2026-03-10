@@ -2,8 +2,8 @@
 name: design-to-code-check
 description: "Check alignment between a specific design specification and its code implementation — a focused, single-component or single-screen comparison. Trigger when someone says: does this match the design, check implementation, design code alignment, what's different between the design and the build, spec check, implementation review, or anything about comparing a designed component or screen to its coded equivalent. Do NOT trigger for system-wide drift detection across multiple components or teams — use drift-detection for that."
 references:
-  - references/design-to-code-contract.md
-  - references/output-discipline.md
+  - ../../knowledge-notes/design-to-code-contract.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Design-to-code check
@@ -19,14 +19,6 @@ Both categories matter, but they require different responses. An implementation 
 This skill produces a report that distinguishes between the two.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Design-to-Code Contract Definitions** (`references/design-to-code-contract.md`) — Design, build, documentation, and release contract definitions with common gap patterns
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Configuration
 

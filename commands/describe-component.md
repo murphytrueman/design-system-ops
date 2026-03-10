@@ -1,6 +1,6 @@
 ---
 description: Generate an AI-optimised component description
-allowed-tools: Read, Write, Grep, Glob
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 ---
 
 Run the ai-component-description skill to generate a structured, machine-readable description for a design system component.

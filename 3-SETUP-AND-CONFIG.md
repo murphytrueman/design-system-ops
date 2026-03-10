@@ -45,7 +45,7 @@ After cloning, the directory structure should look like:
 
 ```
 design-system-ops/
-├── skills/              38 skills organised by category
+├── skills/              39 skills organised by category
 ├── commands/            13 command definitions
 ├── knowledge-notes/     11 reference documents (canonical)
 ├── sample-outputs/      example outputs for reference
@@ -340,7 +340,7 @@ Skills are powered by bundled knowledge notes. Think of knowledge notes as cheat
 
 **Example:** When you run `token-audit`, Claude first reads the `token-architecture` knowledge note (which explains the three-tier token model, naming rules, and common failures). That background knowledge is why the audit catches things like tier leakage and naming violations — it is not guessing, it is applying a framework.
 
-The knowledge notes live in `references/` folders inside each skill category. They are copies of the master files in `knowledge-notes/`.
+The knowledge notes are the canonical source in `knowledge-notes/`. Skills reference them directly via relative paths in their frontmatter `references:` field (e.g., `../../knowledge-notes/token-architecture.md`). When you edit a knowledge note, you edit it once in `knowledge-notes/` and all skills automatically pick up the updated version.
 
 **The ten knowledge notes:**
 
@@ -357,7 +357,7 @@ The knowledge notes live in `references/` folders inside each skill category. Th
 | `context-engine-blueprints` | YAML output templates for all seven context engine blueprints |
 | `output-discipline` | Shared quality standards for all skill output — scoping claims to what was inspected, no numeric scores, consistent severity and status indicators, respecting intentional deviations |
 
-**If you modify a knowledge note:** The canonical copy is in `knowledge-notes/`. After editing, sync the updated file to every `references/` subdirectory that contains a copy. The README documents which directories receive each note.
+**If you modify a knowledge note:** Edit the file directly in the `knowledge-notes/` directory. All skills automatically reference the updated version through their `references:` frontmatter field — no syncing needed. The change takes effect immediately for all skills that use it.
 
 ---
 
@@ -448,13 +448,13 @@ Or use the `component-to-release` agent, which chains these automatically.
 
 **"The skill didn't load the knowledge notes"**
 
-This means the `references/` folder inside a skill category is missing files. To check:
-1. Open the skill file (e.g., `audit/token-audit.md`)
-2. Look at the top of the file — between the `---` lines, you will see a `references:` section listing file names
-3. Check that each of those files exists in the `references/` folder of that category (e.g., `audit/references/`)
-4. If any are missing, copy them from the master `knowledge-notes/` folder
+This is rare if you have installed from the repository, but if it happens:
+1. Open the skill file (e.g., `skills/audit/token-audit.md`)
+2. Look at the top of the file — between the `---` lines, you will see a `references:` section listing file paths
+3. Verify that each file exists in the `knowledge-notes/` directory at the path specified (e.g., `../../knowledge-notes/token-architecture.md` should resolve to `knowledge-notes/token-architecture.md`)
+4. If any knowledge note files are missing from `knowledge-notes/`, check your installation — the repo should include all of them
 
-**Example:** If `audit/token-audit.md` lists `references/token-architecture.md` but that file does not exist in `audit/references/`, copy `knowledge-notes/token-architecture.md` into `audit/references/`.
+Skills reference knowledge notes directly from the canonical `knowledge-notes/` directory, so make sure that directory has all its files.
 
 **"The output is generic / not specific enough"**
 
@@ -757,16 +757,16 @@ This section tracks every change to the product. Update it with every modificati
 
 **Changes made:**
 
-1. **Knowledge note loading (bundled references)**
-   - Created `references/` subdirectories in `audit/`, `govern/`, `document/`, `validate/`
-   - Copied knowledge notes to each skill directory that needs them
-   - Updated 13 skill files with `references:` YAML frontmatter and "Reference material" body sections
-   - Updated README to reflect bundled reference architecture
+1. **Knowledge note loading (canonical source)**
+   - Established `knowledge-notes/` as the canonical source for all reference material
+   - Updated skill files with `references:` YAML frontmatter pointing to knowledge notes via relative paths
+   - All 39 skills now reference knowledge notes directly without local copies
+   - Changes to knowledge notes are automatically picked up by all skills
 
 2. **Expanded token input formats**
    - Added CSS custom properties, SCSS variables, TypeScript/JavaScript objects, and Tailwind config as accepted inputs
    - Updated `token-audit`, `token-documentation`, `token-compliance` with format-specific detection guidance
-   - Updated `ai-readiness` knowledge note and all synced copies
+   - Updated `ai-readiness` knowledge note in `knowledge-notes/` for all skills to reference
 
 3. **Sample output files**
    - Created `sample-outputs/` directory

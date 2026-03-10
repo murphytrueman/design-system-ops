@@ -2,7 +2,7 @@
 name: token-documentation
 description: "Write documentation for design tokens — covering semantic intent, usage context, and do/don't examples. Trigger when someone says: document these tokens, token reference, what does this token mean, token usage guide, write the token docs, token intent, or anything about creating human-readable documentation for design tokens."
 references:
-  - references/token-architecture.md
+  - ../../knowledge-notes/token-architecture.md
 ---
 
 # Token documentation
@@ -20,14 +20,6 @@ The goal is documentation that makes the semantic contract legible. A consumer r
 This skill documents existing tokens. It does not create new tokens, redesign the token architecture, or validate token file structure (use `schema-validator` for structural validation, `token-audit` for architectural assessment). If the token set is empty or has not been defined yet, this skill does not apply — help the team establish their token architecture first. If only primitive tokens exist (no semantic tier), note that the documentation value is limited since primitive tokens are largely self-documenting, and suggest establishing a semantic tier before investing in documentation.
 
 ---
-
-## Reference material
-
-Before producing output, read the following bundled knowledge notes. These contain the frameworks and mental models that make this skill's output production-grade.
-
-- **Token Architecture Principles** (`references/token-architecture.md`) — Three-tier token model, naming conventions, reference rules, and common failure patterns
-
-Load and read each reference file listed above before proceeding. The frameworks in these notes inform every check and recommendation this skill produces.
 
 ## Configuration
 
