@@ -10,15 +10,8 @@ Claude Code skills for the work that keeps a design system alive.
 
 ## The work nobody built AI for
 
-There are great AI tools for the designer who uses a design system. Generate a component, write a story, suggest a layout. That work is well-served.
-
-But what about the team running it?
-
-The token audits. The deprecation plans. The stakeholder briefs nobody reads until something breaks. The contribution workflows, the drift you fight quietly before it becomes someone else's emergency. The governance documentation. The onboarding that happens informally because there's no time to do it properly. The budget defence you prepare at 11pm before a quarterly review.
-
-That work is hard, it's largely invisible, and it compounds badly when it doesn't get done. It also never had proper AI tooling — until now.
-
-Design System Ops is built specifically for practitioners. Not designers who use a system. The people responsible for one.
+Design systems drift. Tokens go stale. Components fall out of spec. Governance documentation gets written once and never updated. The deprecation plan lives in someone's head. The stakeholder brief gets thrown together the night before quarterly review.
+There are great AI tools for the designer who uses a design system. But the team running it? That work never had proper tooling – until now.
 
 ---
 
@@ -87,6 +80,17 @@ See [1-INSTALL.md](1-INSTALL.md) for the full guide with entry points by use cas
 ### AI infrastructure skills
 
 Five skills produce machine-readable files that AI agents and tooling consume directly: `context-engine-builder`, `governance-encoder`, `codebase-index`, `component-decision-tree`, and `metadata-schema-generator`. If you're building AI-native design system infrastructure, these are the files your agents need.
+
+---
+
+## Core frameworks
+
+The skills encode specific practitioner frameworks, not generic advice:
+
+- **Three-tier token architecture** — primitive → semantic → component, with tier-leakage detection and DTCG 2025.10 alignment
+- **Component Challenge Rating** — a difficulty classification system that calibrates audit depth and remediation estimates to actual component complexity
+- **Design system maturity model** — five levels from ad-hoc to optimised, used across health reports, stakeholder briefs, and adoption tracking to frame recommendations appropriately
+- **AI-readiness scoring** — evaluates how well your system's metadata, naming, and structure support AI agent consumption
 
 ---
 
