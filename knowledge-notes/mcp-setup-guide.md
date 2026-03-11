@@ -1,3 +1,8 @@
+---
+name: mcp-setup-guide
+type: knowledge
+---
+
 # MCP setup guide
 
 **Knowledge note for Design System Ops**

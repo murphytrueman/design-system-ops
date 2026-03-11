@@ -1,3 +1,8 @@
+---
+name: ai-readiness
+type: knowledge
+---
+
 # AI-readiness patterns
 
 **Knowledge note for Design System Ops**

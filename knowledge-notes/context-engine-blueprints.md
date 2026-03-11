@@ -1,3 +1,8 @@
+---
+name: context-engine-blueprints
+type: knowledge
+---
+
 # Context engine blueprint templates
 
 **Knowledge note for Design System Ops**

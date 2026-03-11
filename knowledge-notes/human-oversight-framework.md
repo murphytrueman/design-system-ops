@@ -1,3 +1,8 @@
+---
+name: human-oversight-framework
+type: knowledge
+---
+
 # Human oversight framework
 
 **Knowledge note for Design System Ops**

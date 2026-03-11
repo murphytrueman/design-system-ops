@@ -1,3 +1,8 @@
+---
+name: design-to-code-contract
+type: knowledge
+---
+
 # Design-to-code contract definitions
 
 **Knowledge note for Design System Ops**

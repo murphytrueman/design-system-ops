@@ -1,3 +1,8 @@
+---
+name: adoption-measurement
+type: knowledge
+---
+
 # Adoption measurement principles
 
 **Knowledge note for Design System Ops**

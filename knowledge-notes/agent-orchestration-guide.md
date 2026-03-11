@@ -1,3 +1,8 @@
+---
+name: agent-orchestration-guide
+type: knowledge
+---
+
 # Agent orchestration guide
 
 **Knowledge note for Design System Ops**

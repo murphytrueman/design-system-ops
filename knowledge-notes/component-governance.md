@@ -1,3 +1,8 @@
+---
+name: component-governance
+type: knowledge
+---
+
 # Component governance frameworks
 
 **Knowledge note for Design System Ops**

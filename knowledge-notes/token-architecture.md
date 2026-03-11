@@ -1,3 +1,8 @@
+---
+name: token-architecture
+type: knowledge
+---
+
 # Token architecture principles
 
 **Knowledge note for Design System Ops**

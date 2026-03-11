@@ -1,3 +1,8 @@
+---
+name: output-discipline
+type: knowledge
+---
+
 # Output discipline
 
 **Knowledge note for Design System Ops**

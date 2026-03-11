@@ -1,3 +1,8 @@
+---
+name: component-bestiary-reference
+type: knowledge
+---
+
 # Component Bestiary reference
 
 **Knowledge note for Design System Ops**
