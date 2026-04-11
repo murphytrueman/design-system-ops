@@ -90,7 +90,7 @@ For each component, extract the prop layer automatically from TypeScript or equi
 
 ```json
 {
-  "$schema": "https://design-system-ops.dev/metadata/v1",
+  "$schema": "https://designsystemops.com/schemas/metadata/v1.json",
   "component": "Button",
   "version": "1.0.0",
   "status": "stable",
@@ -307,7 +307,7 @@ Assemble all layers into the complete metadata schema per component.
 
 ```json
 {
-  "$schema": "https://design-system-ops.dev/metadata/v1",
+  "$schema": "https://designsystemops.com/schemas/metadata/v1.json",
   "generated": "[date]",
   "system": "[design system name]",
   "component_count": 55,
