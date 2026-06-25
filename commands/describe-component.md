@@ -7,7 +7,7 @@ Run the ai-component-description skill to generate a structured, machine-readabl
 
 Load the ai-component-description skill from ${CLAUDE_PLUGIN_ROOT}/skills/ai-component-description/SKILL.md and follow its complete workflow.
 
-Before starting, read the reference material specified in the skill's frontmatter from ${CLAUDE_PLUGIN_ROOT}/skills/ai-component-description/references/.
+Before starting, read the knowledge notes declared in the skill's frontmatter `references:` field, located in ${CLAUDE_PLUGIN_ROOT}/knowledge-notes/.
 
 Produce a six-section description:
 1. Purpose — what the component does and when to use it

@@ -50,7 +50,7 @@ design-system-ops/
 ├── knowledge-notes/     11 reference documents (canonical)
 ├── sample-outputs/      example outputs for reference
 ├── .claude-plugin/      plugin manifest for Cowork
-└── .ds-ops-config.yml   annotated configuration template
+└── ds-ops-config.example.yml   annotated config template (copy to your project root as .ds-ops-config.yml)
 ```
 
 **Verify the install:** Run any skill by name in Claude Code. Example: "Run token-audit on my token files." Claude should find and load the skill. If it does not, check that the skills directory path is correct in your Claude Code configuration.
@@ -205,7 +205,7 @@ gates:
     contrast_blocks_release: false  # Brand transition in progress — tracking timeline separately
 ```
 
-A full annotated config template ships with the product at `.ds-ops-config.yml`.
+A full annotated config template ships with the product at `ds-ops-config.example.yml` — copy it into your project root and rename it to `.ds-ops-config.yml`.
 
 ---
 

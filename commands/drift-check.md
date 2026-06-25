@@ -7,7 +7,7 @@ Run the drift-detection skill to identify where consuming teams are diverging fr
 
 Load the drift-detection skill from ${CLAUDE_PLUGIN_ROOT}/skills/drift-detection/SKILL.md and follow its complete workflow.
 
-Before starting, read the reference material specified in the skill's frontmatter from ${CLAUDE_PLUGIN_ROOT}/skills/drift-detection/references/.
+Before starting, read the knowledge notes declared in the skill's frontmatter `references:` field, located in ${CLAUDE_PLUGIN_ROOT}/knowledge-notes/.
 
 Classify every drift instance into one of five categories: A (intentional divergence), B (version lag), C (accidental drift), D (misunderstanding), E (system gap). Apply severity weighting based on component criticality (Step 4a).
 

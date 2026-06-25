@@ -7,7 +7,7 @@ Run the governance review — a quarterly assessment that produces an internal r
 
 Load the agent instructions from ${CLAUDE_PLUGIN_ROOT}/skills/governance-review-agent.md and follow the complete workflow.
 
-Before starting, read the reference material for the adoption-report and drift-detection skills from their respective ${CLAUDE_PLUGIN_ROOT}/skills/*/references/ directories.
+Before starting, read the reference material for the adoption-report and drift-detection skills from the `references:` field of each skill's frontmatter, located in ${CLAUDE_PLUGIN_ROOT}/knowledge-notes/.
 
 Begin with Step 1b (Adoption measurement calibration) to establish maturity-appropriate adoption expectations.
 

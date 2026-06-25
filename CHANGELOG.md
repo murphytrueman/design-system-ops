@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-26
+
 ### Added
 
 - **theme-audit skill** — Dedicated skill for auditing theme implementation. Covers theme discovery, coverage checking, component-tier propagation, visual consistency, DTCG resolver validation, and regression detection.
@@ -15,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- **Config template renamed and un-hidden** — The shipped annotated config template moved from the hidden `.ds-ops-config.yml` to the visible, self-describing `ds-ops-config.example.yml`, following the conventional `.example` pattern. Users copy it into their project root and rename it to `.ds-ops-config.yml` (the name skills still read at runtime — unchanged). Makes the template discoverable in the bundle and unambiguous about being a template.
 - **adoption-report skill** — Expanded from a structural outline to a full step-by-step workflow with 5 phases, calibration checkpoint, integration awareness, small-system guidance, and quality checks. Now matches the procedural depth of the audit skills.
 - **stakeholder-brief skill** — Expanded with tone calibration by audience (engineering, product, design leadership), framing patterns, anti-patterns, maturity-level framing, and quality checks.
 - **system-pitch skill** — Expanded with ROI calculation framework, 7 objection handlers, audience calibration, investment models, risk framing, and anti-patterns section.
@@ -24,4 +27,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- **Slash command reference loading** — All 12 commands that load framework context pointed at a per-skill `references/` directory removed during the knowledge-note consolidation. They now read the knowledge notes declared in each skill's frontmatter `references:` field from `knowledge-notes/`, so commands no longer attempt to read a non-existent path.
+- **triage skill count** — Corrected the skill count from 38 to 39 to account for the added `theme-audit` skill.
 - **Sample output path references** — Corrected provenance paths in sample outputs to match actual plugin structure (`skills/` prefix).

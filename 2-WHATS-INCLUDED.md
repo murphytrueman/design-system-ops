@@ -265,7 +265,7 @@ When a tool is connected, skills pull data automatically. Without connections, y
 | **Chromatic** | Pulls visual regression data | Drift detection sees visual diffs, not just code diffs | Low |
 | **Documentation platforms** | Cross-references docs coverage (Zeroheight, Supernova, Storybook docs) | System health reports include documentation completeness | Low |
 
-**How to configure connections:** Create a `.ds-ops-config.yml` file in your project root. A fully annotated template is included in the repo root at `.ds-ops-config.yml`. See the detailed setup guide in `3-SETUP-AND-CONFIG.md`.
+**How to configure connections:** Create a `.ds-ops-config.yml` file in your project root. A fully annotated template is included in the repo root at `ds-ops-config.example.yml` — copy it across and rename it. See the detailed setup guide in `3-SETUP-AND-CONFIG.md`.
 
 ---
 
@@ -991,7 +991,7 @@ The `sample-outputs/` directory contains six real skill outputs. Use these to un
 
 ## Optional configuration
 
-Design System Ops works out of the box with no configuration. If you want to customise it, create a `.ds-ops-config.yml` file in your project root. A fully annotated template ships with the repo at `.ds-ops-config.yml` in the root.
+Design System Ops works out of the box with no configuration. If you want to customise it, create a `.ds-ops-config.yml` file in your project root. A fully annotated template ships with the repo at `ds-ops-config.example.yml` in the root — copy it across and rename it.
 
 **What you can configure:**
 - Severity levels for specific violation types
@@ -1036,7 +1036,7 @@ Say "write a stakeholder brief" with whatever data you have.
 design-system-ops/
 ├── .claude-plugin/           ← Plugin manifest
 │   └── plugin.json
-├── .ds-ops-config.yml        ← Team configuration (optional)
+├── ds-ops-config.example.yml ← Config template (copy to your project as .ds-ops-config.yml)
 ├── 1-INSTALL.md              ← Quick-start installation guide
 ├── 2-WHATS-INCLUDED.md       ← This file
 ├── 3-SETUP-AND-CONFIG.md     ← Detailed setup, configuration, and troubleshooting

@@ -9,6 +9,6 @@ Load the codemod-generator skill from ${CLAUDE_PLUGIN_ROOT}/skills/codemod-gener
 
 The user should provide the migration context as an argument: $ARGUMENTS
 
-Before starting, read the reference material specified in the skill's frontmatter from ${CLAUDE_PLUGIN_ROOT}/skills/codemod-generator/references/.
+Before starting, read the knowledge notes declared in the skill's frontmatter `references:` field, located in ${CLAUDE_PLUGIN_ROOT}/knowledge-notes/.
 
 Produce the full codemod package including: jscodeshift transform, test cases, migration runner script, MIGRATION.md, and ROLLBACK.md.

@@ -1,9 +1,13 @@
-# Design System Ops — Team configuration
+# Design System Ops — Team configuration (EXAMPLE TEMPLATE)
 #
-# Place this file in your project root or in the same directory as your
-# design-system-ops/ skill pack. Skills will read it before producing output
-# and calibrate thresholds, integrations, and recurring workflow settings
-# to your team's context.
+# This is an annotated template, not an active config. To use it:
+#   1. Copy this file into your project root (the folder with your package.json).
+#   2. Rename the copy to `.ds-ops-config.yml` — note the leading dot.
+#   3. Uncomment and edit only the settings you want to override.
+#
+# Skills read `.ds-ops-config.yml` from your project root before producing
+# output, and calibrate thresholds, integrations, and recurring workflow
+# settings to your team's context.
 #
 # Every field is optional. Skills use sensible defaults when a field is absent.
 # Only set what you need to override.

@@ -7,7 +7,7 @@ Run the system-health skill to produce a scored health assessment of the user's 
 
 Load the system-health skill from ${CLAUDE_PLUGIN_ROOT}/skills/system-health/SKILL.md and follow its complete workflow.
 
-Before starting, read the reference material specified in the skill's frontmatter from ${CLAUDE_PLUGIN_ROOT}/skills/system-health/references/.
+Before starting, read the knowledge notes declared in the skill's frontmatter `references:` field, located in ${CLAUDE_PLUGIN_ROOT}/knowledge-notes/.
 
 Begin with Step 1b (Baseline calibration) to establish the system's maturity level before scoring. Score all 7 dimensions (Tokens, Components, Documentation, Adoption, Governance, AI readiness, Platform maturity) with calibrated expectations appropriate to the system's maturity level.
 

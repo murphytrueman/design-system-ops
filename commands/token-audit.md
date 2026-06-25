@@ -11,6 +11,6 @@ If the user provided a file or directory path as an argument, use that as the to
 
 If no argument was provided, begin with Step 0 (Token discovery) — search the codebase for CSS custom properties, SCSS variables, JSON/YAML token files, Style Dictionary configs, TypeScript token objects, Tailwind configs, and Tokens Studio exports.
 
-Before starting the audit, read the reference material specified in the skill's frontmatter from ${CLAUDE_PLUGIN_ROOT}/skills/token-audit/references/.
+Before starting the audit, read the knowledge notes declared in the skill's frontmatter `references:` field, located in ${CLAUDE_PLUGIN_ROOT}/knowledge-notes/.
 
 Produce the full audit report including: three-tier assessment, naming violations, value-level violations, severity-rated findings, dependency map, and prioritised remediation list.

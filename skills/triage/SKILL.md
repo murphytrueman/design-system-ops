@@ -5,11 +5,11 @@ description: "Recommend which design system skills to run first based on a quick
 
 # Triage
 
-A skill for quickly assessing a design system's state and recommending which skills to run first, in what order, and why. Prevents the overwhelm of running all 38 skills when 3–5 would surface the critical findings.
+A skill for quickly assessing a design system's state and recommending which skills to run first, in what order, and why. Prevents the overwhelm of running all 39 skills when 3–5 would surface the critical findings.
 
 ## Context
 
-Design System Ops has 38 skills across 5 categories: audit, validate, document, govern, and communicate. Running all of them is comprehensive but overwhelming — especially for a team encountering the plugin for the first time. The triage skill reads the system's current state and produces a prioritised run plan: which skills to run first, which to skip for now, and which to return to later.
+Design System Ops has 39 skills across 5 categories: audit, validate, document, govern, and communicate. Running all of them is comprehensive but overwhelming — especially for a team encountering the plugin for the first time. The triage skill reads the system's current state and produces a prioritised run plan: which skills to run first, which to skip for now, and which to return to later.
 
 The triage skill is intentionally lightweight. It should take no more than 5 minutes of input-gathering and produce a run plan in under a minute. The value is in sequencing, not in depth — the subsequent skills provide the depth.
 

@@ -9,6 +9,6 @@ Load the cicd-integration skill from ${CLAUDE_PLUGIN_ROOT}/skills/cicd-integrati
 
 If the user provided a file or directory path as an argument, use that as the system root: $ARGUMENTS
 
-Before starting, read the reference material specified in the skill's frontmatter from ${CLAUDE_PLUGIN_ROOT}/skills/cicd-integration/references/.
+Before starting, read the knowledge notes declared in the skill's frontmatter `references:` field, located in ${CLAUDE_PLUGIN_ROOT}/knowledge-notes/.
 
 Produce the full pipeline package including: workflow YAML, helper scripts, quality gates configuration, PIPELINE.md documentation, and phased roadmap.

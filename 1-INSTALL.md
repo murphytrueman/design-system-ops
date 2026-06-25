@@ -415,7 +415,7 @@ integrations:
 
 If you want to customise how the skills behave — for example, making certain types of violations more severe, connecting to Figma or GitHub, or enabling recurring trend tracking — create a file called `.ds-ops-config.yml` in your project root (the same folder as your `package.json`).
 
-A fully annotated template with explanations for every setting is included at `.ds-ops-config.yml` in the repo root. Copy it into your project root, read the comments, and uncomment the settings you want.
+A fully annotated template with explanations for every setting is included at `ds-ops-config.example.yml` in the repo root. Copy it into your project root, rename it to `.ds-ops-config.yml` (note the leading dot), read the comments, and uncomment the settings you want.
 
 For a detailed walkthrough of every configuration option, see `3-SETUP-AND-CONFIG.md`.
 
@@ -441,7 +441,7 @@ Your project-level config is not inside the skill pack, so it's never overwritte
 | `commands/` | 13 command definitions for agent workflows and shortcuts |
 | `knowledge-notes/` | 10 canonical reference documents that power the skills |
 | `sample-outputs/` | Real skill outputs showing expected depth and format |
-| `.ds-ops-config.yml` | Annotated configuration template |
+| `ds-ops-config.example.yml` | Annotated configuration template (copy to your project root as `.ds-ops-config.yml`) |
 | `installable/` | Pre-packaged `.plugin` (Cowork) and `.zip` for quick installation |
 | `1-INSTALL.md` | This file |
 | `2-WHATS-INCLUDED.md` | Full product documentation — skills, agents, knowledge notes |

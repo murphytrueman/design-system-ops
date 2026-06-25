@@ -9,6 +9,6 @@ Load the visual-report skill from ${CLAUDE_PLUGIN_ROOT}/skills/visual-report/SKI
 
 The user may provide audit data inline or reference previous skill outputs: $ARGUMENTS
 
-Before starting, read the reference material specified in the skill's frontmatter from ${CLAUDE_PLUGIN_ROOT}/skills/visual-report/references/.
+Before starting, read the knowledge notes declared in the skill's frontmatter `references:` field, located in ${CLAUDE_PLUGIN_ROOT}/knowledge-notes/.
 
 Produce the visual output: an interactive HTML dashboard with Chart.js charts, metric cards, and text summaries for accessibility.

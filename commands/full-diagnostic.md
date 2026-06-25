@@ -7,7 +7,7 @@ Run the full system diagnostic — a comprehensive health sweep that chains five
 
 Load the agent instructions from ${CLAUDE_PLUGIN_ROOT}/skills/full-system-diagnostic-agent.md and follow the complete workflow.
 
-Before starting, read the reference material for each chained skill from their respective ${CLAUDE_PLUGIN_ROOT}/skills/*/references/ directories.
+Before starting, read the reference material for each chained skill from the `references:` field of each skill's frontmatter, located in ${CLAUDE_PLUGIN_ROOT}/knowledge-notes/.
 
 The diagnostic runs in this order:
 1. Token audit — token architecture, naming, structural debt
