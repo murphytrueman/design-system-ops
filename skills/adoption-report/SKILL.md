@@ -1,6 +1,6 @@
 ---
 name: adoption-report
-description: "Produce a design system adoption report separating coverage from actual adoption, with trend direction and risk flags. Trigger when someone says: adoption report, how much is the system being used, usage metrics, adoption status, coverage report, which teams are using the system, who's not using the system, or anything about measuring or reporting on how widely the design system is being used."
+description: "Produce a design system adoption report separating coverage from actual adoption, with trend direction and risk flags. Trigger when someone says: adoption report, how much is the system being used, usage metrics, adoption status, coverage report, which teams are using the system, who's not using the system, or anything about measuring or reporting on how widely the design system is being used. Here 'coverage' means adoption coverage (how much of the system teams actually use). Do NOT trigger for documentation coverage or doc staleness — use docs-coverage for whether the documentation surface keeps pace with the components."
 references:
   - ../../knowledge-notes/output-discipline.md
   - ../../knowledge-notes/adoption-measurement.md
@@ -21,7 +21,7 @@ This skill produces a report that holds both numbers separately and distinguishe
 
 ## Configuration
 
-Before producing output, check for a `.ds-os-config.yml` file in the project root. If present, load:
+Before producing output, check for a `.ds-ops-config.yml` file in the project root. If present, load:
 - `system.component_count` — informs small-system behaviour
 - `system.maturity_level` — informs adoption expectations calibration (see Step 1b)
 - `integrations.*` — enables auto-pull for adoption data (see below)
@@ -29,7 +29,7 @@ Before producing output, check for a `.ds-os-config.yml` file in the project roo
 
 ## Auto-pull integrations
 
-If integrations are configured in `.ds-os-config.yml`, pull data automatically:
+If integrations are configured in `.ds-ops-config.yml`, pull data automatically:
 
 **npm registry** (`integrations.npm.enabled: true`):
 - Pull weekly/monthly download statistics for `integrations.npm.package_name` over the reporting period
@@ -59,7 +59,7 @@ If an integration fails, log it and proceed with manual data gathering. Do not b
 
 ## Recurring workflow
 
-If `recurring` is configured in `.ds-os-config.yml`:
+If `recurring` is configured in `.ds-ops-config.yml`:
 
 1. **Load the previous adoption report** from `recurring.output_directory`.
 2. **Auto-populate the trend direction** by comparing current period data against the previous report:

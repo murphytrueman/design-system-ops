@@ -19,7 +19,7 @@ The audit surfaces three categories of problems: coverage gaps (token defined in
 
 ## Configuration
 
-Before producing output, check for a `.ds-os-config.yml` file in the project root. If present, load:
+Before producing output, check for a `.ds-ops-config.yml` file in the project root. If present, load:
 
 - `system.theming` — if false, exit early with a note that this skill applies only to systems with theming enabled. If true, proceed.
 - `severity.*` — overrides for theme-specific findings (e.g. `missing_theme_value: critical` for a system about to launch dark mode)
@@ -399,7 +399,7 @@ If `system.component_count` in config is < 5, or if component count is inferred 
 
 ## Recurring workflow
 
-If `recurring` is configured in `.ds-os-config.yml`:
+If `recurring` is configured in `.ds-ops-config.yml`:
 
 1. **Before producing output**, check `recurring.output_directory` for a previous theme audit report
 2. **If a previous report exists**, load it and compare:

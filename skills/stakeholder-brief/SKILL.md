@@ -370,7 +370,7 @@ Before delivering the brief, verify all of these:
 
 ---
 
-## Configuration for .ds-os-config.yml
+## Configuration for .ds-ops-config.yml
 
 If this skill runs as part of a recurring workflow, configure it as follows:
 

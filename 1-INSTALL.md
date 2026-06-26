@@ -273,7 +273,7 @@ This triggers the `full-system-diagnostic` agent, which chains: token-audit → 
 
 ## Every skill, with an example prompt
 
-### Audit (8 skills)
+### Audit (10 skills)
 
 | Skill | What to say | What you get |
 |-------|-------------|-------------|
@@ -285,8 +285,10 @@ This triggers the `full-system-diagnostic` agent, which chains: token-audit → 
 | `figma-variable-audit` | "Audit my Figma variables" | Variable naming, tier structure, mode consistency, code-vs-Figma mismatches |
 | `codebase-index` | "Build a component map of our system" | Machine-readable component index with file paths, exports, dependencies, and categories |
 | `system-benchmark` | "How does our system compare to industry standards?" | 12-dimension benchmark against comparable public systems |
+| `theme-audit` | "Audit our theme implementation" | Per-mode token coverage, component-tier propagation gaps, cross-theme consistency, DTCG resolver validation |
+| `docs-coverage` | "Which components are undocumented?" | Coverage by rung, git-based staleness, undocumented and orphaned docs — each finding with a join-confidence tier |
 
-### Govern (10 skills)
+### Govern (11 skills)
 
 | Skill | What to say | What you get |
 |-------|-------------|-------------|
@@ -300,6 +302,7 @@ This triggers the `full-system-diagnostic` agent, which chains: token-audit → 
 | `governance-encoder` | "Encode our governance rules" | Machine-executable governance constraints (linting rules, CI checks, review policies) |
 | `session-memory` | "Track findings across skill runs" | Persistent finding store with trend tracking, cross-skill correlation, progress monitoring |
 | `codemod-generator` | "Generate a codemod for renaming color-primary" | jscodeshift migration script with dry-run support, before/after examples, edge case handling |
+| `triage` | "Where should I start?" | A prioritised run plan of 3–5 skills based on a quick read of the system's state |
 
 ### Document (7 skills)
 
@@ -439,7 +442,7 @@ Your project-level config is not inside the skill pack, so it's never overwritte
 |------|--------------|
 | `skills/` | 37 skill files organised by name, each with a `SKILL.md` and `references/` |
 | `commands/` | 13 command definitions for agent workflows and shortcuts |
-| `knowledge-notes/` | 10 canonical reference documents that power the skills |
+| `knowledge-notes/` | 12 canonical reference documents that power the skills |
 | `sample-outputs/` | Real skill outputs showing expected depth and format |
 | `ds-ops-config.example.yml` | Annotated configuration template (copy to your project root as `.ds-ops-config.yml`) |
 | `installable/` | Pre-packaged `.plugin` (Cowork) and `.zip` for quick installation |

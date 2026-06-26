@@ -12,7 +12,7 @@ Design System Ops is a toolkit that gives Claude (the AI) deep expertise in desi
 
 Instead of starting from scratch every time you ask Claude for help with your design system, these skills give it the frameworks, mental models, and structured processes that a staff-level design systems practitioner would use.
 
-**What is in the pack:** 39 skills (individual tools that each do one thing well), 4 agents (chained workflows that run multiple skills in sequence), 11 knowledge notes (expert frameworks that power the skills), 6 sample outputs (real examples so you know what to expect), and an optional configuration file.
+**What is in the pack:** 40 skills (individual tools that each do one thing well), 4 agents (chained workflows that run multiple skills in sequence), 12 knowledge notes (expert frameworks that power the skills), 7 sample outputs (real examples so you know what to expect), and an optional configuration file.
 
 ---
 
@@ -44,11 +44,11 @@ Skills are instruction files that teach Claude how to do something specific. A s
 
 When you ask Claude to do something that matches a skill, Claude reads the skill file and follows its process. The result is output that is dramatically more thorough, specific, and production-ready than what you would get from a generic prompt.
 
-**In this pack, there are 39 skills** organised into five categories: Audit, Govern, Document, Validate, and Communicate.
+**In this pack, there are 40 skills** organised into five categories: Audit, Govern, Document, Validate, and Communicate.
 
 ### What are agents?
 
-Agents are skills that chain multiple other skills together into a single workflow. Instead of running five skills one at a time, an agent runs them in sequence and synthesises the results.
+Agents are skills that chain multiple other skills together into a single workflow. Instead of running several skills one at a time, an agent runs them in sequence and synthesises the results.
 
 **In this pack, there are 4 agents** that chain skills into end-to-end workflows like a full system diagnostic or a pre-release validation pipeline.
 
@@ -58,7 +58,7 @@ Knowledge notes are reference documents that contain expert frameworks and menta
 
 For example, the `ai-readiness` knowledge note contains the six dimensions of component AI readiness, the context cascade model, and the three pillars framework. When you run the `ai-component-description` skill, Claude reads that knowledge note first, which is why its output is informed by these frameworks rather than being generic advice.
 
-**In this pack, there are 11 knowledge notes** covering token architecture, component governance, AI readiness, design-to-code contracts, the Component Bestiary challenge rating system, agent orchestration patterns, human oversight frameworks, MCP setup guidance, context engine blueprint templates, adoption measurement principles, and output discipline (the shared quality standards that keep all audit and assessment output consistent, specific, and honest).
+**In this pack, there are 12 knowledge notes** covering token architecture, component governance, AI readiness, design-to-code contracts, the Component Bestiary challenge rating system, agent orchestration patterns, human oversight frameworks, MCP setup guidance, context engine blueprint templates, adoption measurement principles, documentation coverage (the source-of-truth model behind the docs-coverage audit), and output discipline (the shared quality standards that keep all audit and assessment output consistent, specific, and honest).
 
 You never need to interact with knowledge notes directly. They load automatically when a skill needs them.
 
@@ -269,9 +269,9 @@ When a tool is connected, skills pull data automatically. Without connections, y
 
 ---
 
-## The 39 skills — what each one does
+## The 40 skills — what each one does
 
-### Audit skills (9) — assess where you are
+### Audit skills (10) — assess where you are
 
 These skills look at what you have and tell you what is working, what is broken, and what to fix first.
 
@@ -409,6 +409,21 @@ These skills look at what you have and tell you what is working, what is broken,
 - "Are all our tokens properly themed across all modes?"
 
 **Best used with:** Your codebase (reads token files and component source), Figma (reads token definitions and applied values)
+
+---
+
+#### `docs-coverage`
+
+**What it does:** Audits whether your documentation surface keeps pace with your components. Measures the code (the source of truth for what exists) against Storybook and any documentation platform, reporting coverage gaps (components with no docs), staleness (docs that predate the component's last code change, computed from git), and orphaned docs. Every coverage finding carries a confidence tier so a fuzzy name match is never presented as fact.
+
+**When to use it:** When you suspect the docs have fallen behind the code. After a release, to check what shipped undocumented. As a recurring health check on the documentation surface. It works with zero integration — a components directory, a Storybook build, and git history are enough; Zeroheight, Supernova, and custom docs sites are optional layers.
+
+**Example prompts:**
+- "Which components are undocumented?"
+- "Audit our docs coverage — are our Storybook docs keeping pace with the components?"
+- "Check for stale documentation against our last few releases."
+
+**Best used with:** Your codebase and a Storybook build (`storybook-static/`); optionally a configured documentation platform
 
 ---
 
@@ -896,7 +911,7 @@ Agents chain multiple skills together and synthesise the combined results. All a
 
 ### `full-system-diagnostic`
 
-**What it chains:** token-audit, naming-audit, component-audit, drift-detection, system-health
+**What it chains:** token-audit, naming-audit, component-audit, drift-detection, docs-coverage, system-health — plus theme-audit (if the system supports theming) and figma-variable-audit (if Figma is configured)
 
 **When to use it:** Quarterly reviews. When you inherit a system. Before a major version.
 
@@ -942,12 +957,13 @@ Agents chain multiple skills together and synthesise the combined results. All a
 
 ---
 
-## The 11 knowledge notes — what powers the skills
+## The 12 knowledge notes — what powers the skills
 
 You do not need to read these to use the skills. They load automatically.
 
 | Note | What it provides | Used by |
 |---|---|---|
+| `documentation-coverage` | Source-of-truth model, the three rungs of "documented", join-key reliability hierarchy, git-based staleness, per-platform signal matrix | Docs coverage |
 | `token-architecture` | Three-tier token model, naming conventions, reference rules, DTCG 2025.10 specification | Token audit, token docs, token compliance, drift detection, schema validator, figma variable audit |
 | `component-governance` | Contribution criteria, deprecation triggers, lifecycle stages, maturity model (five stages: Ad-hoc, Managed, Systematic, Measured, Optimised) | Contribution workflow, deprecation process, decision record, component audit, system health, and more |
 | `ai-readiness` | Six dimensions of AI readiness, context cascade, three pillars framework | AI component description, pattern docs, usage guidelines, system health, codebase index, and more |
@@ -1021,7 +1037,7 @@ Say "audit my tokens" and point it at your token files.
 Say "write an AI component description for [your most-used component]" — this is the differentiating skill and shows the value immediately.
 
 **If you want the full diagnostic:**
-Say "run a full system diagnostic" — this chains five skills and produces a unified report.
+Say "run a full system diagnostic" — this chains six skills (plus conditional theme and Figma audits) and produces a unified report.
 
 **If you just need to communicate up:**
 Say "write a stakeholder brief" with whatever data you have.
@@ -1044,7 +1060,7 @@ design-system-ops/
 ├── CONTRIBUTING.md           ← Contribution guide
 ├── LICENSE                   ← MIT license
 │
-├── skills/                   ← 39 skills, each in its own directory
+├── skills/                   ← 40 skills, each in its own directory
 │   ├── token-audit/
 │   │   └── SKILL.md
 │   ├── component-audit/

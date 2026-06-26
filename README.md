@@ -62,7 +62,7 @@ See [1-INSTALL.md](1-INSTALL.md) for the full guide with entry points by use cas
 
 | Category | Skills | What they do |
 |----------|--------|-------------|
-| **Audit** | token-audit, component-audit, system-health, drift-detection, naming-audit, figma-variable-audit, codebase-index, system-benchmark, theme-audit | Understand what you actually have |
+| **Audit** | token-audit, component-audit, system-health, drift-detection, naming-audit, figma-variable-audit, codebase-index, system-benchmark, theme-audit, docs-coverage | Understand what you actually have |
 | **Govern** | contribution-workflow, deprecation-process, decision-record, change-communication, backlog-generator, version-bump-advisor, release-retrospective, governance-encoder, session-memory, codemod-generator, triage | Run the system as infrastructure |
 | **Document** | ai-component-description, pattern-documentation, token-documentation, usage-guidelines, component-decision-tree, context-engine-builder, metadata-schema-generator | Make the system legible to humans and machines |
 | **Validate** | design-to-code-check, accessibility-per-component, token-compliance, schema-validator, component-api-validator, cicd-integration | Verify quality before it ships |
@@ -72,7 +72,7 @@ See [1-INSTALL.md](1-INSTALL.md) for the full guide with entry points by use cas
 
 | Agent | What it chains | When to use it |
 |-------|---------------|----------------|
-| `/full-diagnostic` | 5 audit skills with cross-skill synthesis | Quarterly review or inheriting a system |
+| `/full-diagnostic` | 6 audit skills (+ conditional theme/Figma) with cross-skill synthesis | Quarterly review or inheriting a system |
 | `/release-check` | Design-to-code, accessibility, token compliance, AI description, usage guidelines, change communication | Before shipping any component |
 | `/governance-review` | Adoption report, drift detection, stakeholder brief | Monthly or quarterly governance cadence |
 | `/migration` | Token audit, naming audit, migration plan, codemod generation, communication | Planning a major migration |
@@ -122,6 +122,7 @@ Real outputs from real codebases are in [`sample-outputs/`](sample-outputs/):
 - **[example-token-audit.md](sample-outputs/example-token-audit.md)** — A complete audit of a ~480 token system: 11 findings across Critical/High/Medium/Low, specific code examples, DTCG alignment assessment, and a prioritised remediation roadmap.
 - **[example-component-description.md](sample-outputs/example-component-description.md)** — A six-section MCP description for a React Dialog component: ~620 words of structured plain text for Figma.
 - **[example-health-dashboard.html](sample-outputs/example-health-dashboard.html)** — An interactive HTML dashboard generated from audit findings: health radar, severity distribution, priority matrix, metric cards. Open in any browser.
+- **[docs-coverage-carbon-react.md](sample-outputs/docs-coverage-carbon-react.md)** — A docs-coverage audit run against a real public Storybook (IBM Carbon's React build): coverage-by-rung, git-based staleness findings with both change dates, and the "37 undocumented → 5 real candidates" triage that keeps the skill from crying wolf. Every finding carries a join-confidence tier.
 
 ---
 

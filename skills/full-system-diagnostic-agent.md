@@ -1,11 +1,11 @@
 ---
 name: full-system-diagnostic
-description: "Run a comprehensive design system health sweep chaining five audit skills into a unified diagnostic report. Trigger when someone says: run a full audit, full system diagnostic, comprehensive review, end-to-end health check, give me the full picture, quarterly review, or anything requesting a complete rather than focused assessment of a design system's health."
+description: "Run a comprehensive design system health sweep chaining six audit skills — plus conditional theme and Figma audits — into a unified diagnostic report. Trigger when someone says: run a full audit, full system diagnostic, comprehensive review, end-to-end health check, give me the full picture, quarterly review, or anything requesting a complete rather than focused assessment of a design system's health."
 ---
 
 # Full system diagnostic
 
-A chained workflow that runs five audit skills in sequence and synthesises their outputs into a single, unified diagnostic report. Covers tokens, components, naming, drift, and overall system health. Produces a ranked action list with cross-skill patterns identified that no single skill would surface alone.
+A chained workflow that runs six audit skills in sequence and synthesises their outputs into a single, unified diagnostic report. Covers tokens, components, naming, drift, documentation coverage, and overall system health, with conditional theme and Figma-variable audits when the system supports theming or has Figma connected. Produces a ranked action list with cross-skill patterns identified that no single skill would surface alone.
 
 **Output type:** Proposal only. This agent produces analysis and recommendations. It does not make changes. Every action item requires human decision and execution.
 
@@ -30,7 +30,8 @@ Do not run the full diagnostic when you need a specific, focused answer. If the 
 Before running any skill, check for a `.ds-ops-config.yml` file in the project root. If present, the agent passes integration and calibration settings to each skill in the chain:
 
 - **All configured integrations are inherited by each chained skill.** If Figma MCP is configured, every skill that supports it will auto-pull. The agent does not need to re-configure integrations per skill.
-- **Severity calibration applies uniformly.** The same `severity.*` settings flow to token-audit, naming-audit, component-audit, and drift-detection, ensuring consistent severity ratings across the diagnostic.
+- **Severity calibration applies uniformly.** The same `severity.*` settings flow to token-audit, naming-audit, component-audit, drift-detection, and docs-coverage — and to theme-audit and figma-variable-audit when they run — ensuring consistent severity ratings across the diagnostic.
+- **Conditional audits are gated on configuration.** `theme-audit` runs only when `system.theming: true` (or theming is detected); `figma-variable-audit` runs only when `integrations.figma` is configured. When the gate is not met, the step is skipped and the report notes it was not applicable — not a gap.
 - **Recurring workflow applies to the agent as a whole.** The diagnostic report is saved to `recurring.output_directory` and compared against the previous full diagnostic, not against individual skill runs. This produces a holistic trend: "System health improved — two dimensions moved from Weak to Functional since Q3."
 
 ## Phase 1: Prepare
@@ -43,13 +44,13 @@ Before running any skill, establish scope and access:
 4. Set the assessment date — this is the point-in-time snapshot
 5. **Estimate component count.** Before proceeding, determine the approximate number of components in the system. This determines which workflow path to follow.
 
-If full access is not available for all five skills, proceed with what is available and note the gaps in the final report. A partial diagnostic with explicit gap acknowledgment is more useful than a delayed comprehensive one.
+If full access is not available for all six skills, proceed with what is available and note the gaps in the final report. A partial diagnostic with explicit gap acknowledgment is more useful than a delayed comprehensive one.
 
 ---
 
 ## Small-system gate
 
-**If the system has fewer than 5 components, stop here.** The full diagnostic chain is designed for systems with enough surface area that cross-skill patterns emerge — concentrated debt, documentation gaps, governance gaps, structural gaps. A system with 1–4 components does not have the complexity to produce meaningful cross-skill synthesis, and running all five skills will generate repetitive findings at disproportionate cost.
+**If the system has fewer than 5 components, stop here.** The full diagnostic chain is designed for systems with enough surface area that cross-skill patterns emerge — concentrated debt, documentation gaps, governance gaps, structural gaps. A system with 1–4 components does not have the complexity to produce meaningful cross-skill synthesis, and running all six skills will generate repetitive findings at disproportionate cost.
 
 Instead, recommend individual skills based on what the person actually needs:
 
@@ -58,6 +59,7 @@ Instead, recommend individual skills based on what the person actually needs:
 | Token quality or structure | `token-audit` |
 | Naming consistency | `naming-audit` |
 | Component coverage or duplication | `component-audit` |
+| Documentation falling behind the code | `docs-coverage` |
 | Implementation diverging from spec | `drift-detection` or `design-to-code-check` |
 | Overall maturity assessment | `system-health` (which works well as a standalone at any system size) |
 | Pre-release quality for a specific component | `component-to-release` agent |
@@ -72,7 +74,7 @@ Instead, recommend individual skills based on what the person actually needs:
 
 ## Phase 2: Run the skill sequence
 
-Run the five skills in this order. Each skill's output becomes context for the next.
+Run the skills in this order. Each skill's output becomes context for the next. The five core audits run first (tokens, naming, components, drift, docs-coverage), then any conditional audits that apply, and finally system-health — which runs last so it can synthesise everything upstream.
 
 ### Step 1 — Token audit (`token-audit`)
 
@@ -111,14 +113,31 @@ Run drift detection. Capture:
 
 Cross-reference with component audit coverage gaps: are teams building locally because the system does not have what they need (Classification E — system gap)? How much of the drift is the system's fault vs. the teams' fault?
 
-### Step 5 — System health (`system-health`)
+### Step 5 — Docs coverage (`docs-coverage`)
 
-Run the system health assessment last. It now has the full picture from all four prior skills to draw on.
+Run the docs-coverage audit. Capture:
+- Coverage by rung (exists / described / guided / undocumented)
+- Undocumented components, with the join-confidence tier on each
+- Staleness findings (docs predating a component's last code change) and orphaned docs
+
+Cross-reference with the component audit: do the undocumented components overlap with the unused or recently-added ones? Newly-added components with no docs are an onboarding-velocity problem; widely-used components with stale docs are a trust problem. Carry both forward — docs-coverage is the direct evidence for the documentation dimension that system-health would otherwise have to infer.
+
+### Conditional steps — run only when applicable
+
+These two audits are gated on configuration. Run each only if its gate is met; otherwise skip it and record "not applicable" in the report (an absent theming or Figma setup is not a finding).
+
+**Theme audit (`theme-audit`) — if `system.theming: true` or theming is detected.** Capture theme coverage per mode, component-tier propagation gaps, and cross-theme consistency violations. Cross-reference with token-audit: missing semantic theming tokens found there should correspond to propagation gaps here.
+
+**Figma variable audit (`figma-variable-audit`) — if `integrations.figma` is configured.** Capture code-vs-Figma variable discrepancies and orphaned variables. Cross-reference with token-audit: this is the design-side view of the same token architecture, and divergence between the two is a source-of-truth finding.
+
+### Step 6 — System health (`system-health`)
+
+Run the system health assessment last. It now has the full picture from all prior skills to draw on.
 
 Cross-reference each dimension status against the evidence:
-- Tokens status should reflect token audit findings
+- Tokens status should reflect token audit findings (and theme-audit / figma-variable-audit, where they ran — the latter is the design-side view of the same token architecture)
 - Components status should reflect component audit findings
-- Documentation status should incorporate naming audit findings (poor naming often signals poor documentation)
+- Documentation status should reflect docs-coverage findings directly — coverage by rung, staleness, and undocumented components — rather than inferring documentation health from naming
 - Adoption status should incorporate drift detection findings (widespread drift often signals adoption problems)
 - Governance status should incorporate whether decision records exist for the problems the other skills surfaced
 
@@ -126,7 +145,7 @@ Cross-reference each dimension status against the evidence:
 
 ## Phase 3: Synthesise cross-skill findings
 
-This is the step that the individual skills cannot do. Look across all five outputs for patterns that only emerge when you see everything together.
+This is the step that the individual skills cannot do. Look across all the skill outputs for patterns that only emerge when you see everything together.
 
 ### Synthesis decision tree
 
@@ -164,13 +183,15 @@ Use the first "Yes" as the primary framing for the executive summary. If multipl
 
 ### Pattern 1: Concentrated debt
 
-Are the violations from all five skills clustered in a specific area — a particular component category, a specific team's contributions, a particular era of the system?
+Are the violations from multiple skills clustered in a specific area — a particular component category, a specific team's contributions, a particular era of the system?
 
 If yes: this is not a distributed maintenance problem. It is a localised problem with a specific origin. The action is targeted, not systemic.
 
 ### Pattern 2: The documentation gap
 
 Do the skills collectively show a system that is technically sound but poorly communicated? Good tokens, reasonable components, but low adoption and high drift?
+
+docs-coverage is the direct evidence for this pattern — read it before concluding. A low described/guided rung distribution, a coverage gap concentrated in widely-used components, or a staleness tail where docs predate code changes all confirm a legibility problem rather than a quality one.
 
 If yes: the system's quality is not the problem. The problem is legibility — teams cannot find or understand what is there. The action is documentation and communication, not rebuilding.
 
@@ -235,13 +256,18 @@ This section should stand alone. A stakeholder who reads only this should unders
 | Naming audit | [violation count] | [dominant pattern] | |
 | Component audit | [library size, % unused] | [top finding] | |
 | Drift detection | [finding count, distribution] | [dominant class] | |
+| Docs coverage | [coverage by rung, undocumented count] | [top gap or staleness finding] | |
+| Theme audit *(if run)* | [coverage per mode] | [top propagation gap] | |
+| Figma variable audit *(if run)* | [code-vs-Figma discrepancies] | [top discrepancy] | |
 | System health | [overall status] | [weakest dimension] | |
+
+If a conditional audit (theme or Figma) was not applicable, retain its row and mark it "n/a — not applicable" rather than deleting it or leaving it blank — so a reader can tell "skipped by design" from "failed to run."
 
 ---
 
 #### Cross-skill patterns
 
-State which pattern(s) were identified (concentrated debt / documentation gap / governance gap / structural gap). For each pattern identified:
+State which pattern(s) from the synthesis decision tree were identified (concentrated debt / documentation gap / governance gap / structural gap / AI-readiness gap / platform maturity gap / dependency cascade). For each pattern identified:
 - The evidence across skills
 - The single recommended response
 - Why addressing the pattern is more valuable than addressing individual findings
@@ -281,6 +307,7 @@ If `recurring` is configured in `.ds-ops-config.yml`:
 2. **Compare the full reports:**
    - System health status changes (overall and per-dimension)
    - Violation count trends across token-audit, naming-audit, component-audit
+   - Documentation coverage trend (rung distribution, undocumented count, staleness) from docs-coverage
    - Drift classification trend (is the system drifting faster or slower?)
    - Cross-skill pattern changes (did a pattern from last quarter resolve, persist, or worsen?)
 3. **Add a "Diagnostic trend" section** before the action list:

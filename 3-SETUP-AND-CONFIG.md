@@ -45,7 +45,7 @@ After cloning, the directory structure should look like:
 
 ```
 design-system-ops/
-├── skills/              39 skills organised by category
+├── skills/              40 skills organised by category
 ├── commands/            13 command definitions
 ├── knowledge-notes/     11 reference documents (canonical)
 ├── sample-outputs/      example outputs for reference
@@ -133,7 +133,7 @@ The component uses [framework: React/Vue/Twig] with [styling: Tailwind/SCSS/Emot
 
 ### Option D: "I want the full picture"
 
-Run the `full-system-diagnostic` agent. This chains five skills and produces a unified report with cross-skill pattern analysis.
+Run the `full-system-diagnostic` agent. This chains six skills (plus conditional theme and Figma audits) and produces a unified report with cross-skill pattern analysis.
 
 **Note:** If your system has fewer than 5 components, the agent will recommend individual skills instead. See the small-system gate in the agent file.
 
@@ -342,7 +342,7 @@ Skills are powered by bundled knowledge notes. Think of knowledge notes as cheat
 
 The knowledge notes are the canonical source in `knowledge-notes/`. Skills reference them directly via relative paths in their frontmatter `references:` field (e.g., `../../knowledge-notes/token-architecture.md`). When you edit a knowledge note, you edit it once in `knowledge-notes/` and all skills automatically pick up the updated version.
 
-**The ten knowledge notes:**
+**The twelve knowledge notes:**
 
 | Note | What it provides |
 |---|---|
@@ -355,6 +355,8 @@ The knowledge notes are the canonical source in `knowledge-notes/`. Skills refer
 | `human-oversight-framework` | Human-in-the-loop validation for AI agent workflows |
 | `mcp-setup-guide` | Three-layer MCP architecture for design system tooling |
 | `context-engine-blueprints` | YAML output templates for all seven context engine blueprints |
+| `adoption-measurement` | Coverage vs adoption distinction, four adoption signals, leading vs lagging indicators, adoption maturity stages |
+| `documentation-coverage` | Source-of-truth model, the three rungs of "documented", join-key reliability hierarchy, git-based staleness, per-platform signal matrix |
 | `output-discipline` | Shared quality standards for all skill output — scoping claims to what was inspected, no numeric scores, consistent severity and status indicators, respecting intentional deviations |
 
 **If you modify a knowledge note:** Edit the file directly in the `knowledge-notes/` directory. All skills automatically reference the updated version through their `references:` frontmatter field — no syncing needed. The change takes effect immediately for all skills that use it.
@@ -760,7 +762,7 @@ This section tracks every change to the product. Update it with every modificati
 1. **Knowledge note loading (canonical source)**
    - Established `knowledge-notes/` as the canonical source for all reference material
    - Updated skill files with `references:` YAML frontmatter pointing to knowledge notes via relative paths
-   - All 39 skills now reference knowledge notes directly without local copies
+   - All 40 skills now reference knowledge notes directly without local copies
    - Changes to knowledge notes are automatically picked up by all skills
 
 2. **Expanded token input formats**

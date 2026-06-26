@@ -83,12 +83,16 @@ integrations:
     enabled: false
     url: ""                       # Published Storybook URL, e.g. "https://storybook.yourorg.com"
                                   # Used for component inventory via /index.json endpoint
+    static_path: ""               # Local Storybook build dir, e.g. "storybook-static"
+                                  # Preferred by docs-coverage — reads index.json with no server or auth
 
   documentation:
     enabled: false
     platform: ""                  # zeroheight | supernova | storybook | custom
     url: ""                       # Documentation site URL
     api_key_env: ""               # Env var name for API key (Zeroheight, Supernova)
+    styleguide_id: ""             # Zeroheight styleguide ID (for the Pages REST API)
+    design_system_id: ""          # Supernova design system ID (for the SDK / MCP "Relay")
 
 # ─────────────────────────────────────────────
 # Recurring workflows
@@ -102,6 +106,15 @@ recurring:
   naming_pattern: "{skill}-{date}"      # Output file naming. {skill} and {date} are replaced.
   comparison_mode: "full"               # "full" = side-by-side diff. "summary" = delta summary only.
   retain_count: 8                       # Number of previous reports to keep. Oldest are removed.
+
+# ─────────────────────────────────────────────
+# Docs coverage
+# ─────────────────────────────────────────────
+# Tuning for the docs-coverage skill (component vs documentation-surface audit).
+
+docs_coverage:
+  staleness_threshold_days: 90          # A doc is flagged stale if it predates the component's
+                                        # last code change by more than this many days. Default: 90.
 
 # ─────────────────────────────────────────────
 # Lint and gate overrides
