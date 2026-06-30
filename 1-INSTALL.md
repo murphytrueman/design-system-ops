@@ -5,7 +5,7 @@
 ## Quick start (2 minutes)
 
 **In Cowork (desktop app — easiest, no terminal needed):**
-1. Download `design-system-ops.plugin` from the [`installable/`](installable/) folder in this repo
+1. Download `design-system-ops.plugin` from the [`installable/`](installable/) folder in this repo — or from the [latest Release](https://github.com/murphytrueman/design-system-ops/releases/latest)
 2. Open the Claude desktop app and start a Cowork session
 3. Drop the `.plugin` file into the chat
 4. Follow the install prompt — done

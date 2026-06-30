@@ -31,7 +31,7 @@ That is the difference. Not a smarter prompt. A different kind of output entirel
 
 ### Cowork (desktop app — easiest)
 
-1. Download `design-system-ops.plugin` from the [`installable/`](installable/) folder
+1. Download `design-system-ops.plugin` from the [`installable/`](installable/) folder — or from the [latest Release](https://github.com/murphytrueman/design-system-ops/releases/latest)
 2. Open the Claude desktop app and start a Cowork session
 3. Drop the `.plugin` file into the chat
 4. Follow the install prompt — done
