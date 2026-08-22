@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **Test suite (`tests/`)** — 43 stdlib-Python tests, no dependencies. Validates skill frontmatter (name/description present, kebab-case, name matches directory, names unique), that every `references:` path resolves and stays inside the repo, that no knowledge note is orphaned, that every slash command declares `allowed-tools` and every `${CLAUDE_PLUGIN_ROOT}` path it loads exists, that `plugin.json` is well-formed semver agreeing with this file, that relative links and images in the shipped docs resolve, and that `build.sh` produces a byte-identical `.zip`/`.plugin` pair containing every skill and no tooling. Run with `./tests/run.sh`.
+- **CI (`.github/workflows/ci.yml`)** — Runs the suite on Python 3.9 and 3.12 plus shellcheck on `build.sh`, on every push to `main` and every pull request.
+
+### Changed
+
+- **`build.sh`** — Output directory is now overridable via `DSOPS_OUT_DIR` (namespaced so a generic `OUT_DIR` in a contributor's shell can't redirect the build) so tests can build into a temp dir without touching the committed bundle. `tests/` and `.github/` are excluded from the bundle: CI runs them, installers never see them.
+- **README** — `Install` renamed to `Installation` and `Quick examples` to `Usage`, so registry linters that index this repo find the headings they look for. The old `#install` and `#quick-examples` anchors are preserved via inline anchor tags, so existing external links still resolve. Added a CI badge and a contributing note about the test suite.
+
 ## [1.2.0] - 2026-06-26
 
 ### Added

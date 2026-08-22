@@ -6,6 +6,8 @@ Claude Code skills for the work that keeps a design system alive.
 
 [designsystemops.com](https://designsystemops.com)
 
+[![CI](https://github.com/murphytrueman/design-system-ops/actions/workflows/ci.yml/badge.svg)](https://github.com/murphytrueman/design-system-ops/actions/workflows/ci.yml)
+
 ---
 
 ## The work nobody built AI for
@@ -27,7 +29,9 @@ That is the difference. Not a smarter prompt. A different kind of output entirel
 
 ---
 
-## Install
+<a id="install"></a>
+
+## Installation
 
 ### Cowork (desktop app — easiest)
 
@@ -94,7 +98,9 @@ The skills encode specific practitioner frameworks, not generic advice:
 
 ---
 
-## Quick examples
+<a id="quick-examples"></a>
+
+## Usage
 
 **"I just want to know where we stand"**
 → Say: "How healthy is my design system?"
@@ -166,6 +172,14 @@ Setup details in [1-INSTALL.md](1-INSTALL.md#setting-up-figma-integration).
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Run the test suite before opening a pull request:
+
+```bash
+./tests/run.sh
+```
+
+Stdlib Python, nothing to install. It validates skill frontmatter, reference paths, slash-command targets, documentation links, and the built plugin bundle. CI runs the same suite on every pull request — see [tests/README.md](tests/README.md).
 
 ---
 

@@ -10,21 +10,23 @@
 # (.internal/, .DS_Store, local scratch) is excluded by construction.
 # A few tracked files are explicitly held back below.
 #
-# Usage:  ./build.sh
+# Usage:  ./build.sh            (writes to installable/)
+#         DSOPS_OUT_DIR=/tmp/x ./build.sh   (writes elsewhere — used by tests/)
 #
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit 1
 
-OUT_DIR="installable"
+OUT_DIR="${DSOPS_OUT_DIR:-installable}"
 ZIP="$OUT_DIR/design-system-ops.zip"
 PLUGIN="$OUT_DIR/design-system-ops.plugin"
 
 # Tracked files that should NOT ship inside the bundle:
 #   installable/*        the build output itself
+#   tests/, .github/     repo tooling — CI runs them, installers never see them
 #   .gitignore           repo tooling, not part of the plugin
 # (ds-ops-config.example.yml IS shipped — it's the annotated config template
 #  the README promises; users copy it to their project root as .ds-ops-config.yml.)
-EXCLUDES='^installable/|^\.gitignore$'
+EXCLUDES='^installable/|^tests/|^\.github/|^\.gitignore$'
 
 # Refuse to build with a dirty/untracked-but-staged surprise: warn only.
 if ! git diff --quiet || ! git diff --cached --quiet; then
@@ -34,6 +36,7 @@ fi
 
 FILES="$(git ls-files | grep -Ev "$EXCLUDES")"
 
+mkdir -p "$OUT_DIR"
 rm -f "$ZIP" "$PLUGIN"
 printf '%s\n' "$FILES" | zip -q -X "$ZIP" -@
 cp "$ZIP" "$PLUGIN"

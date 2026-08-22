@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.9 is what ships on current macOS; 3.12 is what CI runners default
+        # to. The suite is stdlib-only, so it must pass on both.
+        python-version: ['3.9', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # build.sh derives its file list from `git ls-files`, so the build tests
+      # need git to trust the checkout directory.
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Run test suite
+        run: python -m unittest discover -s tests -t tests -v
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Scoped to warning+ so the build gates on real problems, not style
+      # preferences. shellcheck is preinstalled on ubuntu-latest.
+      - name: Shellcheck shell scripts
+        run: shellcheck --severity=warning build.sh tests/run.sh

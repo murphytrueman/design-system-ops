@@ -21,6 +21,24 @@ Pull requests welcome. If something in the install guide, setup docs, or skill d
 
 Each skill is a markdown file (`SKILL.md`) inside its own folder under `skills/`. Skills reference knowledge notes directly from the canonical `knowledge-notes/` directory via their frontmatter `references:` field using relative paths like `../../knowledge-notes/filename.md`. When adding a new skill, include the knowledge note paths in the skill's frontmatter `references:` array. The project structure includes: skills in `skills/skillname/SKILL.md`, commands in `commands/`, knowledge notes in `knowledge-notes/`, and sample outputs in `sample-outputs/`.
 
+## Running the tests
+
+Before opening a pull request, run the suite:
+
+```bash
+./tests/run.sh
+```
+
+It is stdlib Python — nothing to install — and it runs in well under a second. The tests check the things that break silently for installers: frontmatter Claude Code can't parse, a skill name that no longer matches its directory, a `references:` path pointing at a note that isn't there, a slash command loading a file that doesn't exist, and a bundle in `installable/` that has drifted from the source tree. CI runs the same suite on every pull request.
+
+If you changed anything that ships inside the plugin, rebuild the bundle and commit it:
+
+```bash
+./build.sh
+```
+
+See [tests/README.md](tests/README.md) for what each test file covers.
+
 ## What to avoid
 
 - Generic AI advice. Every finding, recommendation, and output should be specific to the user's actual codebase, not templated.
