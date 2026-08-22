@@ -35,11 +35,11 @@ jobs:
       # Check out the tag being released, not whichever branch dispatched the
       # run — otherwise a re-run would upload a main-built bundle onto an old
       # release.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ steps.target.outputs.ref }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
