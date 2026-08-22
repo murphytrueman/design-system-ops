@@ -26,7 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **docs-coverage skill** — Audits whether the documentation surface keeps pace with the component library: coverage gaps (components with no docs), staleness (docs that predate the component's last code change, computed from git), and orphaned docs. Works with zero integration from the codebase plus a Storybook build; Zeroheight, Supernova, and custom docs sites are optional layers. Every coverage finding carries a join-confidence tier so a fuzzy name match is never presented as fact. Ships with a new `documentation-coverage` knowledge note, a `docs-coverage` command, and a sample output (`docs-coverage-carbon-react`) generated against a real public Storybook index.
 - **theme-audit skill** — Dedicated skill for auditing theme implementation. Covers theme discovery, coverage checking, component-tier propagation, visual consistency, DTCG resolver validation, and regression detection.
-- **4 new sample outputs** — system-health-campusiq, drift-detection-sparky-consumer-app, stakeholder-brief-campusiq-q1, component-audit-fintech-pulse. These join the existing samples to provide calibration material across the most-used skill categories.
+- **4 new sample outputs** — system-health-meridian, drift-detection-sparky-consumer-app, stakeholder-brief-meridian-q1, component-audit-fintech-pulse. These join the existing samples to provide calibration material across the most-used skill categories.
 - **CHANGELOG.md** — This file.
 - **LICENSE** — MIT license.
 

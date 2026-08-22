@@ -998,10 +998,10 @@ The `sample-outputs/` directory contains six real skill outputs. Use these to un
 |---|---|---|
 | `example-component-description.md` | ai-component-description | Complete six-section description for a React Dialog component |
 | `example-token-audit.md` | token-audit | Full audit of a ~480 token system with CSS custom properties and JSON source |
-| `system-health-campusiq.md` | system-health | Complete health assessment for a mid-sized design system with seven dimension ratings |
+| `system-health-meridian.md` | system-health | Complete health assessment for a mid-sized design system with seven dimension ratings |
 | `component-audit-fintech-pulse.md` | component-audit | Full component inventory with complexity scores, duplication analysis, and recommendations |
 | `drift-detection-sparky-consumer-app.md` | drift-detection | Drift analysis showing hardcoded values, local reimplementations, and suggested fixes |
-| `stakeholder-brief-campusiq-q1.md` | stakeholder-brief | One-page executive brief with situation, recommendations, and ROI framing |
+| `stakeholder-brief-meridian-q1.md` | stakeholder-brief | One-page executive brief with situation, recommendations, and ROI framing |
 
 ---
 
@@ -1175,10 +1175,10 @@ design-system-ops/
 └── sample-outputs/           ← 6 calibration examples
     ├── example-component-description.md
     ├── example-token-audit.md
-    ├── system-health-campusiq.md
+    ├── system-health-meridian.md
     ├── component-audit-fintech-pulse.md
     ├── drift-detection-sparky-consumer-app.md
-    └── stakeholder-brief-campusiq-q1.md
+    └── stakeholder-brief-meridian-q1.md
 ```
 
 Skills reference the canonical `knowledge-notes/` directory directly through frontmatter paths (e.g., `../../knowledge-notes/filename.md`). The plugin framework auto-loads these files when a skill runs — you do not need to manage separate copies. This keeps knowledge notes in a single, maintainable location.
