@@ -6,10 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-08-22
+
 ### Added
 
-- **Test suite (`tests/`)** — 43 stdlib-Python tests, no dependencies. Validates skill frontmatter (name/description present, kebab-case, name matches directory, names unique), that every `references:` path resolves and stays inside the repo, that no knowledge note is orphaned, that every slash command declares `allowed-tools` and every `${CLAUDE_PLUGIN_ROOT}` path it loads exists, that `plugin.json` is well-formed semver agreeing with this file, that relative links and images in the shipped docs resolve, and that `build.sh` produces a byte-identical `.zip`/`.plugin` pair containing every skill and no tooling. Run with `./tests/run.sh`.
+- **Test suite (`tests/`)** — 48 stdlib-Python tests, no dependencies. Validates skill frontmatter (name/description present, kebab-case, name matches directory, names unique), that every `references:` path resolves and stays inside the repo, that no knowledge note is orphaned, that every slash command declares `allowed-tools` and every `${CLAUDE_PLUGIN_ROOT}` path it loads exists, that `plugin.json` is well-formed semver agreeing with this file, that relative links and images in the shipped docs resolve, and that `build.sh` produces a byte-identical `.zip`/`.plugin` pair containing every skill and no tooling. Run with `./tests/run.sh`.
 - **CI (`.github/workflows/ci.yml`)** — Runs the suite on Python 3.9 and 3.12 plus shellcheck on `build.sh`, on every push to `main` and every pull request.
+- **Release automation (`.github/workflows/release.yml`)** — On a `v*` tag, verifies the tag matches `plugin.json`, runs the test suite, rebuilds the bundle, and attaches `design-system-ops.plugin` and `.zip` to the GitHub Release. The README points Cowork users at the latest Release for the download, so this keeps that asset from drifting from the repo.
+- **Inventory tests** — The counts advertised in the `plugin.json` description and the skills listed in the README's "What's included" table are now pinned to the filesystem, in both directions.
 
 ### Changed
 

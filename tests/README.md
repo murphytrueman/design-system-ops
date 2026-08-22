@@ -34,6 +34,7 @@ python3 -m unittest discover -s tests -t tests -v -p test_skills.py
 | `test_commands.py` | Slash-command frontmatter, `allowed-tools`, and that every `${CLAUDE_PLUGIN_ROOT}` path resolves |
 | `test_plugin_manifest.py` | `.claude-plugin/plugin.json` shape, semver, and agreement with the top CHANGELOG entry |
 | `test_docs_links.py` | Relative links and images in the shipped docs, plus the README headings registries look for |
+| `test_inventory.py` | The counts advertised in `plugin.json` and the skills and agents listed in the README tables match what is actually on disk |
 | `test_build.py` | `build.sh` output: identical `.zip`/`.plugin`, every skill and command present, no tooling or scratch files leaking in, and that `installable/` is not stale |
 
 `dsops.py` is the shared helper — a small frontmatter parser and the file

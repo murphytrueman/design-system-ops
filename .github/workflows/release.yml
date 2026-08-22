@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build and upload assets for. Leave empty for a dry run (builds and verifies, uploads nothing).'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and attach the plugin bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve target
+        id: target
+        run: |
+          tag="${{ inputs.tag || github.ref_name }}"
+          if [ -z "${{ inputs.tag }}" ] && [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "dry_run=true" >> "$GITHUB_OUTPUT"
+            echo "ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
+            echo "Dry run against ${{ github.ref_name }} — nothing will be uploaded."
+          else
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+            echo "ref=$tag" >> "$GITHUB_OUTPUT"
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+            echo "Releasing $tag"
+          fi
+
+      # Check out the tag being released, not whichever branch dispatched the
+      # run — otherwise a re-run would upload a main-built bundle onto an old
+      # release.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.target.outputs.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # The README sends Cowork users to the latest Release for the .plugin
+      # file, so a release whose tag disagrees with the manifest ships confusion.
+      - name: Check the tag matches plugin.json
+        if: steps.target.outputs.dry_run != 'true'
+        run: |
+          tag="${{ steps.target.outputs.tag }}"
+          manifest="$(python -c 'import json;print(json.load(open(".claude-plugin/plugin.json"))["version"])')"
+          if [ "${tag#v}" != "$manifest" ]; then
+            echo "::error::tag $tag does not match plugin.json version $manifest"
+            exit 1
+          fi
+          echo "tag $tag matches plugin.json $manifest"
+
+      - name: Run test suite
+        run: python -m unittest discover -s tests -t tests
+
+      - name: Build the bundle
+        run: ./build.sh
+
+      - name: Create the release if it does not exist yet
+        if: steps.target.outputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.target.outputs.tag }}"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --title "$tag" --generate-notes
+          fi
+
+      - name: Attach the bundle
+        if: steps.target.outputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ steps.target.outputs.tag }}" \
+            installable/design-system-ops.plugin \
+            installable/design-system-ops.zip \
+            --clobber
+
+      - name: Dry run summary
+        if: steps.target.outputs.dry_run == 'true'
+        run: |
+          echo "Dry run complete. Built but did not upload:"
+          ls -l installable/
