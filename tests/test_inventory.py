@@ -24,8 +24,8 @@ SKILL_ROW = re.compile(
     r"^\|\s*\*\*(?:Audit|Govern|Document|Validate|Communicate)\*\*\s*\|\s*(.+?)\s*\|",
     re.M,
 )
-# Rows of the Agents table: | `/full-diagnostic` | ... |
-AGENT_ROW = re.compile(r"^\|\s*`/([a-z0-9-]+)`\s*\|", re.M)
+# Rows of the Agents table: | `/design-system-ops:full-diagnostic` | ... |
+AGENT_ROW = re.compile(r"^\|\s*`/(?:design-system-ops:)?([a-z0-9-]+)`\s*\|", re.M)
 
 
 # Present-tense count claims in the guides: (file, pattern, what it counts).

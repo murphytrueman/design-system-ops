@@ -269,9 +269,9 @@ Evaluate E (gaps) for contribution.
 
 ### "I'm releasing a component and want to validate everything"
 
-**Say:** "Run the release pipeline for Dialog"
+**Run:** `/design-system-ops:release-check Dialog`
 
-This triggers the `component-to-release` agent, which chains six skills in sequence: design-to-code check → accessibility audit → token compliance → AI component description → usage guidelines → change communication. One prompt, full pre-release validation.
+This runs the `component-to-release` agent, which chains six skills in sequence: design-to-code check → accessibility audit → token compliance → AI component description → usage guidelines → change communication, plus a semver check when the change is breaking. One command, full pre-release validation.
 
 **Good for:** Shipping components with confidence, catching issues before they reach consumers.
 
@@ -356,12 +356,14 @@ This triggers the `full-system-diagnostic` agent, which chains: token-audit → 
 
 ### Agents (4 chained workflows)
 
-| Agent | What to say | What it chains |
-|-------|-------------|----------------|
-| `full-system-diagnostic` | "Run a full diagnostic" | token-audit → naming-audit → component-audit → drift-detection → system-health |
-| `component-to-release` | "Run the release pipeline for Dialog" | design-to-code → accessibility → token-compliance → description → guidelines → comms |
-| `governance-review` | "Run a quarterly governance review" | adoption-report → drift-detection → stakeholder-brief |
-| `migration` | "Plan a migration to the new token format" | token-audit → naming-audit → migration plan → change-communication |
+Run each one by its command. Claude Code prefixes plugin commands with the pack's name.
+
+| Agent | Command | What it chains |
+|-------|---------|----------------|
+| `full-system-diagnostic` | `/design-system-ops:full-diagnostic` | token-audit → naming-audit → component-audit → drift-detection → docs-coverage → system-health (plus theme-audit and figma-variable-audit when they apply) |
+| `component-to-release` | `/design-system-ops:release-check Dialog` | design-to-code → accessibility → token-compliance → description → guidelines → comms (plus a semver check for breaking changes) |
+| `governance-review` | `/design-system-ops:governance-review` | adoption-report → drift-detection → stakeholder-brief |
+| `migration` | `/design-system-ops:migration` | token-audit → naming-audit → migration plan → codemod-generator → deprecation-process → change-communication |
 
 ---
 

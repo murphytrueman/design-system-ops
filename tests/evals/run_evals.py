@@ -25,6 +25,7 @@ Exit: 0 all cases pass, 1 any case fails, 2 setup problem.
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -45,6 +46,21 @@ ALLOWED_TOOLS = [
 
 DEGRADED = ("install is incomplete", "degraded mode")
 
+# The skill's own template tells a genuinely-degraded run to say it "was produced
+# in degraded mode". A healthy run therefore mentions the phrase only to deny it
+# ("this is a full run, not degraded mode") — so ignore negated mentions.
+NEGATION = re.compile(r"n't|\b(not|no|without)\b")
+
+
+def reports_degraded(output):
+    lowered = output.lower()
+    for marker in DEGRADED:
+        for match in re.finditer(re.escape(marker), lowered):
+            window = lowered[max(0, match.start() - 30):match.start()]
+            if not NEGATION.search(window):
+                return True
+    return False
+
 # A run that never reached the model says nothing about the skill.
 AUTH_FAILURES = ("Failed to authenticate", "Invalid API key", "Please run /login", "Not logged in")
 
@@ -52,7 +68,7 @@ AUTH_FAILURES = ("Failed to authenticate", "Invalid API key", "Please run /login
 def build_bundle(tmp):
     env = dict(os.environ, DSOPS_OUT_DIR=tmp)
     subprocess.run(["bash", os.path.join(REPO, "build.sh")], cwd=REPO, env=env,
-                   check=True, stdout=subprocess.DEVNULL)
+                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return os.path.join(tmp, "design-system-ops.zip")
 
 
@@ -90,7 +106,7 @@ def run_case(case, plugin, fixture, model, timeout):
 def check(case, output):
     lowered = output.lower()
     problems = []
-    if any(marker in lowered for marker in DEGRADED):
+    if reports_degraded(output):
         problems.append("the skill reported an incomplete install or ran in degraded mode")
     for term in case["finds"]:
         if term.lower() not in lowered:

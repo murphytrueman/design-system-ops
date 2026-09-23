@@ -21,7 +21,7 @@ There are great AI tools for the designer who uses a design system. But the team
 
 A skill pack for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [Cowork](https://claude.ai) that teaches Claude how to do design systems work the way a staff-level practitioner would — with structured processes, expert frameworks, and output calibrated to the actual complexity of what you're dealing with.
 
-When you ask Claude to audit your tokens, it doesn't give you generic advice. It reads your actual token files, identifies tier leakage, flags naming violations, produces a prioritised finding table with remediation guidance, and — if you're migrating to DTCG — gives you a sprint-plannable migration plan with hour estimates.
+When you ask Claude to audit your tokens, it doesn't give you generic advice. It reads your actual token files, identifies tier leakage, flags naming violations, and produces a prioritised finding table with remediation guidance and effort ranges you can plan sprints around. If you're moving to DTCG, it can plan that migration too.
 
 That is the difference. Not a smarter prompt. A different kind of output entirely.
 
@@ -54,6 +54,8 @@ For project-level installation (instead of global):
 git clone https://github.com/murphytrueman/design-system-ops.git your-project/.claude/skills/design-system-ops
 ```
 
+Claude Code loads the cloned folder as a plugin. To confirm, run `claude plugin list`: you should see `design-system-ops@skills-dir` with status loaded. A project-level install only loads once you trust the project folder; accept Claude Code's trust prompt, then run `/reload-plugins`.
+
 **Verify:** Open Claude Code and say "How healthy is my design system?" If Claude responds with a structured, multi-step process — not generic advice — you're set up.
 
 To check the install itself, run `bash ~/.claude/skills/design-system-ops/verify-install.sh` — it confirms every skill can find its knowledge notes. Only git clone and the `.plugin` bundle are supported; installers that flatten skills into separate folders (e.g. `npx skills install`) drop the knowledge notes, and skills will stop and tell you so.
@@ -76,12 +78,14 @@ See [1-INSTALL.md](1-INSTALL.md) for the full guide with entry points by use cas
 
 ### Agents
 
+Run these as slash commands. Claude Code prefixes plugin commands with the pack's name, so type `/design-system-ops:` to see them all.
+
 | Agent | What it chains | When to use it |
 |-------|---------------|----------------|
-| `/full-diagnostic` | 6 audit skills (+ conditional theme/Figma) with cross-skill synthesis | Quarterly review or inheriting a system |
-| `/release-check` | Design-to-code, accessibility, token compliance, AI description, usage guidelines, change communication | Before shipping any component |
-| `/governance-review` | Adoption report, drift detection, stakeholder brief | Monthly or quarterly governance cadence |
-| `/migration` | Token audit, naming audit, migration plan, codemod generation, communication | Planning a major migration |
+| `/design-system-ops:full-diagnostic` | 6 audit skills (+ conditional theme/Figma) with cross-skill synthesis | Quarterly review or inheriting a system |
+| `/design-system-ops:release-check` | Design-to-code, accessibility, token compliance, AI description, usage guidelines, change communication (plus a semver check for breaking changes) | Before shipping any component |
+| `/design-system-ops:governance-review` | Adoption report, drift detection, stakeholder brief | Monthly or quarterly governance cadence |
+| `/design-system-ops:migration` | Token audit, naming audit, migration plan, codemod generation, deprecation plan, communication | Planning a token migration (format, tool, naming or tier) |
 
 ### AI infrastructure skills
 
@@ -94,7 +98,7 @@ Five skills produce machine-readable files that AI agents and tooling consume di
 The skills encode specific practitioner frameworks, not generic advice:
 
 - **Three-tier token architecture** — primitive → semantic → component, with tier-leakage detection and DTCG 2025.10 alignment
-- **Component Challenge Rating** — a difficulty classification system that calibrates audit depth and remediation estimates to actual component complexity
+- **Component Challenge Rating** — rates components by how risky they are to implement, so higher-risk components get deeper documentation and more rigorous validation
 - **Design system maturity model** — five named stages from Ad-hoc to Optimised, used across health reports, stakeholder briefs, and adoption tracking to frame recommendations appropriately
 - **AI-readiness assessment** — evaluates how well your system's metadata, naming, and structure support AI agent consumption
 
@@ -117,9 +121,9 @@ The skills encode specific practitioner frameworks, not generic advice:
 → Say: "Write a stakeholder brief for leadership about our design system"
 
 **"Run the full pre-release pipeline"**
-→ Say: "Run the release pipeline for Dialog"
+→ Run: `/design-system-ops:release-check Dialog`
 
-You don't need to memorise skill names. Describe what you need and the right skill activates.
+You don't need to memorise skill names. Describe what you need and the right skill activates. The four chained workflows are the exception: run them by their command, so a long multi-skill run only starts when you ask for it.
 
 ---
 
