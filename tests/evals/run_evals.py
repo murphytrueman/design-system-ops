@@ -26,6 +26,7 @@ Exit: 0 all cases pass, 1 any case fails, 2 setup problem.
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -160,19 +161,49 @@ def skill_was_loaded(skill, calls):
     return False
 
 
+# A finding is a line carrying a severity or result label, plus the lines under
+# it up to the next finding, heading, table row or bold label. Grading only
+# counts what's said inside findings: a planted problem mentioned in passing
+# isn't found, and a control mentioned in an exclusions note isn't flagged.
+MARKER = re.compile("\U0001F534|\U0001F7E0|\U0001F7E1|\u26AA|\u274C|\u26A0")
+
+
+def findings(report):
+    """Return (header line, full text) for each finding in the report."""
+    found, current = [], None
+    for line in report.splitlines():
+        stripped = line.strip()
+        if MARKER.search(line):
+            current = [line]
+            found.append(current)
+            if stripped.startswith("|"):
+                current = None  # a table row is a whole finding
+        elif stripped.startswith(("#", "|")) or (stripped.startswith("**") and current is not None and len(current) > 1):
+            current = None
+        elif current is not None:
+            current.append(line)
+    return [(lines[0], "\n".join(lines)) for lines in found]
+
+
 def check(case, output, calls):
     lowered = output.lower()
     problems = []
     if not skill_was_loaded(case["skill"], calls):
         used = sorted({name for name, _ in calls}) or ["none"]
         problems.append("the %s skill was never loaded (tools used: %s)" % (case["skill"], ", ".join(used)))
-    for term in case["finds"]:
+    blocks = findings(output)
+    anchor = case["finds"][0].lower()
+    if not any(anchor in text.lower() for _, text in blocks):
+        problems.append("no finding names %r (mentioned in passing doesn't count)" % case["finds"][0])
+    for term in case["finds"][1:]:
         if term.lower() not in lowered:
             problems.append("missed: %r" % term)
-    for first, second in case.get("must_not_flag", []):
-        for line in output.splitlines():
-            if first.lower() in line.lower() and second.lower() in line.lower():
-                problems.append("flagged a correct thing: %r" % line.strip()[:160])
+    # Each control is one or more terms that must not all appear in a single
+    # finding's header line: ["currentColor"], or ["surface-raised", "darker"].
+    for terms in case.get("must_not_flag", []):
+        for header, _ in blocks:
+            if all(term.lower() in header.lower() for term in terms):
+                problems.append("flagged a correct thing: %r" % header.strip()[:160])
                 break
     return problems
 
