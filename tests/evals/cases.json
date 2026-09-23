@@ -199,6 +199,14 @@
       "prompt": "Our CPO keeps asking how the design system is going. Can you write something I could send her this week?",
       "finds": [],
       "why": "A second wording that doesn't name a skill must also route to stakeholder-brief. It guards against tuning the description to one test sentence."
+    },
+    {
+      "id": "route-design-to-code-3",
+      "skill": "design-to-code-check",
+      "expect": "route",
+      "prompt": "Before we ship the new Tooltip, can you QA the build against the mockups? Padding should be 8px, corners 4px, dark background with light text.",
+      "finds": [],
+      "why": "A third wording, written before the description was revised, must also route to design-to-code-check. It's the unseen check on whether the description captures the intent rather than a phrase."
     }
   ]
 }

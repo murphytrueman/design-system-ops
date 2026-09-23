@@ -1,6 +1,6 @@
 ---
 name: design-to-code-check
-description: "Compares a component or screen's design spec with its code and logs each gap as a build error or spec gap. Use it whenever someone asks if something matches its design or spec, even one component with the spec pasted in. System-wide drift: drift-detection."
+description: "Checks a component or screen's code against its design and logs each discrepancy as a build error or spec gap. Use it whenever someone wants an implementation checked against a design, spec or specified values, however they phrase it, even for one component. System-wide drift: drift-detection."
 references:
   - ../../knowledge-notes/design-to-code-contract.md
   - ../../knowledge-notes/output-discipline.md
