@@ -49,6 +49,11 @@ ALLOWED_TOOLS = [
     "Bash(wc:*)", "Bash(head:*)", "Bash(git log:*)", "Bash(git ls-files:*)",
 ]
 
+# How many tool calls a routing case may make before it counts as "no skill".
+# Passing routes load their skill within the first three steps.
+ROUTE_BUDGET = 6
+
+
 # A run that never reached the model says nothing about the skill.
 AUTH_FAILURES = ("Failed to authenticate", "Invalid API key", "Please run /login", "Not logged in")
 
@@ -95,7 +100,7 @@ def flatten_into(repo, root, skill):
     shutil.copy(os.path.join(root, "skills", skill, "SKILL.md"), target)
 
 
-def run_case(case, plugin, root, fixture, model, timeout):
+def run_case(case, plugin, root, fixture, model, timeout, route_budget=ROUTE_BUDGET):
     with tempfile.TemporaryDirectory(prefix="dsops-eval-") as tmp:
         repo = fresh_fixture(fixture, tmp)
         if case.get("layout") == "flattened":
@@ -115,15 +120,11 @@ def run_case(case, plugin, root, fixture, model, timeout):
             command.append("--bare")
         if model:
             command += ["--model", model]
-        return stream(command, repo, timeout, stop_at_skill=case.get("expect") == "route")
+        return stream(command, repo, timeout, stop_at_skill=case.get("expect") == "route",
+                      route_budget=route_budget)
 
 
-# How many tool calls a routing case may make before it counts as "no skill".
-# Passing routes load their skill within the first three steps.
-ROUTE_BUDGET = 6
-
-
-def stream(command, cwd, timeout, stop_at_skill=False):
+def stream(command, cwd, timeout, stop_at_skill=False, route_budget=ROUTE_BUDGET):
     """Run claude and show progress as it works: S when the skill loads, a dot
     for every other tool call. A case takes minutes; silence looks like a hang."""
     process = subprocess.Popen(command, cwd=cwd, stdout=subprocess.PIPE,
@@ -149,7 +150,7 @@ def stream(command, cwd, timeout, stop_at_skill=False):
                         process.kill()
                     elif stop_at_skill:
                         other_calls += 1
-                        if other_calls >= ROUTE_BUDGET:
+                        if other_calls >= route_budget:
                             # The routing decision comes early. This many steps
                             # without a skill means Claude chose to go without.
                             process.kill()
@@ -254,7 +255,7 @@ def check(case, output, calls):
         # must be the right one.
         picked = [str(args.get("skill", "")).split(":")[-1] for name, args in calls if name == "Skill"]
         if not picked:
-            problems.append("no skill loaded within the first %d steps; Claude did the work without one" % ROUTE_BUDGET)
+            problems.append("no skill loaded; Claude did the work without one")
         elif picked[0] != case["skill"]:
             problems.append("routed to %s instead of %s" % (picked[0], case["skill"]))
         return problems
@@ -310,7 +311,8 @@ def run_one(case, attempt, label, plugin, root, spec, args):
     print("%-30s %-28s " % (label, case["skill"]), end="", flush=True)
     started = time.time()
     try:
-        code, output, errors = run_case(case, plugin, root, spec["fixture"], args.model, args.timeout)
+        code, output, errors = run_case(case, plugin, root, spec["fixture"], args.model, args.timeout,
+                                        route_budget=args.route_budget)
     except subprocess.TimeoutExpired:
         print(" FAIL\n    timed out after %ds" % args.timeout)
         return False
@@ -360,6 +362,8 @@ def main():
     parser.add_argument("--plugin", help="plugin directory or .zip to test (default: a fresh build)")
     parser.add_argument("--model", help="model to run the skills with")
     parser.add_argument("--timeout", type=int, default=900, help="seconds per case (default 900)")
+    parser.add_argument("--route-budget", type=int, default=ROUTE_BUDGET,
+                        help="tool calls a routing case may make without a skill before it stops (default %d)" % ROUTE_BUDGET)
     parser.add_argument("--repeat", type=int, default=1,
                         help="run each case this many times and report a pass rate; skill use varies run to run")
     args = parser.parse_args()
