@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/ui",
+  "version": "2.3.0",
+  "private": true,
+  "description": "Shared UI components and design tokens for the web app.",
+  "main": "src/index.ts",
+  "peerDependencies": { "react": "^18.0.0" }
+}

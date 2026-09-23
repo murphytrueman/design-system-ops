@@ -1,0 +1,21 @@
+.button {
+  padding: var(--space-gap) var(--space-inset);
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--button-background);
+  color: var(--button-text);
+}
+
+.primary:hover {
+  background: var(--button-background-hover);
+}
+
+.secondary {
+  background: transparent;
+  color: var(--color-action-primary);
+  border: 1px solid currentColor;
+}

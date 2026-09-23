@@ -1,0 +1,11 @@
+.card {
+  background: var(--card-background);
+  border: 1px solid var(--card-border);
+  padding: var(--card-padding);
+  border-radius: 8px;
+}
+
+.title {
+  margin: 0 0 var(--space-gap);
+  color: #1a73e8;
+}

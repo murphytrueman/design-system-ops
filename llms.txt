@@ -1,0 +1,24 @@
+# Design System Ops
+
+> A skill pack for Claude that audits, governs, documents, validates, and communicates design systems. Skills are markdown instructions; each one loads shared knowledge notes that carry the frameworks behind its findings.
+
+The pack only works with its folders side by side. Every skill under `skills/<name>/SKILL.md` lists the knowledge notes it depends on in its frontmatter `references:` field, as paths like `../../knowledge-notes/token-architecture.md`. If `knowledge-notes/` is not next to `skills/`, the install is broken: installers that flatten each skill into its own folder (for example `npx skills install`) cause this. Install with git clone or the `.plugin` bundle instead, then run `verify-install.sh` from the install root to confirm every reference resolves.
+
+## Start here
+
+- [README.md](README.md): what the pack does, installation, and example prompts
+- [1-INSTALL.md](1-INSTALL.md): supported install methods, how to verify an install, and which skill to start with
+- [2-WHATS-INCLUDED.md](2-WHATS-INCLUDED.md): every skill, agent, and knowledge note, with what each one is for
+
+## Reference
+
+- [knowledge-notes/](knowledge-notes/): the shared frameworks skills load before they run
+- [knowledge-notes/output-discipline.md](knowledge-notes/output-discipline.md): how every audit scopes its claims and reports findings
+- [commands/](commands/): slash commands, including the chained agent workflows
+- [ds-ops-config.example.yml](ds-ops-config.example.yml): the annotated configuration template
+
+## Optional
+
+- [3-SETUP-AND-CONFIG.md](3-SETUP-AND-CONFIG.md): framework compatibility, monorepos, and troubleshooting
+- [sample-outputs/](sample-outputs/): sample skill outputs showing expected depth and format (anonymised)
+- [CHANGELOG.md](CHANGELOG.md): version history

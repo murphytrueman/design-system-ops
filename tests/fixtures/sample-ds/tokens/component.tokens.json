@@ -1,0 +1,12 @@
+{
+  "button": {
+    "background": { "$value": "{color.action.primary}" },
+    "background-hover": { "$value": "{color.action.primary-hover}" },
+    "text": { "$value": "{color.text.on-action}" }
+  },
+  "card": {
+    "background": { "$value": "{color.surface.raised}" },
+    "border": { "$value": "{color.gray.200}" },
+    "padding": { "$value": "{space.inset}" }
+  }
+}

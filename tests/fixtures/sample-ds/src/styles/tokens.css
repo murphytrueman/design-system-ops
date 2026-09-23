@@ -1,0 +1,27 @@
+/* Generated from tokens/*.tokens.json. Light theme is the default. */
+:root {
+  --color-action-primary: #2563eb;
+  --color-action-primary-hover: #1d4ed8;
+  --color-surface-base: #ffffff;
+  --color-surface-raised: #f9fafb;
+  --color-border-default: #e5e7eb;
+  --color-text-default: #111827;
+  --color-text-on-action: #ffffff;
+  --space-inset: 16px;
+  --space-gap: 8px;
+
+  --button-background: var(--color-action-primary);
+  --button-background-hover: var(--color-action-primary-hover);
+  --button-text: var(--color-text-on-action);
+  --card-background: var(--color-surface-raised);
+  --card-border: #e5e7eb;
+  --card-padding: var(--space-inset);
+}
+
+/* Dark theme overrides. */
+[data-theme="dark"] {
+  --color-surface-base: #111827;
+  --color-surface-raised: #1f2937;
+  --color-border-default: #374151;
+  --color-text-default: #f9fafb;
+}

@@ -1,0 +1,23 @@
+{
+  "color": {
+    "action": {
+      "primary": { "$value": "{color.blue.500}" },
+      "primary-hover": { "$value": "{color.blue.600}" }
+    },
+    "surface": {
+      "base": { "$value": "{color.white}" },
+      "raised": { "$value": "{color.gray.50}" }
+    },
+    "border": {
+      "default": { "$value": "{color.gray.200}" }
+    },
+    "text": {
+      "default": { "$value": "{color.gray.900}" },
+      "on-action": { "$value": "{color.white}" }
+    }
+  },
+  "space": {
+    "inset": { "$value": "{spacing.4}" },
+    "gap": { "$value": "{spacing.2}" }
+  }
+}

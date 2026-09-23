@@ -1,0 +1,206 @@
+# Design System Ops — Team configuration (EXAMPLE TEMPLATE)
+#
+# This is an annotated template, not an active config. To use it:
+#   1. Copy this file into your project root (the folder with your package.json).
+#   2. Rename the copy to `.ds-ops-config.yml` — note the leading dot.
+#   3. Uncomment and edit only the settings you want to override.
+#
+# Skills read `.ds-ops-config.yml` from your project root before producing
+# output, and calibrate thresholds, integrations, and recurring workflow
+# settings to your team's context.
+#
+# Every field is optional. Skills use sensible defaults when a field is absent.
+# Only set what you need to override.
+
+# ─────────────────────────────────────────────
+# System identity
+# ─────────────────────────────────────────────
+
+system:
+  name: ""                        # Your design system's name (e.g. "Apex", "Polaris", "Carbon")
+  component_count: null           # Approximate count — triggers small-system behaviour when < 5
+  framework: ""                   # Primary framework: react | vue | twig | svelte | web-components
+  styling: ""                     # Primary styling: css-vars | scss | tailwind | emotion | styled-components
+  theming: false                  # Does the system support multiple themes (light/dark, brand variants)?
+  component_paths: []             # Component source directories, e.g. ["packages/ui/src/components"]. Leave empty to auto-detect.
+  tokens: []                      # Token source files or directories, e.g. ["tokens/", "src/styles/tokens.css"]
+  token_format: ""                # dtcg | style-dictionary-v3 | style-dictionary-v4 | tokens-studio | custom. Leave blank to detect.
+  category_model: ""              # How components are grouped: atomic | functional | custom. Leave blank to infer.
+  content_guidelines_path: ""     # Voice and tone / content guidelines doc, e.g. "docs/content.md"
+
+# ─────────────────────────────────────────────
+# Severity calibration
+# ─────────────────────────────────────────────
+# Override default severity ratings for specific violation types.
+# Skills use these when classifying findings. Values: critical | high | medium | low
+#
+# Example: a team with active theming should treat hardcoded colours as critical,
+# while a team with no theming plans might treat them as medium.
+
+severity:
+  hardcoded_color: high           # Default: high. Set to critical if actively theming.
+  hardcoded_spacing: medium       # Default: medium.
+  hardcoded_typography: medium    # Default: medium.
+  wrong_tier_reference: high      # Default: high. Set to critical for mature token architectures.
+  missing_interaction_state: high # Default: high. Covers hover, focus, active, disabled.
+  missing_aria: critical          # Default: critical. Rarely downgraded.
+  naming_violation: medium        # Default: medium. Set to high if naming conventions are formalised.
+  tier_leakage: high              # Default: high. Component referencing primitive directly.
+  specification_gap: medium       # Default: medium. Design did not define this case.
+  # Skill-specific overrides use a prefix, e.g.:
+  # api_breaking_change: critical   # component-api-validator (severity.api_*)
+  # schema_missing_type: high       # schema-validator (severity.schema_*)
+
+# ─────────────────────────────────────────────
+# Integration endpoints
+# ─────────────────────────────────────────────
+# When configured, skills auto-pull data from these sources instead of
+# asking the user to provide it manually. Every integration is optional.
+
+integrations:
+
+  figma:
+    enabled: false
+    file_key: ""                  # From your Figma URL: figma.com/design/<file_key>/...
+    library_name: ""              # The published library name (for analytics queries)
+    personal_access_token_env: "FIGMA_ACCESS_TOKEN"  # Env var name holding your PAT
+
+  npm:
+    enabled: false
+    package_name: ""              # e.g. "@yourorg/design-system" or "@yourorg/components"
+    registry_url: ""              # Leave blank for public npm. Set for private registries.
+    scoped_packages: []           # For monorepos: ["@yourorg/button", "@yourorg/card", ...]
+
+  github:
+    enabled: false
+    repo: ""                      # e.g. "yourorg/design-system"
+    token_env: "GITHUB_TOKEN"     # Env var name holding your PAT
+    default_branch: "main"
+
+  style_dictionary:
+    enabled: false
+    config_path: ""               # Path to your Style Dictionary config, e.g. "style-dictionary/config.json"
+    version: "4"                  # "3" or "4" — affects DTCG compatibility checks
+
+  chromatic:
+    enabled: false
+    project_token_env: "CHROMATIC_PROJECT_TOKEN"
+    app_id: ""                    # Your Chromatic app ID
+
+  storybook:
+    enabled: false
+    url: ""                       # Published Storybook URL, e.g. "https://storybook.yourorg.com"
+                                  # Used for component inventory via /index.json endpoint
+    static_path: ""               # Local Storybook build dir, e.g. "storybook-static"
+                                  # Preferred by docs-coverage — reads index.json with no server or auth
+
+  documentation:
+    enabled: false
+    platform: ""                  # zeroheight | supernova | storybook | custom
+    url: ""                       # Documentation site URL
+    api_key_env: ""               # Env var name for API key (Zeroheight, Supernova)
+    styleguide_id: ""             # Zeroheight styleguide ID (for the Pages REST API)
+    design_system_id: ""          # Supernova design system ID (for the SDK / MCP "Relay")
+
+  code_tokens: ""                 # Path to code token source, for comparing Figma variables with code (figma-variable-audit)
+
+# ─────────────────────────────────────────────
+# Recurring workflows
+# ─────────────────────────────────────────────
+# Skills that support recurring runs (adoption-report, governance-review,
+# drift-detection, system-health, full-system-diagnostic) use these settings
+# to store outputs, compare against previous runs, and track trends.
+
+recurring:
+  output_directory: ".ds-ops-reports/"   # Where reports are stored. Relative to project root.
+  naming_pattern: "{skill}-{date}"      # Output file naming. {skill} and {date} are replaced.
+  comparison_mode: "full"               # "full" = side-by-side diff. "summary" = delta summary only.
+  retain_count: 8                       # Number of previous reports to keep. Oldest are removed.
+
+# ─────────────────────────────────────────────
+# Docs coverage
+# ─────────────────────────────────────────────
+# Tuning for the docs-coverage skill (component vs documentation-surface audit).
+
+docs_coverage:
+  staleness_threshold_days: 90          # A doc is flagged stale if it predates the component's
+                                        # last code change by more than this many days. Default: 90.
+
+# ─────────────────────────────────────────────
+# Lint and gate overrides
+# ─────────────────────────────────────────────
+# Override release gates in the component-to-release agent.
+# Use when your team has agreed exceptions (e.g. colour contrast WARN
+# is acceptable during a brand transition).
+
+gates:
+  token_compliance:
+    wrong_tier_blocks_release: true       # Default: true
+    hardcoded_color_blocks_release: true  # Default: true when theming is enabled
+  accessibility:
+    keyboard_blocks_release: true         # Default: true. Almost never overridden.
+    contrast_blocks_release: true         # Default: true. Set false during brand transitions with a timeline.
+  design_to_code:
+    critical_blocks_release: true         # Default: true
+
+# ─────────────────────────────────────────────
+# Skill-specific settings
+# ─────────────────────────────────────────────
+# Read only by the skill named in each section. Leave a section out to use
+# that skill's defaults.
+
+decision_tree:                          # component-decision-tree
+  output_format: "yaml"                 # yaml (.yml files) or json (.json files)
+
+context_engine:                         # context-engine-builder
+  blueprints: []                        # Which blueprints to generate. Empty = Technical and UI, then ask before the rest.
+  output_format: "yaml"                 # yaml (.yml files) or json (.json files)
+
+cicd:                                   # cicd-integration
+  platform: ""                          # github-actions | gitlab-ci | circleci | bitbucket
+  package_manager: ""                   # npm | yarn | pnpm
+  node_version: "22"                    # 22 or 24 (both LTS)
+  test_framework: ""                    # jest | vitest | playwright
+  component_library_path: ""            # e.g. "packages/components"
+  token_path: ""                        # e.g. "packages/tokens"
+  monorepo: false
+  triggers: []                          # e.g. ["push to main", "pull request to main"]
+
+codemods:                               # codemod-generator
+  language: "typescript"                # typescript | javascript | both
+  transform_engine: "jscodeshift"       # jscodeshift | ts-morph | custom
+  output_directory: "codemods/"
+  test_framework: "jest"                # jest | vitest
+  style_dictionary_format: false        # Tokens use Style Dictionary format
+  css_custom_properties: true           # Tokens are consumed as CSS custom properties
+
+governance:                             # governance-encoder
+  rule_format: "json"                   # json | yaml
+  severity_model: []                    # Custom severity levels. Empty = error / warning / info.
+  categories: []                        # Override the default rule categories. Empty = defaults.
+
+metadata:                               # metadata-schema-generator
+  schema_version: ""                    # Lock the output schema version. Blank = current.
+  output_directory: ".ai/metadata/"
+  include_business_context: false       # Only enable when you can supply the metrics and their sources
+
+memory:                                 # session-memory
+  directory: ".ds-ops/sessions"         # Where session files are stored
+  retain_count: 12                      # Older files beyond this are proposed for deletion, never deleted without confirmation
+  auto_save: true                       # Save after every skill run (saving only; pruning always asks)
+  comparison_window: 3                  # How many previous sessions to compare against
+
+benchmark:                              # system-benchmark
+  system_type: ""                       # enterprise | product | agency | government
+  team_size: null                       # Full-time design system team members
+  system_age_months: null               # How long the system has been in active development
+  consumer_count: null                  # Teams or products consuming the system
+  comparison_targets: []                # Optional, e.g. ["Material Design", "Polaris", "Carbon"]
+
+visuals:                                # visual-report
+  brand_primary: "#2563EB"              # Primary chart colour
+  brand_secondary: "#DC2626"            # Accent for warnings and critical items
+  brand_success: "#16A34A"
+  brand_neutral: "#6B7280"
+  output_format: "html"                 # html | svg | mermaid
+  output_directory: ""                  # Blank = current working directory

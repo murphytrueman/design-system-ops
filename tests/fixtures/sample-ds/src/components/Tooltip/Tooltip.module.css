@@ -1,0 +1,11 @@
+.wrapper {
+  position: relative;
+}
+
+.bubble {
+  position: absolute;
+  padding: var(--space-gap);
+  background: var(--color-text-default);
+  color: var(--color-surface-base);
+  border-radius: 4px;
+}

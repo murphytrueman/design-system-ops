@@ -1,0 +1,42 @@
+{
+  "fixture": "tests/fixtures/sample-ds",
+  "cases": [
+    {
+      "id": "tier-leakage",
+      "skill": "token-audit",
+      "prompt": "Use the design-system-ops token-audit skill to audit the design tokens in this repository.",
+      "finds": ["card.border", "color.gray.200"],
+      "why": "card.border aliases a primitive directly, skipping the semantic tier (color.border.default)."
+    },
+    {
+      "id": "hardcoded-hex",
+      "skill": "token-compliance",
+      "prompt": "Use the design-system-ops token-compliance skill to check the components in src/components for hardcoded values.",
+      "finds": ["#1a73e8", "Card.module.css"],
+      "must_not_flag": [["currentColor", "violation"], ["transparent", "violation"], ["tokens.css", "hardcoded"]],
+      "why": "Card's title colour is a raw hex that isn't in the palette. currentColor, transparent and the token source file itself are not violations."
+    },
+    {
+      "id": "undocumented-component",
+      "skill": "docs-coverage",
+      "prompt": "Use the design-system-ops docs-coverage skill to check which components in this repository are documented. Treat the *.stories.tsx files as the documentation surface.",
+      "finds": ["Tooltip"],
+      "why": "Tooltip is exported from src/index.ts but has no story."
+    },
+    {
+      "id": "tooltip-a11y",
+      "skill": "accessibility-per-component",
+      "prompt": "Use the design-system-ops accessibility-per-component skill to audit the Tooltip component in src/components/Tooltip.",
+      "finds": ["aria-describedby", "1.4.13"],
+      "why": "The trigger doesn't reference the tooltip with aria-describedby, and the bubble is always shown rather than appearing on hover and focus (WCAG 1.4.13)."
+    },
+    {
+      "id": "dark-theme-controls",
+      "skill": "theme-audit",
+      "prompt": "Use the design-system-ops theme-audit skill to audit the light and dark themes in src/styles/tokens.css.",
+      "finds": ["--card-border"],
+      "must_not_flag": [["surface-raised", "darker than"], ["space-inset", "missing"], ["space-gap", "missing"]],
+      "why": "--card-border is a raw value with no dark override, so cards keep a light border in dark mode. Correct behaviour that must not be flagged: the raised surface is lighter than the base in dark mode, and spacing inherits from :root."
+    }
+  ]
+}
