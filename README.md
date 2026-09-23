@@ -123,7 +123,7 @@ The skills encode specific practitioner frameworks, not generic advice:
 **"Run the full pre-release pipeline"**
 → Run: `/design-system-ops:release-check Dialog`
 
-You don't need to memorise skill names. Describe what you need and the right skill activates. The four chained workflows are the exception: run them by their command, so a long multi-skill run only starts when you ask for it.
+You don't need to memorise skill names. Describe what you need and the right skill activates. You can also run any skill directly, with a path if you like: `/design-system-ops:token-audit src/tokens`. The four chained workflows are the exception to asking in plain language: run them by their command, so a long multi-skill run only starts when you ask for it.
 
 ---
 

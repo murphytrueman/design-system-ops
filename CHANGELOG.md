@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-09-23
+
+### Fixed
+
+- **Eight commands were hiding the skills they shared a name with.** Claude Code loads each command as a skill too, and `token-audit`, `component-audit`, `system-health`, `docs-coverage`, `system-benchmark`, `visual-report`, `codemod-generator` and `cicd-integration` existed as both. Where names matched, the command's one-line description replaced the skill's, so Claude routed those eight skills on the thin version. The duplicate commands are removed; their pre-approved tools moved into each skill's frontmatter, and the skills run directly as `/design-system-ops:<skill>`. Six commands remain: the four agent workflows plus `drift-check` and `describe-component`. A test now rejects any command that shares a skill's name, and one checks that a skill's own tool list covers the commands it runs.
+- **Docs checked against a real install.** Cloning into `.claude/skills/` loads the pack as a skills-directory plugin (`claude plugin list` shows `design-system-ops@skills-dir`); a project-level install needs the folder trusted first. Commands are namespaced (`/design-system-ops:<name>`), and the chained workflows are run by command. The README and install guide now say so, and the token-audit, Challenge Rating and agent-chain descriptions match the skills.
+- **The folder tree in `2-WHATS-INCLUDED.md`** listed 39 of 40 skills, 13 command files that don't exist, and 11 of 14 knowledge notes. It's regenerated from the files, and a test now compares it with disk.
+
 ## [1.3.0] - 2026-09-23
 
 ### Added

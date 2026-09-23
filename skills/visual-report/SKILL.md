@@ -1,6 +1,7 @@
 ---
 name: visual-report
 description: "Turns existing audit, health or session-memory output into an HTML dashboard, SVG charts or Mermaid diagrams. Triggers: visualise the findings, dashboard, chart, graph the trends. Does not run audits (run one first); for a written brief use stakeholder-brief."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 references:
   - ../../knowledge-notes/output-discipline.md
 ---

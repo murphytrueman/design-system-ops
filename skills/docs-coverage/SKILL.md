@@ -1,6 +1,7 @@
 ---
 name: docs-coverage
 description: "Audit whether docs keep pace with components: undocumented components, stale docs, orphaned pages, with join confidence. Triggers: docs coverage, which components are undocumented, stale docs check. Not for writing docs (usage-guidelines) or doc analytics (adoption-report)."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(git log:*), Bash(git ls-files:*)
 references:
   - ../../knowledge-notes/documentation-coverage.md
   - ../../knowledge-notes/output-discipline.md

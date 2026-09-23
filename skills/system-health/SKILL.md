@@ -1,6 +1,7 @@
 ---
 name: system-health
 description: "Holistic health check across tokens, components, docs, adoption, governance, AI readiness, platform maturity, with status labels. Triggers: how healthy is my system, system health check, big picture. Not for one area (use its audit) or external comparison (system-benchmark)."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/ai-readiness.md

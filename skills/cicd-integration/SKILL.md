@@ -1,6 +1,7 @@
 ---
 name: cicd-integration
 description: "Generate CI pipeline files and check scripts (GitHub Actions, GitLab, CircleCI, Bitbucket) that automate design system checks: token validation, hardcoded values, a11y scans, visual regression, bundle size. Trigger: set up CI, quality gates, automate these checks. Not for running an audit."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(git diff:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/token-architecture.md

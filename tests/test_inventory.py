@@ -46,6 +46,7 @@ DOC_CLAIMS = [
     ("2-WHATS-INCLUDED.md", r"^## The (\d+) agents", "agents"),
     ("2-WHATS-INCLUDED.md", r"^## The (\d+) knowledge notes", "knowledge notes"),
     ("2-WHATS-INCLUDED.md", r"skills/ +← (\d+) skills", "skills"),
+    ("2-WHATS-INCLUDED.md", r"commands/ +← (\d+) slash commands", "commands"),
     ("3-SETUP-AND-CONFIG.md", r"── skills/ +(\d+) skills", "skills"),
     ("3-SETUP-AND-CONFIG.md", r"── commands/ +(\d+) command definitions", "commands"),
     ("3-SETUP-AND-CONFIG.md", r"── knowledge-notes/ +(\d+) ", "knowledge notes"),
@@ -197,6 +198,42 @@ class TestGuideCounts(unittest.TestCase):
                     match = re.search(pattern % category, self._doc(name), re.M)
                     self.assertIsNotNone(match, "no %s heading found" % category)
                     self.assertEqual(expected, int(match.group(1)))
+
+
+class TestFolderTree(unittest.TestCase):
+    """The folder tree in 2-WHATS-INCLUDED.md is the one place that lists
+    every file by name. It drifted before: it listed 39 of 40 skills, command
+    files that never existed, and 11 of 14 knowledge notes."""
+
+    TREE = re.compile(r"(?ms)^```\ndesign-system-ops/\n(.*?)^```")
+    ENTRY = re.compile(r"^│   [├└]── ([^\s]+)")
+
+    def _sections(self):
+        match = self.TREE.search(dsops.read_text(os.path.join(dsops.REPO_ROOT, "2-WHATS-INCLUDED.md")))
+        self.assertIsNotNone(match, "folder tree not found")
+        sections, current = {}, None
+        for line in match.group(1).splitlines():
+            top = re.match(r"^[├└]── ([^\s]+)/", line)
+            if top:
+                current = sections.setdefault(top.group(1), set())
+                continue
+            entry = self.ENTRY.match(line)
+            if entry and current is not None:
+                current.add(entry.group(1).rstrip("/"))
+        return sections
+
+    def test_tree_matches_the_files_on_disk(self):
+        sections = self._sections()
+        expected = {
+            "skills": {os.path.basename(d) for d in dsops.skill_dirs()}
+            | {os.path.basename(p) for p in dsops.agent_files()},
+            "commands": {os.path.basename(p) for p in dsops.command_files()},
+            "knowledge-notes": {n for n in os.listdir(dsops.KNOWLEDGE_DIR) if n.endswith(".md")},
+            "sample-outputs": set(_sample_files()),
+        }
+        for name, files in expected.items():
+            with self.subTest(section=name):
+                self.assertEqual(files, sections.get(name, set()))
 
 
 class TestSampleTables(unittest.TestCase):

@@ -1057,6 +1057,9 @@ design-system-ops/
 ├── .claude-plugin/           ← Plugin manifest
 │   └── plugin.json
 ├── ds-ops-config.example.yml ← Config template (copy to your project as .ds-ops-config.yml)
+├── verify-install.sh         ← Checks every skill can find its knowledge notes
+├── llms.txt                  ← A short map of the pack for AI agents
+├── README.md                 ← Overview
 ├── 1-INSTALL.md              ← Quick-start installation guide
 ├── 2-WHATS-INCLUDED.md       ← This file
 ├── 3-SETUP-AND-CONFIG.md     ← Detailed setup, configuration, and troubleshooting
@@ -1064,128 +1067,130 @@ design-system-ops/
 ├── CONTRIBUTING.md           ← Contribution guide
 ├── LICENSE                   ← MIT license
 │
-├── skills/                   ← 40 skills, each in its own directory
-│   ├── token-audit/
+├── skills/                   ← 40 skills, each in its own directory, plus 4 agent chains
+│   ├── accessibility-per-component/
 │   │   └── SKILL.md
-│   ├── component-audit/
-│   │   └── SKILL.md
-│   ├── theme-audit/
-│   │   └── SKILL.md
-│   ├── system-health/
-│   │   └── SKILL.md
-│   ├── drift-detection/
-│   │   └── SKILL.md
-│   ├── naming-audit/
-│   │   └── SKILL.md
-│   ├── figma-variable-audit/
-│   │   └── SKILL.md
-│   ├── codebase-index/
-│   │   └── SKILL.md
-│   ├── system-benchmark/
-│   │   └── SKILL.md
-│   ├── contribution-workflow/
-│   │   └── SKILL.md
-│   ├── deprecation-process/
-│   │   └── SKILL.md
-│   ├── decision-record/
-│   │   └── SKILL.md
-│   ├── change-communication/
-│   │   └── SKILL.md
-│   ├── backlog-generator/
-│   │   └── SKILL.md
-│   ├── version-bump-advisor/
-│   │   └── SKILL.md
-│   ├── release-retrospective/
-│   │   └── SKILL.md
-│   ├── governance-encoder/
-│   │   └── SKILL.md
-│   ├── session-memory/
-│   │   └── SKILL.md
-│   ├── codemod-generator/
-│   │   └── SKILL.md
-│   ├── triage/
+│   ├── adoption-report/
 │   │   └── SKILL.md
 │   ├── ai-component-description/
 │   │   └── SKILL.md
-│   ├── pattern-documentation/
+│   ├── backlog-generator/
 │   │   └── SKILL.md
-│   ├── token-documentation/
+│   ├── change-communication/
 │   │   └── SKILL.md
-│   ├── usage-guidelines/
+│   ├── cicd-integration/
+│   │   └── SKILL.md
+│   ├── codebase-index/
+│   │   └── SKILL.md
+│   ├── codemod-generator/
+│   │   └── SKILL.md
+│   ├── component-api-validator/
+│   │   └── SKILL.md
+│   ├── component-audit/
 │   │   └── SKILL.md
 │   ├── component-decision-tree/
 │   │   └── SKILL.md
 │   ├── context-engine-builder/
 │   │   └── SKILL.md
-│   ├── metadata-schema-generator/
+│   ├── contribution-workflow/
+│   │   └── SKILL.md
+│   ├── decision-record/
+│   │   └── SKILL.md
+│   ├── deprecation-process/
 │   │   └── SKILL.md
 │   ├── design-to-code-check/
 │   │   └── SKILL.md
-│   ├── accessibility-per-component/
-│   │   └── SKILL.md
-│   ├── token-compliance/
-│   │   └── SKILL.md
-│   ├── schema-validator/
-│   │   └── SKILL.md
-│   ├── component-api-validator/
-│   │   └── SKILL.md
-│   ├── cicd-integration/
-│   │   └── SKILL.md
-│   ├── adoption-report/
-│   │   └── SKILL.md
-│   ├── stakeholder-brief/
-│   │   └── SKILL.md
-│   ├── system-pitch/
-│   │   └── SKILL.md
 │   ├── designer-onboarding/
+│   │   └── SKILL.md
+│   ├── docs-coverage/
+│   │   └── SKILL.md
+│   ├── drift-detection/
 │   │   └── SKILL.md
 │   ├── engineering-onboarding/
 │   │   └── SKILL.md
+│   ├── figma-variable-audit/
+│   │   └── SKILL.md
+│   ├── governance-encoder/
+│   │   └── SKILL.md
+│   ├── metadata-schema-generator/
+│   │   └── SKILL.md
+│   ├── naming-audit/
+│   │   └── SKILL.md
+│   ├── pattern-documentation/
+│   │   └── SKILL.md
+│   ├── release-retrospective/
+│   │   └── SKILL.md
+│   ├── schema-validator/
+│   │   └── SKILL.md
+│   ├── session-memory/
+│   │   └── SKILL.md
+│   ├── stakeholder-brief/
+│   │   └── SKILL.md
+│   ├── system-benchmark/
+│   │   └── SKILL.md
+│   ├── system-health/
+│   │   └── SKILL.md
+│   ├── system-pitch/
+│   │   └── SKILL.md
+│   ├── theme-audit/
+│   │   └── SKILL.md
+│   ├── token-audit/
+│   │   └── SKILL.md
+│   ├── token-compliance/
+│   │   └── SKILL.md
+│   ├── token-documentation/
+│   │   └── SKILL.md
+│   ├── triage/
+│   │   └── SKILL.md
+│   ├── usage-guidelines/
+│   │   └── SKILL.md
+│   ├── version-bump-advisor/
+│   │   └── SKILL.md
 │   ├── visual-report/
 │   │   └── SKILL.md
-│   ├── full-system-diagnostic-agent.md    ← Agent chain
 │   ├── component-to-release-agent.md      ← Agent chain
+│   ├── full-system-diagnostic-agent.md    ← Agent chain
 │   ├── governance-review-agent.md         ← Agent chain
 │   └── migration-agent.md                 ← Agent chain
 │
-├── commands/                 ← 13 slash commands
-│   ├── token-audit.md
-│   ├── component-audit.md
-│   ├── theme-audit.md
-│   ├── system-health.md
-│   ├── drift-detection.md
-│   ├── naming-audit.md
-│   ├── figma-variable-audit.md
-│   ├── codebase-index.md
-│   ├── system-benchmark.md
-│   ├── ai-component-description.md
-│   ├── system-pitch.md
-│   ├── adoption-report.md
-│   └── visual-report.md
+├── commands/                 ← 6 slash commands
+│   ├── describe-component.md
+│   ├── drift-check.md
+│   ├── full-diagnostic.md
+│   ├── governance-review.md
+│   ├── migration.md
+│   └── release-check.md
 │
-├── knowledge-notes/          ← 11 reference documents (single canonical source)
-│   ├── token-architecture.md
-│   ├── component-governance.md
-│   ├── ai-readiness.md
-│   ├── design-to-code-contract.md
-│   ├── component-bestiary-reference.md
+├── knowledge-notes/          ← 14 reference documents (single canonical source)
+│   ├── adoption-measurement.md
 │   ├── agent-orchestration-guide.md
+│   ├── ai-readiness.md
+│   ├── component-bestiary-reference.md
+│   ├── component-governance.md
+│   ├── configuration-and-recurring.md
+│   ├── context-engine-blueprints.md
+│   ├── design-to-code-contract.md
+│   ├── documentation-coverage.md
+│   ├── executive-communication.md
 │   ├── human-oversight-framework.md
 │   ├── mcp-setup-guide.md
-│   ├── context-engine-blueprints.md
 │   ├── output-discipline.md
-│   └── adoption-measurement.md
+│   └── token-architecture.md
 │
-└── sample-outputs/           ← 6 calibration examples
-    ├── example-component-description.md
-    ├── example-token-audit.md
-    ├── system-health-meridian.md
-    ├── component-audit-react-library.md
-    ├── drift-detection-harbor-consumer-app.md
-    └── stakeholder-brief-meridian-q1.md
+├── sample-outputs/           ← 8 sample outputs
+│   ├── component-audit-react-library.md
+│   ├── docs-coverage-carbon-react.md
+│   ├── drift-detection-harbor-consumer-app.md
+│   ├── example-component-description.md
+│   ├── example-health-dashboard.html
+│   ├── example-token-audit.md
+│   ├── stakeholder-brief-meridian-q1.md
+│   └── system-health-meridian.md
+│
+└── installable/              ← Pre-built .plugin (Cowork) and .zip bundles
 ```
 
-Skills reference the canonical `knowledge-notes/` directory directly through frontmatter paths (e.g., `../../knowledge-notes/filename.md`). The plugin framework auto-loads these files when a skill runs — you do not need to manage separate copies. This keeps knowledge notes in a single, maintainable location.
+Skills reference the canonical `knowledge-notes/` directory directly through frontmatter paths (e.g., `../../knowledge-notes/filename.md`). Each skill tells Claude to read the notes in its `references:` field before it starts, and stops if any are missing — you do not need to manage separate copies. This keeps knowledge notes in a single, maintainable location.
 
 ---
 

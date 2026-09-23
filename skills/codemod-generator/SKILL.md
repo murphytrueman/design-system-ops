@@ -1,6 +1,7 @@
 ---
 name: codemod-generator
 description: "Generate tested jscodeshift/postcss codemods for design system migrations: token renames, prop renames or removals, import paths, component swaps. Triggers: codemod, migration script, rename this prop everywhere. Deprecation planning: deprecation-process. Release notes: change-communication."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(node:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx tsc:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/design-to-code-contract.md

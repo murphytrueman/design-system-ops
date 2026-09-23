@@ -1,6 +1,7 @@
 ---
 name: token-audit
 description: "Audit how design tokens are defined: tiers, naming, alias chains, raw values, orphans, DTCG readiness. Triggers: audit my tokens, token architecture review, token health check. Not for code consuming tokens (token-compliance), theme parity (theme-audit) or Figma variables (figma-variable-audit)."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx style-dictionary:*)
 references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/output-discipline.md

@@ -1,6 +1,7 @@
 ---
 name: component-audit
 description: "Deep audit of a component library: inventory, usage, duplication, complexity, coverage gaps. Triggers: audit my components, unused components, what components do I have, assess my library. Not for a whole-system view (system-health) or AI index files (codebase-index)."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npm view:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/component-bestiary-reference.md

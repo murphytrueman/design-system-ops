@@ -184,6 +184,31 @@ class TestCommandTools(unittest.TestCase):
                             "add a narrow Bash(<command>:*) entry to allowed-tools",
                         )
 
+    def test_skills_approve_the_shell_commands_they_run(self):
+        # A skill run directly (/design-system-ops:<skill>) gets only the
+        # tools its own frontmatter pre-approves.
+        for path in dsops.skill_files():
+            data = dsops.load_document(path)[0]
+            if "allowed-tools" not in data:
+                continue
+            approved = re.findall(r"Bash\(([^:)]+):\*\)", data["allowed-tools"])
+            for run in shell_invocations(dsops.read_text(path)):
+                if run.startswith(PROMPT_BY_DESIGN):
+                    continue
+                with self.subTest(skill=dsops.rel(path), run=run[:60]):
+                    self.assertTrue(
+                        any(run == a or run.startswith(a + " ") for a in approved),
+                        "add a narrow Bash(<command>:*) entry to the skill's allowed-tools",
+                    )
+
+    def test_no_command_shares_a_skill_name(self):
+        # Claude Code loads commands as skills. A command with a skill's name
+        # hides that skill, so routing sees the command's one-line description
+        # instead of the skill's.
+        skills = {os.path.basename(d) for d in dsops.skill_dirs()}
+        commands = {os.path.splitext(os.path.basename(p))[0] for p in dsops.command_files()}
+        self.assertEqual(set(), skills & commands)
+
     def test_the_check_catches_an_unapproved_command(self):
         runs = list(shell_invocations("Run `git log -1 --format=%cI -- src/Button.tsx`."))
         self.assertEqual(1, len(runs))

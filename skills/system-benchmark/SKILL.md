@@ -1,6 +1,7 @@
 ---
 name: system-benchmark
 description: "Benchmark a design system against named public systems (Material, Carbon, Polaris, GOV.UK) and maturity profiles. Triggers: benchmark our system, how do we compare, are we behind or ahead. Not for an internal health check (system-health)."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/component-governance.md
