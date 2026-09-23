@@ -4,7 +4,7 @@
 **Run against:** `tests/fixtures/sample-ds`, a small design system with known problems planted in it
 **Eval case:** `undocumented-component` in `tests/evals/cases.json`
 **Date:** 2026-09-23
-**Edited:** no. Everything below the line is exactly what the skill produced in a headless run with read-only tools. Rerun it with `python3 tests/evals/run_evals.py --case undocumented-component`.
+**Edited:** no. Everything below the line is exactly what the skill produced in a headless run with read-only tools, against the fixture as of commit `bc84ffe`. The fixture has changed since, so a rerun won't match line for line. Rerun it with `python3 tests/evals/run_evals.py --case undocumented-component`.
 
 ---
 

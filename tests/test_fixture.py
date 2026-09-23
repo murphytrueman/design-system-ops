@@ -108,6 +108,12 @@ class TestControls(unittest.TestCase):
                 with self.subTest(theme=theme, pairing=label):
                     self.assertGreaterEqual(ratio(fg, bg), 4.5)
 
+    def test_button_has_a_visible_designed_focus_style(self):
+        # Without one, design-to-code rightly raises a focus finding, and the
+        # full release-chain case would hinge on its severity.
+        css = fixture("src", "components", "Button", "Button.module.css")
+        self.assertRegex(css, r":focus-visible\s*\{[^}]*outline:\s*2px solid")
+
     def test_button_uses_only_exempt_keywords(self):
         css = fixture("src", "components", "Button", "Button.module.css")
         self.assertIn("transparent", css)

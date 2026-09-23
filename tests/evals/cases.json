@@ -171,8 +171,7 @@
       "expect": "chain",
       "prompt": "/design-system-ops:release-check Tooltip — a new component release. Design spec: a small bubble with var(--space-gap) padding, a 4px corner radius, the default text colour as its background and the base surface colour as its text.",
       "chain": [
-        "design-to-code-check",
-        "accessibility-per-component"
+        "design-to-code-check"
       ],
       "not_after_gate": [
         "token-compliance",
@@ -181,10 +180,9 @@
         "change-communication"
       ],
       "finds": [
-        "BLOCKED",
-        "aria-describedby"
+        "BLOCKED"
       ],
-      "why": "Tooltip's trigger isn't linked to it with aria-describedby, an ARIA failure, so the accessibility gate must stop the pipeline: the release is BLOCKED and the documentation and announcement steps never run."
+      "why": "Tooltip isn't a working tooltip yet (the bubble is always visible, and its trigger isn't linked with aria-describedby), so a gate must block it: the release is BLOCKED and the documentation and announcement steps never run. Either gate may catch it — design-to-code checks focus and keyboard behaviour too."
     }
   ]
 }

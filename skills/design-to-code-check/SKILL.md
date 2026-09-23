@@ -193,7 +193,8 @@ One paragraph. What is the overall alignment? Are discrepancies concentrated in 
 | DC-01 | [dimension] | [I–IV] | 🔴 Critical / 🟠 High / 🟡 Medium / ⚪ Low | [specific element] | [what the design says] | [what was implemented] | [who does what] |
 
 Severity guidance:
-- 🔴 Critical: accessibility regression (missing focus state, insufficient colour contrast, no keyboard interaction)
+- 🔴 Critical: accessibility regression — focus that isn't visible (outline removed with nothing replacing it), insufficient colour contrast, or a component that can't be reached or operated by keyboard
+- A focus style the spec never defined, where the browser's default focus ring still shows, is a 🟠 High Type II spec gap rather than a regression: focus is visible, it just isn't designed. Check the CSS for `outline: none` / `outline: 0` before calling it Critical
 - 🟠 High: visible to end users, affects perceived quality or usability
 - 🟡 Medium: system inconsistency (hardcoded value, wrong token), visible under close inspection
 - ⚪ Low: minor difference without user-facing impact
@@ -228,5 +229,5 @@ If any of these discrepancies are deliberate (a known constraint or an agreed di
 - Type I (error) and Type II (spec gap) findings are clearly distinguished — they need different owners
 - Interactive states are checked thoroughly, not just the default state
 - Token compliance is checked as part of the colour and spacing dimensions — not just visual correctness
-- Accessibility regressions (missing focus state, insufficient contrast) are always Critical
+- Accessibility regressions (invisible focus, insufficient contrast, no keyboard access) are always Critical; an undesigned focus style with the browser default still visible is High
 - The report is specific enough to act on without a follow-up conversation

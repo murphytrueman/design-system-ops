@@ -5,6 +5,11 @@
   cursor: pointer;
 }
 
+.button:focus-visible {
+  outline: 2px solid var(--color-action-primary);
+  outline-offset: 2px;
+}
+
 .primary {
   background: var(--button-background);
   color: var(--button-text);
