@@ -233,6 +233,19 @@ def skills_loaded(calls):
 SCOPE_BLOCK = re.compile(r"(?m)^\s*(\*\*Scope\*\*|#+\s*Scope\b)")
 
 
+def flagged_subject(header):
+    """The part of a finding header that says what was flagged.
+
+    For a table row that's the leading cells (ID, check, severity, location,
+    value), not the explanatory ones at the end: a note saying where a leaked
+    value surfaces, or that currentColor is exempt, doesn't flag it."""
+    stripped = header.strip()
+    if stripped.startswith("|"):
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        return " | ".join(cells[:5])
+    return header
+
+
 def check(case, output, calls):
     lowered = output.lower()
     problems = []
@@ -281,11 +294,12 @@ def check(case, output, calls):
     for term in case["finds"][1:]:
         if term.lower() not in lowered:
             problems.append("missed: %r" % term)
-    # Each control is one or more terms that must not all appear in a single
-    # finding's header line: ["currentColor"], or ["surface-raised", "darker"].
+    # Each control is one or more terms that must not all appear in what a
+    # finding flags: ["currentColor"], or ["surface-raised", "darker"].
     for terms in case.get("must_not_flag", []):
         for header, _ in blocks:
-            if all(term.lower() in header.lower() for term in terms):
+            subject = flagged_subject(header).lower()
+            if all(term.lower() in subject for term in terms):
                 problems.append("flagged a correct thing: %r" % header.strip()[:160])
                 break
     return problems
