@@ -30,6 +30,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
@@ -100,8 +102,37 @@ def run_case(case, plugin, fixture, model, timeout):
             command.append("--bare")
         if model:
             command += ["--model", model]
-        result = subprocess.run(command, cwd=repo, capture_output=True, text=True, timeout=timeout)
-    return result.returncode, result.stdout, result.stderr
+        return stream(command, repo, timeout)
+
+
+def stream(command, cwd, timeout):
+    """Run claude and show progress as it works: S when the skill loads, a dot
+    for every other tool call. A case takes minutes; silence looks like a hang."""
+    process = subprocess.Popen(command, cwd=cwd, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE, text=True)
+    timer = threading.Timer(timeout, process.kill)
+    timer.start()
+    lines = []
+    try:
+        for line in process.stdout:
+            lines.append(line)
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue
+            if event.get("type") != "assistant":
+                continue
+            for block in event.get("message", {}).get("content", []):
+                if isinstance(block, dict) and block.get("type") == "tool_use":
+                    print("S" if block.get("name") == "Skill" else ".", end="", flush=True)
+        errors = process.stderr.read()
+        code = process.wait()
+    finally:
+        timed_out = not timer.is_alive()
+        timer.cancel()
+    if timed_out:
+        raise subprocess.TimeoutExpired(command, timeout)
+    return code, "".join(lines), errors
 
 
 def parse_stream(stream):
@@ -146,6 +177,11 @@ def check(case, output, calls):
     return problems
 
 
+def elapsed(started):
+    seconds = int(time.time() - started)
+    return "%dm%02ds" % (seconds // 60, seconds % 60)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--case", action="append", help="run only this case id (repeatable)")
@@ -167,6 +203,7 @@ def main():
               "      design-system-ops installed as a plugin, disable it first so only the\n"
               "      build under test is loaded.\n")
 
+    print("Each case is a full skill run and takes a few minutes. S = skill loaded, . = a tool call.\n")
     os.makedirs(OUT, exist_ok=True)
     failed = 0
     with tempfile.TemporaryDirectory(prefix="dsops-eval-build-") as build_tmp:
@@ -176,15 +213,16 @@ def main():
             print("SETUP\n    the plugin under test is incomplete: %s" % summary[0])
             return 2
         for case in cases:
-            print("%-26s %s ..." % (case["id"], case["skill"]), end=" ", flush=True)
+            print("%-26s %-28s " % (case["id"], case["skill"]), end="", flush=True)
+            started = time.time()
             try:
                 code, output, errors = run_case(case, plugin, spec["fixture"], args.model, args.timeout)
             except subprocess.TimeoutExpired:
-                print("FAIL\n    timed out after %ds" % args.timeout)
+                print(" FAIL\n    timed out after %ds" % args.timeout)
                 failed += 1
                 continue
             if any(marker in (output + errors) for marker in AUTH_FAILURES):
-                print("SETUP\n    claude couldn't authenticate: %s" % (output + errors).strip()[:200])
+                print(" SETUP\n    claude couldn't authenticate: %s" % (output + errors).strip()[:200])
                 print("    Sign in with `claude` interactively (or set ANTHROPIC_API_KEY), then re-run.")
                 return 2
             with open(os.path.join(OUT, case["id"] + ".jsonl"), "w", encoding="utf-8") as handle:
@@ -199,12 +237,12 @@ def main():
             )
             if problems:
                 failed += 1
-                print("FAIL")
+                print(" FAIL (%s)" % elapsed(started))
                 for problem in problems:
                     print("    " + problem)
                 print("    expected: " + case["why"])
             else:
-                print("ok")
+                print(" ok (%s)" % elapsed(started))
     print("\n%d of %d cases passed. Outputs: %s" % (len(cases) - failed, len(cases), os.path.relpath(OUT, REPO)))
     return 1 if failed else 0
 
