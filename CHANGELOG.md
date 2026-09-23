@@ -6,9 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-24
+
 ### Changed
 
 - **Removed the last two single-skill commands, `/drift-check` and `/describe-component`.** Routing evals showed Claude choosing `drift-check` over the `drift-detection` skill it wraps, and the wrapper restated the skill's instructions: it still said to force every drift finding into class A–E, undoing the rule that findings the code can't classify are marked "Unclassified — needs team input". Run the skills directly as `/design-system-ops:drift-detection` and `/design-system-ops:ai-component-description`; their pre-approved tools moved into the skills. Commands now exist only for the four chained workflows, and a test enforces it.
+- **The five fixture samples are regenerated** against the current test fixture, from an eval run in which every case passed: the five single-skill audits, the full release chain, and the release gate stopping for Tooltip.
 
 ### Fixed
 

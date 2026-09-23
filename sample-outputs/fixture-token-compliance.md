@@ -1,45 +1,44 @@
 # Sample output: token-compliance (fixture run)
 
 **Skill:** `skills/token-compliance`
-**Run against:** `tests/fixtures/sample-ds`, a small design system with known problems planted in it
+**Run against:** `tests/fixtures/sample-ds`, a small design system with known problems planted in it, as of commit `59a43fa`
 **Eval case:** `hardcoded-hex` in `tests/evals/cases.json`
 **Date:** 2026-09-23
-**Edited:** no. Everything below the line is exactly what the skill produced in a headless run with read-only tools, against the fixture as of commit `bc84ffe`. The fixture has changed since, so a rerun won't match line for line. Rerun it with `python3 tests/evals/run_evals.py --case hardcoded-hex`.
-
----
-
-Audit complete. Here's the report.
+**Edited:** no. Everything below the line is exactly what the skill produced in a headless run with read-only tools. Rerun it with `python3 tests/evals/run_evals.py --case hardcoded-hex`; runs vary, so expect the same findings in different words.
 
 ---
 
 # Token compliance report
 
-**Your components are mostly well-tokenised — 12 of 13 styled declarations resolve through tokens. The one that doesn't (`#1a73e8` in Card) is a theming break, and there's a second, sneakier one: Card's border is wired to a token that was itself hardcoded upstream, so Card won't render correctly in dark mode at all.**
+Two findings will break your dark theme, and only one of them is visible as a hardcoded value. The other — Card's border — looks fully tokenised in the component CSS but resolves to a frozen literal.
 
 **Date:** 2026-09-23
-**Scope:** `src/components` — Button, Card, Tooltip (source + CSS Modules)
-**Assessment method:** Direct codebase inspection, cross-referenced against `tokens/*.tokens.json` and `src/styles/tokens.css`
+**Scope:** `src/components/` (Button, Card, Tooltip)
+**Assessment method:** codebase — CSS Modules with CSS custom properties
+**Config:** no `.ds-ops-config.yml` found; default severities, no integrations auto-pulled
 
 ---
 
 ## Summary
 
-Violations are few and concentrated: **Card carries both the critical and the highest-impact issue**, Tooltip has one semantic misuse, Button has a minor tier inconsistency. This is not a system with an adoption problem — the token plumbing works and is being used. What it has is three specific defects plus one genuine gap in the token set (no radius scale).
+Three components, seven violations, no volume problem — this is a small and mostly well-behaved surface. Spacing is fully tokenised everywhere; no component reaches past the semantic tier into primitives.
 
-The pattern worth your attention: **both Card findings only bite under theming.** Your dark theme block in `tokens.css` is live, which means these aren't latent debt — they're shipping bugs in dark mode.
+The two that matter both concern theming. `Card.module.css:10` hardcodes `#1a73e8`, a colour that exists nowhere in your palette. And `card.border` is defined in `component.tokens.json` as a reference to the primitive `{color.gray.200}` rather than the semantic `{color.border.default}` — so `var(--card-border)` in `Card.module.css:3` stays `#e5e7eb` when every other border in the system flips to `#374151` under `[data-theme="dark"]`.
+
+The remaining five are a system gap rather than team behaviour: there is no border-radius token, so three components invented three radii.
 
 ---
 
 ## Violation counts
 
-| Check | Violations | 🔴 Critical | 🟠 High | 🟡 Medium | ⚪ Low |
+| Check | Violations found | 🔴 Critical | 🟠 High | 🟡 Medium | ⚪ Low |
 |---|---|---|---|---|---|
-| Hardcoded colour values | 1 | 1 | — | — | — |
-| Hardcoded dimension values (radius) | 3 | — | — | 3 | — |
-| Hardcoded typography values | 0 | — | — | — | — |
-| Wrong-tier token references | 0 | — | — | — | — |
-| Inconsistent token application | 2 | — | 1 | 1 | — |
-| **Total** | **6** | **1** | **1** | **4** | **0** |
+| Hardcoded colour values | 1 | 1 | 0 | 0 | 0 |
+| Hardcoded spacing/dimension values | 4 | 0 | 0 | 3 | 1 |
+| Hardcoded typography values | 0 | 0 | 0 | 0 | 0 |
+| Wrong-tier token references | 1 | 1 | 0 | 0 | 0 |
+| Inconsistent token application | 1 | 0 | 0 | 1 | 0 |
+| **Total** | **7** | **2** | **0** | **4** | **1** |
 
 ---
 
@@ -47,71 +46,63 @@ The pattern worth your attention: **both Card findings only bite under theming.*
 
 | ID | Check | Severity | Location | Raw value / incorrect reference | Correct token | Notes |
 |---|---|---|---|---|---|---|
-| TC-01 | Colour | 🔴 Critical | `src/components/Card/Card.module.css:10` | `color: #1a73e8` | none — nearest: `var(--color-action-primary)` (`#2563eb`) | Off-system. Severity upgraded from High: theming is live and this value cannot follow it. See note below. |
-| TC-02 | Dimension | 🟡 Medium | `src/components/Card/Card.module.css:5` | `border-radius: 8px` | none — no radius token exists | Off-system; system gap, not misuse |
-| TC-03 | Dimension | 🟡 Medium | `src/components/Button/Button.module.css:4` | `border-radius: 6px` | none — no radius token exists | Off-system; system gap |
-| TC-04 | Dimension | 🟡 Medium | `src/components/Tooltip/Tooltip.module.css:10` | `border-radius: 4px` | none — no radius token exists | Off-system; system gap |
-| TC-05 | Inconsistent | 🟡 Medium | `src/components/Button/Button.module.css:19` | `var(--color-action-primary)` | `var(--button-border)` or `var(--button-text-secondary)` (neither exists yet) | `.primary` uses the component tier, `.secondary` reaches past it to semantic. Not wrong-tier — but inconsistent within one component. |
-| TC-06 | Inconsistent | 🟠 High | `src/components/Tooltip/Tooltip.module.css:8-9` | `background: var(--color-text-default)`; `color: var(--color-surface-base)` | `var(--color-surface-inverse)` / `var(--color-text-inverse)` (neither exists yet) | Borrows a *text* token's value for a *background*. Works today by coincidence; breaks the moment text colour is retuned independently. |
+| TC-01 | Colour | 🔴 Critical | `src/components/Card/Card.module.css:10` | `#1a73e8` | none — nearest: `var(--color-action-primary)` (`#2563eb`) | Off-system. Upgraded from High: the system ships a dark theme and this value doesn't participate, so the card title stays mid-blue on a `#1f2937` surface. Also worth asking whether an *action* colour belongs on a non-interactive `<h3>` — `var(--color-text-default)` may be the right answer. |
+| TC-02 | Wrong-tier | 🔴 Critical | `src/components/Card/Card.module.css:3` (root cause: `tokens/component.tokens.json:9`) | `card.border: {color.gray.200}` | `card.border: {color.border.default}` | The component reference is correct; the token definition skips the semantic tier. Emitted as the literal `--card-border: #e5e7eb` at `src/styles/tokens.css:17`, and `[data-theme="dark"]` never overrides it. Definition fix is `token-audit` territory — flagged here because it's reached through consuming code and is invisible in component review. |
+| TC-03 | Dimension | 🟡 Medium | `src/components/Button/Button.module.css:4` | `border-radius: 6px` | none — no radius token exists | Off-system |
+| TC-04 | Dimension | 🟡 Medium | `src/components/Card/Card.module.css:5` | `border-radius: 8px` | none — no radius token exists | Off-system |
+| TC-05 | Dimension | 🟡 Medium | `src/components/Tooltip/Tooltip.module.css:10` | `border-radius: 4px` | none — no radius token exists | Off-system |
+| TC-06 | Dimension | ⚪ Low | `src/components/Button/Button.module.css:9-10` | `outline: 2px`, `outline-offset: 2px` | none — no focus-ring token exists | Ambiguous: 2px is a reasonable accessibility floor and may be deliberate. Only becomes a problem when a second component defines a focus ring differently. |
+| TC-07 | Consistency | 🟡 Medium | `src/components/Button/Button.module.css:9,14,19,24` | mixes `--button-background` / `--button-text` (component tier) with `--color-action-primary` (semantic tier) for the same colour role | — | Not wrong-tier — semantic references from component code are valid. But the same role is expressed two ways in one file because the component tier only covers the primary variant; there's no `button.background.secondary`, `button.border`, or `button.focus-ring`. Either complete the tier or drop to semantics throughout. |
 
-**On TC-01:** `#1a73e8` matches no token in your system — it's Google's blue, not your `#2563eb`. Two things follow. It won't flip in dark mode, so a blue title lands on `#1f2937` at roughly **3.2:1** contrast; in light mode on `#f9fafb` it's about **4.3:1** — both under 4.5:1 for normal text. And you need a decision the audit can't make for you: if the card title is meant to read as *heading text*, the right token is `var(--color-text-default)`; if it's meant to read as an *action*, it's `var(--color-action-primary)`. The hardcoded value is ambiguous between the two.
-
-**Excluded as structural:** `border: 1px solid` (Button, Card — divider width), `border: 0` (Button reset), `position: relative/absolute` (Tooltip), `margin: 0` (Card title reset), `cursor: pointer`. Exempt keywords `transparent` and `currentColor` (Button `.secondary`) are not violations.
-
----
-
-## Cross-reference: the root cause behind Card's border
-
-This sits **outside `src/components`**, so it is not in the log above — but it's the reason a file inside your scope misbehaves, and it's the highest-value fix here:
-
-- `tokens/component.tokens.json:9` — `card.border` → `{color.gray.200}` references a **primitive**, skipping the semantic tier. This is the textbook wrong-tier violation.
-- `src/styles/tokens.css:17` — consequently generates `--card-border: #e5e7eb` as a literal, while its sibling `--color-border-default` *does* flip to `#374151` under `[data-theme="dark"]`.
-- `src/components/Card/Card.module.css:3` consumes `var(--card-border)` in good faith.
-
-**Net effect: Card keeps a light-gray border on a dark surface in dark mode.** Card.module.css is doing everything right — the defect is upstream. Fix is one line: point `card.border` at `{color.border.default}`. Token *definitions* are token-audit's remit, so run that skill if you want the tier structure swept properly.
+**Excluded as structural:** `border: 0` and `border: 1px solid currentColor` (Button), `border: 1px solid` (Card) — border widths, not design values. `transparent` and `currentColor` are exempt keywords.
 
 ---
 
 ## Pattern analysis
 
-- **Concentrated, not distributed.** Card holds the critical finding and the cross-reference root cause. Two files fixed clears most of the risk.
-- **The dominant category is "no token exists," not "token ignored."** Four of six findings (TC-02/03/04, and the token-less remediation targets for TC-05/06) point at genuine gaps: no radius scale, no inverse surface pair, no secondary-button tokens. Your team isn't bypassing the system — in three places the system has nothing to offer them. That's a token-set expansion job, not an enforcement job.
-- **Three radii, three values, no scale** (4/6/8px). Divergence here is a symptom of the missing scale, not carelessness.
-- **Adoption is healthy.** All 12 `var()` references resolve to semantic or component tier; padding, margin and gap are fully tokenised across all three components.
+Violations are **concentrated in Card** — it holds both critical findings and is the only component with an off-system colour. Button and Tooltip are otherwise clean.
+
+Three patterns are worth separating:
+
+1. **Card is the outlier, not the trend.** `#1a73e8` is Google's blue, not a near-miss of your `#2563eb`. That reads as copy-paste from outside the system rather than drift within it.
+2. **Border-radius is a missing token tier, not a compliance failure.** Three components, three values, zero tokens to reference. Nobody could have complied. Same for the focus ring.
+3. **Spacing compliance is genuinely clean.** Every padding, margin and gap across all three components routes through `--space-inset` or `--space-gap`. Nothing to fix.
+
+Era analysis doesn't apply here: the repo has a single commit (`987d56d Initial commit`), so `git blame` can't distinguish pre-token from post-token values. The codebase also doesn't meet the messy-codebase indicators — one styling approach, one naming convention, no legacy palette — so the extended protocol was skipped.
+
+**On typography:** zero violations, but read that carefully. The search for `font-size`, `font-weight`, `line-height`, `font-family` and `letter-spacing` returned no hits *anywhere* in `src/`, including the token source — and `tokens/` defines no typography tokens at all. So this is "no typography is declared" rather than "all typography is tokenised." Components inherit type from somewhere outside this package. Worth confirming that's intentional.
 
 ---
 
 ## Remediation priority
 
-**Immediate** — architectural / theming impact:
-1. `card.border` → `{color.border.default}` in `tokens/component.tokens.json`, then regenerate `tokens.css` (fixes dark-mode Card borders)
-2. TC-01 — replace `#1a73e8` after deciding heading vs. action intent
+**Immediate** — both break under theming:
+- **TC-02:** change `card.border` to `{color.border.default}` in `component.tokens.json` and regenerate. No component change needed; `Card.module.css` is already correct. This is a one-line fix with the highest payoff.
+- **TC-01:** decide the intended role of the card title, then use `var(--color-text-default)` or `var(--color-action-primary)`. Don't add `#1a73e8` as a token.
 
-**Planned** — needs tokens added first:
-3. Add a radius scale (`radius.sm/md/lg`) → resolves TC-02/03/04 together
-4. Add `color.surface.inverse` + `color.text.inverse` semantics → resolves TC-06 properly
-5. Add secondary-variant button tokens → resolves TC-05
+**Planned:**
+- **TC-03/04/05:** add a radius scale (your three existing values suggest `radius.sm: 4px`, `radius.md: 6px`, `radius.lg: 8px`) — or decide two of the three were arbitrary and collapse them. The audit can't tell which; the design intent can.
+- **TC-07:** complete the button component tier or drop to semantics. Pick one and apply it consistently.
 
-**Review** — your call:
-6. Whether Button `.secondary` should use component tokens at all. Referencing semantics directly from component code is legitimate; the issue is only that `.primary` and `.secondary` do it differently. Picking one convention for the file is enough.
+**Review:**
+- **TC-06:** confirm whether the 2px focus ring is a deliberate accessibility floor. If so, promote it to a token so the next component inherits it rather than reinventing it.
 
 ---
 
 ## Remediation approach
 
-Six violations across three files is **manual-fix territory — don't build a codemod.** Sequence matters more than tooling: add the missing tokens first (radius scale, inverse pair), then the component edits become one-line substitutions rather than judgement calls.
+Seven violations across three files is too small for a codemod — the write-and-test cost exceeds fixing by hand. Do TC-01 and TC-02 now as a single small PR; they're two lines and they close both theming holes.
 
-The one thing worth automating is prevention. A Stylelint rule banning raw hex and `px` outside `src/styles/` would have caught TC-01 at the point it was written, and would keep the radius scale honest once it exists.
+The radius and focus-ring findings aren't really remediation work, they're **token architecture work**: five of seven violations point at gaps in the token set rather than at anyone bypassing it. Worth running `token-audit` before fixing them, because TC-02 suggests the primitive-vs-semantic discipline in `component.tokens.json` may not be isolated to `card.border`.
+
+Going forward, a CI grep for hex literals in `src/components/**` would catch the TC-01 class cheaply. It would *not* have caught TC-02 — that needs a tier-reference check against the token tree.
 
 ---
 
 **Scope**
-- **Inspected:** `src/components/**` — 3 `.tsx`, 3 `.module.css`, 2 `.stories.tsx`. Reference material: `tokens/{primitives,semantic,component}.tokens.json`, `src/styles/tokens.css`, `src/index.ts`, `package.json`.
-- **Not inspected:** No token-consuming code exists outside `src/components` in this repo. `src/styles/tokens.css` was read as reference and root-cause evidence, but excluded from the violation log as generated build output. Stories were excluded per the skill's fixture rule — they contain no styling anyway.
-- **How "none found" was checked:**
-  - *Colour:* the hex/`rgb()`/`hsl()`/`oklch()` pattern returns 20 hits in `tokens/primitives.tokens.json` and `src/styles/tokens.css`, so it demonstrably works on this codebase. Exactly one hit in `src/components`.
-  - *Wrong-tier (zero):* structurally backed — `tokens.css` exposes no primitive-level custom properties at all (no `--color-blue-*`, `--color-gray-*`, `--spacing-*`), so a component→primitive CSS reference is not expressible here. A search for those names across `src/components` returns nothing.
-  - *Typography (zero):* **unconfirmed rather than clean.** The pattern (`font-size|font-weight|line-height|font-family|letter-spacing`) returns zero across the *entire repo*, token source included — there is no typography tier to comply with. Nothing was found because nothing exists, not because components are compliant.
-- **Assumptions:** `src/styles/tokens.css` is current with `tokens/*.tokens.json` (the header comment says it's generated; I did not verify the build). The `[data-theme="dark"]` block means dark mode is a live requirement — this drove the TC-01 upgrade to Critical. No `.ds-ops-config.yml` is present, so default severities apply.
+- **Inspected:** `src/components/**` — `Button.module.css`, `Button.tsx`, `Card.module.css`, `Card.tsx`, `Tooltip.module.css`, `Tooltip.tsx`. Cross-referenced against `tokens/primitives.tokens.json`, `tokens/semantic.tokens.json`, `tokens/component.tokens.json` and `src/styles/tokens.css`.
+- **Not inspected:** `*.stories.tsx` (excluded as fixtures), `src/index.ts`, `src/styles/tokens.css` as a violation target (generated token source — read as reference only). No Figma file, Storybook build or design spec was available, so design-side compliance is out of reach.
+- **How "none found" was checked:** the colour pattern (`#hex`, `rgb()`, `hsl()`, `oklch()`) returns 15 hits in `src/styles/tokens.css`, confirming it works on this codebase — so the single hit in `src/components/` is a real count, not a pattern failure. The typography pattern returns **zero hits in the token source too**, so that zero is reported above as "no typography declared" rather than as clean.
+- **Assumptions:** `src/styles/tokens.css` is current output of `tokens/*.tokens.json` (its header says generated, but no build script exists in `package.json` to verify). `[data-theme="dark"]` is an actively shipped theme — the two Critical severities rest on that; if dark mode is abandoned, both drop to Medium.
 
-If any of these are deliberate — the Google blue as a one-off, or the radii as intentionally untokenised — tell me and I'll exclude them in future runs.
+If any of these are deliberate — the Google blue on the card title, the three distinct radii, the mixed tiers in Button — tell me and I'll exclude them in future runs.

@@ -1,73 +1,68 @@
 # Sample output: docs-coverage (fixture run)
 
 **Skill:** `skills/docs-coverage`
-**Run against:** `tests/fixtures/sample-ds`, a small design system with known problems planted in it
+**Run against:** `tests/fixtures/sample-ds`, a small design system with known problems planted in it, as of commit `59a43fa`
 **Eval case:** `undocumented-component` in `tests/evals/cases.json`
 **Date:** 2026-09-23
-**Edited:** no. Everything below the line is exactly what the skill produced in a headless run with read-only tools, against the fixture as of commit `bc84ffe`. The fixture has changed since, so a rerun won't match line for line. Rerun it with `python3 tests/evals/run_evals.py --case undocumented-component`.
+**Edited:** no. Everything below the line is exactly what the skill produced in a headless run with read-only tools. Rerun it with `python3 tests/evals/run_evals.py --case undocumented-component`; runs vary, so expect the same findings in different words.
 
 ---
 
-Here's the audit.
+Of the 3 exported components, 2 (Button, Card) have stories with autodocs and 1 (Tooltip) has no documentation at all. Nothing is orphaned, and staleness can't be measured here — the repo has a single commit, so every file shares one timestamp.
 
 ---
 
 ### Docs coverage report
 
 **Date:** 2026-09-23
-**Inventory:** 3 components (from the `src/index.ts` barrel) · **Surfaces audited:** `*.stories.tsx` source files (per your instruction) · **Join confidence:** Tier A-equivalent — path-resolved
+**Inventory:** 3 components · **Surfaces audited:** `*.stories.tsx` (source files; no Storybook build or index available) · **Join confidence:** Tier A (resolved file path)
 
 **Summary**
 
-Two of your three exported components (Button, Card) have a story with `tags: ['autodocs']`, so they reach *described*. Tooltip has no story at all — it's the one real gap. Nothing in the library reaches *guided*: there's no MDX, no "when to use" prose, no usage-guidance surface of any kind. Coverage and orphans are measured facts here; **staleness is not testable** — the repo has a single commit (`3ab46e4 Initial commit`), so every component and every story carries the identical timestamp `2026-09-23T21:01:14+10:00`. No doc can predate its component in a one-commit history, so a "0 stale docs" result would be meaningless rather than clean.
+Small library, clean structure, one real gap. The barrel at `src/index.ts` exports exactly three components and the directory glob agrees — no hidden internal components to discount. Button and Card each have a co-located story file with `tags: ['autodocs']`, putting them on rung 2. Tooltip has a source file and a stylesheet but no story, so it ships from the public barrel with nothing on any documentation surface. Nothing reaches rung 3: there's no MDX, no "when to use" prose, and no usage-guidance file anywhere in the repo.
 
-**Coverage by rung**
+Two signals were **measured**: coverage (file-path join against story files) and orphans. One is **unavailable**: staleness. Git history is a single commit (`c095aa1`, 2026-09-23T22:17:14+10:00) touching all 14 tracked files, so every component and every story carry the identical timestamp. The rule returns a zero-day delta for everything, which is not evidence that docs are keeping pace — it's an artefact of a one-commit history. Treat staleness as unknown until the repo accumulates history.
+
+**Coverage by rung** (each component counted at its highest rung; rows are mutually exclusive)
 
 | Rung | Count | % of inventory |
 |---|---|---|
 | Guided (usage guidance) | 0 | 0% |
-| Described (autodocs page, no usage guidance) | 2 | 67% |
+| Described (docs/autodocs page, no usage guidance) | 2 | 67% |
 | Exists (≥1 story, no docs page) | 0 | 0% |
 | Undocumented (no surface) | 1 | 33% |
 
 **Findings**
 
-**DC-01** · 🟠 High · Coverage gap · Join: Tier A-equivalent (path-resolved)
-`Tooltip` is exported from `src/index.ts:5` and implemented at `src/components/Tooltip/Tooltip.tsx`, but `src/components/Tooltip/` contains only `Tooltip.tsx` and `Tooltip.module.css` — no `Tooltip.stories.tsx`. It's a public component at rung 0: consumers get it from the barrel with nothing to look at. Not rated Critical because it isn't foundational in the Button/Input/Text/Icon sense, but it's the only component on the shelf with no surface at all.
-**Action:** add `Tooltip.stories.tsx` with `tags: ['autodocs']`, matching the Button/Card pattern. Tooltip's props are minimal (`label`, `children`), but its behaviour isn't — the bubble is always rendered with `role="tooltip"` and no hover/focus trigger or `aria-describedby` link, which is exactly the kind of thing a story plus usage notes should pin down.
+**DC-01** · 🟠 High · Coverage gap · Confidence: **Tier A** (file path)
+`Tooltip` is exported publicly from `src/index.ts:5` but has no `Tooltip.stories.tsx` in `src/components/Tooltip/`, and no other documentation surface exists in the repo. It's the only component in the library with interaction and accessibility behaviour worth explaining — it renders a `role="tooltip"` element (`src/components/Tooltip/Tooltip.tsx:13`) and takes a `label` + `children` composition that isn't self-evident from the type signature. Consumers currently have to read the source.
+**Action:** add `src/components/Tooltip/Tooltip.stories.tsx` matching the Button/Card pattern (`meta.component`, `tags: ['autodocs']`), with at least a default story and one showing the wrapped-trigger composition.
 
-**DC-02** · 🟡 Medium · Coverage gap · Join: Tier A-equivalent
-No component reaches rung 3. Both story files are pure CSF with no companion MDX, and there are no `.mdx` files anywhere in the repo. Autodocs will generate props tables from the TS types, which gets Button and Card to *described*, but nothing tells a consuming team when to reach for a Card versus a plain container, or which Button variant means what.
-**Action:** this is the layer to raise once Tooltip is covered — an MDX page per component, or `parameters.docs.description`, starting with Button.
+**DC-02** · 🟡 Medium · Coverage gap · Confidence: **Tier A**
+No component reaches rung 3. Button's `variant` prop has a one-line JSDoc (`src/components/Button/Button.tsx:5`) and that is the whole of the guidance layer — nothing says when to use `primary` vs `secondary`, when a Card is the wrong container, or what the anti-patterns are. Autodocs will render props and variants; it won't answer "should I use this here?"
+**Action:** this is a deliberate next step rather than a defect. If you want it, `usage-guidelines` writes the rung-3 layer per component.
 
-**DC-03** · ⚪ Low · Coverage gap (story depth) · Join: Tier A-equivalent
-`Card.stories.tsx` exports one story (`Default`) that always passes `title`. `CardProps.title` is optional (`src/components/Card/Card.tsx:5`), so the untitled rendering path — the `title ? … : null` branch at line 11 — is never shown. Button is better here: both `variant` values have a story.
-**Action:** add an untitled Card story when convenient.
+**DC-03** · ⚪ Low · Coverage gap (evidence quality) · Confidence: **Tier A**
+Rung 2 for Button and Card rests entirely on `tags: ['autodocs']` in the story files. There is no `.storybook/` config directory in the repo and `package.json` declares no Storybook dependency (only a `react` peer dependency), so nothing here actually builds those docs pages. The declaration is credible — the stories import `@storybook/react` types correctly — but I could not verify a rendered docs page exists.
+**Action:** if the Storybook config lives in a parent repo or app workspace, this is a non-finding; tell me and I'll skip it. If not, the described rung is aspirational rather than shipped.
 
-**DC-04** · ⚪ Low · Scope observation
-Both story files import from `@storybook/react`, but `package.json` declares no `devDependencies` and no Storybook dependency, and the repo has no `.storybook/` config and no `storybook-static/` build. The stories are valid CSF source and I audited them as the documentation surface as you asked — but nothing in this repo currently builds or serves them, so "documented" here means "a story file exists," not "a page a developer can open."
+**Staleness** — ⚪ unmeasurable, not clean. All five component and story files last changed at the same instant in the single initial commit. No file is stale under the 90-day default threshold, but with zero history behind it that result carries no information. Re-run once the repo has a few commits.
 
-**Staleness**
-
-Not assessed — **unknown**, not clean. Git history is one commit deep; `git log -1 --format=%cI` returns `2026-09-23T21:01:14+10:00` for all five files checked (both components with stories, both story files, and Tooltip). Every doc is exactly the same age as its component, so the `component_last_change − doc_last_change > 90 days` rule cannot fire. Re-run this once the repo has real history.
-
-**Orphaned documentation**
-
-None. Both story files resolve to a component that exists: `Button.stories.tsx:2` imports `./Button`, `Card.stories.tsx:2` imports `./Card`, and both targets are present and exported from the barrel.
+**Orphaned documentation** — none. Both story files resolve to a component that exists: `Button.stories.tsx` → `./Button` (exists), `Card.stories.tsx` → `./Card` (exists). No story titles point at deleted or renamed symbols.
 
 **Action list**
-- **Immediate:** DC-01 — write `Tooltip.stories.tsx`.
-- **Planned:** DC-02 — add usage guidance to lift Button and Card off rung 2; DC-03 — untitled Card story.
-- **Review:** DC-04 — decide whether Storybook is meant to run from this package or lives in a consuming app.
+- **Immediate:** DC-01 — write a Tooltip story. It's the only component a consumer can't discover in the workbench, and it's the one with behaviour that needs showing.
+- **Planned:** DC-02 — decide whether rung 3 is in scope for a three-component library. At this size the answer may legitimately be "not yet."
+- **Review:** DC-03 — confirm where Storybook is configured. Re-run staleness after the repo builds up commit history.
 
 **Scope**
-- **Inspected:** `src/index.ts` (barrel, used as the inventory source); all three component sources under `src/components/`; both `*.stories.tsx` files, read in full; `package.json`; a full glob of the repo tree; `git log -1 --format=%cI` per file.
-- **Not inspected:** no hosted docs platform was configured or reachable — there is no `.ds-ops-config.yml` in the repo, so no Zeroheight, Supernova or custom site was queried. No `storybook-static/index.json` and no `.storybook/` config exist, so the join was made from CSF source rather than a built Storybook index. If documentation for these components lives outside this repo, it isn't in this report.
-- **How "none found" was checked:** the join reads each story's default-export `meta.component` together with its relative import, which resolves to an exact file path — Tier A-equivalent, though derived from source rather than an `index.json` `componentPath`. Positive control: it matches `Button.stories.tsx` → `src/components/Button/Button.tsx`, a pairing I confirmed by reading both files, so the key fits this codebase. Tooltip's gap was then confirmed by a full-tree glob: `src/components/Tooltip/` holds only `Tooltip.tsx` and `Tooltip.module.css`. The rung-3 absence rests on the same glob (zero `.mdx` files repo-wide) plus reading both story files end to end. Rung 2 is a genuine reading of `tags: ['autodocs']` in each meta — not an unknown.
-- **Assumptions:** the `src/index.ts` barrel is the public API, so the inventory is 3 components and contains no internal-only components; `tags: ['autodocs']` counts as reaching *described*, on the basis that autodocs generates a props table from the exported TS interfaces.
+- **Inspected:** `src/index.ts` (barrel, used as the inventory source), all three component directories under `src/components/`, both `*.stories.tsx` files read in full, `package.json`, and `git log --name-only` over the full history (1 commit, full clone — no `.git/shallow`).
+- **Not inspected:** no Storybook static build (`storybook-static/index.json`) or running server exists in this repo, so no index was parsed; no hosted docs platform is configured (`.ds-ops-config.yml` is absent) and none was queried; the `tokens/` directory and `src/styles/tokens.css` are out of scope for docs coverage.
+- **How "none found" was checked:** the join key is co-located source path — `<Dir>/<Name>.stories.tsx` alongside `<Dir>/<Name>.tsx`, cross-checked against the story's relative `component` import. Positive control: I opened `Button.stories.tsx` and confirmed it declares `component: Button` importing `./Button`, and the key matched it; same for Card. So the key does find documented components in this codebase, which is what makes Tooltip's miss a real gap rather than a key failure. A repo-wide glob confirms only two `*.stories.tsx` files exist and no `.mdx`, README, or docs directory is present. Rung 3 is reported as **absent**, verified by that same glob; rung 2 is reported from story `tags` and was not verified against a rendered build (DC-03).
+- **Assumptions:** the public barrel is the right inventory — all three exports resolve to real files and the directory glob finds no fourth component, so there are no unexported internals being over- or under-counted. `tags: ['autodocs']` is taken as evidence of a docs page. Story files are the sole documentation surface, per your instruction.
 
 > **A note on context:** This audit measures your documentation surface against your code — it does not see why a component was left undocumented or why a doc predates a change. Some gaps are deliberate (internal-only components) and some "stale" docs are still correct after a refactor. Tier C matches are best-guesses, not facts. If a finding describes an intentional choice, let me know — I'll calibrate future runs. The goal is to surface drift you haven't seen, not to second-guess decisions you've already made.
 
 ---
 
-Two notes on how this run went: the `git log` calls succeeded, but my first `ls`/`cat` call was denied by permission mode, so the inventory came from Glob and Read instead — same result, no degradation. All three knowledge-note references the skill depends on were present, so this is a full-fidelity run, not degraded mode.
+Two notes on how this ran: Bash was restricted in this session, so a few command forms were denied — I got the git history I needed through an allowed form, and everything else came from the file tools, so no part of the audit was skipped. All three of the skill's reference notes were present, so this is not a degraded-mode report.

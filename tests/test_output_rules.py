@@ -132,9 +132,27 @@ class TestNoNumericScores(unittest.TestCase):
                 self.assertFalse(any(p.search(fine) for p, _ in SCORE_PATTERNS))
 
 
+def parses_as_json(text):
+    """True for a JSON document, or for a fragment of object members such as
+    '"tooltip": {...}' that's meant to be pasted into an existing object."""
+    for candidate in (text, "{%s}" % text):
+        try:
+            json.loads(candidate)
+            return True
+        except ValueError:
+            continue
+    return False
+
+
 class TestJsonExamples(unittest.TestCase):
     """Skills that generate JSON teach its shape by example. An example that
     doesn't parse teaches the model to write files that don't parse."""
+
+    def test_the_check_accepts_fragments_and_rejects_broken_json(self):
+        self.assertTrue(parses_as_json('{"a": 1}'))
+        self.assertTrue(parses_as_json('"tooltip": {"background": {"$value": "{color.x}"}}'))
+        self.assertFalse(parses_as_json('{"themeSupport": true|false}'))
+        self.assertFalse(parses_as_json('"a": 1,,'))
 
     def test_json_examples_parse(self):
         found = 0
@@ -143,10 +161,10 @@ class TestJsonExamples(unittest.TestCase):
                 found += 1
                 line = text[: block.start()].count("\n") + 1
                 with self.subTest(file=name, line=line):
-                    try:
-                        json.loads(block.group(2))
-                    except ValueError as error:
-                        self.fail("```json example doesn't parse: %s" % error)
+                    self.assertTrue(
+                        parses_as_json(block.group(2)),
+                        "```json example doesn't parse, even as a fragment",
+                    )
         self.assertGreater(found, 0, "no ```json examples found — check JSON_FENCE")
 
 
