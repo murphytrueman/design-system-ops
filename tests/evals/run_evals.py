@@ -25,7 +25,6 @@ Exit: 0 all cases pass, 1 any case fails, 2 setup problem.
 import argparse
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -44,23 +43,6 @@ ALLOWED_TOOLS = [
     "Bash(wc:*)", "Bash(head:*)", "Bash(git log:*)", "Bash(git ls-files:*)",
 ]
 
-DEGRADED = ("install is incomplete", "degraded mode")
-
-# The skill's own template tells a genuinely-degraded run to say it "was produced
-# in degraded mode". A healthy run therefore mentions the phrase only to deny it
-# ("this is a full run, not degraded mode") — so ignore negated mentions.
-NEGATION = re.compile(r"n't|\b(not|no|without)\b")
-
-
-def reports_degraded(output):
-    lowered = output.lower()
-    for marker in DEGRADED:
-        for match in re.finditer(re.escape(marker), lowered):
-            window = lowered[max(0, match.start() - 30):match.start()]
-            if not NEGATION.search(window):
-                return True
-    return False
-
 # A run that never reached the model says nothing about the skill.
 AUTH_FAILURES = ("Failed to authenticate", "Invalid API key", "Please run /login", "Not logged in")
 
@@ -70,6 +52,22 @@ def build_bundle(tmp):
     subprocess.run(["bash", os.path.join(REPO, "build.sh")], cwd=REPO, env=env,
                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return os.path.join(tmp, "design-system-ops.zip")
+
+
+def plugin_is_complete(plugin, tmp):
+    """Run the plugin's own verify-install.sh on the build under test.
+
+    This is the real signal for "the skill ran without its references" —
+    far more reliable than reading the model's prose, which can mention
+    degraded mode to confirm it or to deny it. A skill that hits a broken
+    install stops without its findings, which the finds check catches."""
+    root = plugin
+    if plugin.endswith(".zip"):
+        root = os.path.join(tmp, "plugin")
+        shutil.unpack_archive(plugin, root, "zip")
+    result = subprocess.run(["bash", os.path.join(root, "verify-install.sh"), root],
+                            capture_output=True, text=True)
+    return result.returncode == 0, result.stdout.strip().splitlines()[-1:] or [""]
 
 
 def fresh_fixture(fixture, tmp):
@@ -106,8 +104,6 @@ def run_case(case, plugin, fixture, model, timeout):
 def check(case, output):
     lowered = output.lower()
     problems = []
-    if reports_degraded(output):
-        problems.append("the skill reported an incomplete install or ran in degraded mode")
     for term in case["finds"]:
         if term.lower() not in lowered:
             problems.append("missed: %r" % term)
@@ -144,6 +140,10 @@ def main():
     failed = 0
     with tempfile.TemporaryDirectory(prefix="dsops-eval-build-") as build_tmp:
         plugin = os.path.abspath(args.plugin) if args.plugin else build_bundle(build_tmp)
+        complete, summary = plugin_is_complete(plugin, build_tmp)
+        if not complete:
+            print("SETUP\n    the plugin under test is incomplete: %s" % summary[0])
+            return 2
         for case in cases:
             print("%-26s %s ..." % (case["id"], case["skill"]), end=" ", flush=True)
             try:
