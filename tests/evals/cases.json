@@ -209,6 +209,30 @@
       "finds": [],
       "why": "A third wording, written before the description was revised, must also route to design-to-code-check. It's the unseen check on whether the description captures the intent rather than a phrase.",
       "known_gap": "Measured on 2026-09-23: 0 of 3 with every description tried. Quick checks with the spec pasted in are usually done without the skill; run /design-system-ops:design-to-code-check by name for the full report."
+    },
+    {
+      "id": "route-design-qa-release",
+      "skill": "design-to-code-check",
+      "expect": "route",
+      "prompt": "We're about to ship Button and Card in the next release. Can you do a proper design QA on both against the specs below, and tell me what engineering needs to fix versus what design needs to clarify? Button: primary and secondary variants, 8px by 16px padding, 6px radius, a 2px focus ring in the action colour, and hover darkens the fill. Card: 16px padding, 8px radius, a 1px border in the default border colour, the title in the default text colour, and the raised surface as its background.",
+      "finds": [],
+      "why": "A realistic, substantive design QA request (several components or a handover, with a release or sign-off at stake) should reach design-to-code-check. If these route and the quick one-component asks don't, the gap only affects quick questions."
+    },
+    {
+      "id": "route-design-qa-handover",
+      "skill": "design-to-code-check",
+      "expect": "route",
+      "prompt": "Design handed over the Tooltip spec last sprint and engineering says it's done. Before we sign it off, review the implementation against the handover: shows on hover and keyboard focus, hides on Escape, 8px padding, 4px radius, dark background with light text, a 150ms fade and a max width of 240px.",
+      "finds": [],
+      "why": "A realistic, substantive design QA request (several components or a handover, with a release or sign-off at stake) should reach design-to-code-check. If these route and the quick one-component asks don't, the gap only affects quick questions."
+    },
+    {
+      "id": "route-design-qa-components",
+      "skill": "design-to-code-check",
+      "expect": "route",
+      "prompt": "Can you run a pre-release visual QA of our three components against the design specs? Button: 8px by 16px padding, 6px radius. Card: 16px padding, 8px radius, 1px default border. Tooltip: 8px padding, 4px radius, dark background. Flag anything that doesn't match and say whether it's a build bug or a gap in the spec.",
+      "finds": [],
+      "why": "A realistic, substantive design QA request (several components or a handover, with a release or sign-off at stake) should reach design-to-code-check. If these route and the quick one-component asks don't, the gap only affects quick questions."
     }
   ]
 }
