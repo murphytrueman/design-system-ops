@@ -1,6 +1,7 @@
 ---
 name: schema-validator
 description: "Validate token files structurally against DTCG 2025.10, Style Dictionary v3/v4 or Tokens Studio: parse errors, $type/$value, broken or circular aliases. Trigger: validate token JSON, DTCG compliance, are my token files valid. Do NOT use for naming or architecture — token-audit."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx style-dictionary:*)
 references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/output-discipline.md

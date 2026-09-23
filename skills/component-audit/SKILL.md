@@ -265,6 +265,7 @@ For each component, check whether the following exist:
 - **Anti-pattern coverage:** Are component-specific misuse patterns documented?
 - **Composition rules:** Are placement constraints and containment rules explicit?
 - **Accessibility documentation:** Are keyboard patterns, ARIA contracts, and focus management documented?
+- **Usage examples:** Are there correct, copyable examples an agent could generate from, covering the common configurations?
 
 **System-level indicators:**
 - Component manifest: Does a machine-readable JSON index of components exist? (Y/N)

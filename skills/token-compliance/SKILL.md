@@ -1,6 +1,7 @@
 ---
 name: token-compliance
 description: "Find hardcoded colour, spacing and type values and wrong-tier token references in consuming code. Trigger: find hardcoded values, any hex in the code, are we using tokens correctly, token compliance. Do NOT use for token definitions — token-audit; token file format — schema-validator."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(grep:*), Bash(rg:*), Bash(git log:*), Bash(git blame:*)
 references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/output-discipline.md

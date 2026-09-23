@@ -1,6 +1,7 @@
 ---
 name: component-api-validator
 description: "Audit prop APIs across a component library: naming consistency, boolean/default patterns, type coverage, exported types, breaking changes between versions. Trigger: component API audit, are our props consistent, prop naming review. For semver calls use version-bump-advisor."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npm pack:*)
 references:
   - ../../knowledge-notes/design-to-code-contract.md
   - ../../knowledge-notes/component-governance.md

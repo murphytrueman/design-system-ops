@@ -1,6 +1,7 @@
 ---
 name: deprecation-process
 description: "Plan a deprecation end to end for a component, token, variant or pattern: usage audit, migration path, timeline to a major-version removal, notices. Triggers: deprecate, sunset, phase out, retire, remove, replace X with Y. Announcing non-deprecation changes: change-communication."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(grep:*), Bash(rg:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/output-discipline.md

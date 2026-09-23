@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- **Five skills ran shell commands they didn't pre-approve.** `codebase-index`, `component-api-validator`, `deprecation-process`, `schema-validator` and `token-compliance` told Claude to run commands such as `git log`, `rg` or `npm pack`, but their frontmatter didn't list them, so those steps were blocked in Cowork and headless runs. Each now declares exactly what it runs. The test that checks this now covers every skill that runs a shell command, not only those that already declared a tool list, which is how these five were missed.
+- **`component-audit` judged AI readiness on five of the six dimensions** the `ai-readiness` note defines, so it and `system-health` used different yardsticks. It now includes the sixth: correct usage examples.
+- **`figma-variable-audit` pointed to a knowledge note it doesn't load** (`mcp-setup-guide`). The limits it pointed to are stated in the skill, so the pointer is gone.
+
 ## [1.4.0] - 2026-09-24
 
 ### Changed

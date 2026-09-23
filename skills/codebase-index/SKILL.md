@@ -1,6 +1,7 @@
 ---
 name: codebase-index
 description: "Generate machine-readable index files in .ai/index/ (component inventory, uses/usedBy graph, stats) for AI agents. Triggers: index my codebase, build a relationship graph, what depends on what. Not an assessment; for library health use component-audit."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(git diff:*), Bash(git log:*), Bash(git rev-parse:*)
 references:
   - ../../knowledge-notes/ai-readiness.md
   - ../../knowledge-notes/component-governance.md

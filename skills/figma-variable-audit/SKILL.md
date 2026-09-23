@@ -34,7 +34,7 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 
 ## Step 0: Check Figma availability
 
-This skill needs to read whole variable collections. Before proceeding, check which Figma access is available by attempting a lightweight call (such as `figma_get_status` or listing available Figma tools). Two limits decide what's possible (see the mcp-setup-guide note):
+This skill needs to read whole variable collections. Before proceeding, check which Figma access is available by attempting a lightweight call (such as `figma_get_status` or listing available Figma tools). Two limits decide what's possible:
 
 - **The official Figma MCP can't list collections.** Its read tools are selection-scoped — `get_variable_defs` returns only the variables a selected node uses. It can show a sample, not run a collection-wide audit. If it's the only Figma connection, say the audit would be partial and offer the alternatives below.
 - **The Figma REST Variables API is Enterprise-only.** Don't suggest it to teams on other plans.

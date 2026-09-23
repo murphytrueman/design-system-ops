@@ -109,7 +109,7 @@ class TestConfigKeys(unittest.TestCase):
 PLUGIN_ROOT_PATH = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\s)`,\"']*)")
 
 # Shell commands a skill may tell the model to run, matched as prefixes.
-SHELL = ("git log", "git blame", "git ls-files", "git diff", "git show",
+SHELL = ("git log", "git blame", "git ls-files", "git diff", "git show", "git rev-parse",
          "npx", "npm view", "npm pack", "rg", "gh api", "jq")
 
 # Left to prompt the user on purpose: `gh api` can write to GitHub with the
@@ -186,12 +186,11 @@ class TestCommandTools(unittest.TestCase):
 
     def test_skills_approve_the_shell_commands_they_run(self):
         # A skill run directly (/design-system-ops:<skill>) gets only the
-        # tools its own frontmatter pre-approves.
+        # tools its own frontmatter pre-approves. A skill that runs no shell
+        # commands doesn't need a list; one that does must declare it.
         for path in dsops.skill_files():
             data = dsops.load_document(path)[0]
-            if "allowed-tools" not in data:
-                continue
-            approved = re.findall(r"Bash\(([^:)]+):\*\)", data["allowed-tools"])
+            approved = re.findall(r"Bash\(([^:)]+):\*\)", data.get("allowed-tools", ""))
             for run in shell_invocations(dsops.read_text(path)):
                 if run.startswith(PROMPT_BY_DESIGN):
                     continue
