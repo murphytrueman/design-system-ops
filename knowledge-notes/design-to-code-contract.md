@@ -6,7 +6,7 @@ type: knowledge
 # Design-to-code contract definitions
 
 **Knowledge note for Design System Ops**
-**Auto-loaded by:** design-to-code-check, contribution-workflow, drift-detection, system-health
+**Loaded by:** every skill that lists this note in its frontmatter `references:` (the tests keep that list accurate; this header does not repeat it).
 
 ---
 

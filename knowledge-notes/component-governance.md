@@ -6,7 +6,7 @@ type: knowledge
 # Component governance frameworks
 
 **Knowledge note for Design System Ops**
-**Auto-loaded by:** contribution-workflow, deprecation-process, decision-record, component-audit, system-health
+**Loaded by:** every skill that lists this note in its frontmatter `references:` (the tests keep that list accurate; this header does not repeat it).
 
 ---
 
@@ -116,17 +116,19 @@ At the staff level, governance requires understanding how components depend on e
 
 Staff-level practitioners assess where a system sits on a maturity spectrum and identify what the next stage requires. This is distinct from a system-health assessment — maturity describes the sophistication of the system's practices, not just its current state.
 
-**Ad-hoc.** Components exist but are not governed. No shared tokens, no contribution process, no documentation standard. Components are added by whoever builds them.
+The five stages follow the shape of capability-maturity models (CMMI's initial → managed → defined → quantitatively managed → optimising). The names and the evidence below are this pack's own. A system is at a stage when *all* of that stage's evidence is present; place it at the highest stage that fully holds and name the missing evidence for the next one. Infer the stage from what is in the repo; don't ask the team to rate itself.
 
-**Managed.** A component library exists with some governance. Token architecture is established (at least primitives and some semantics). Documentation exists for most components but is inconsistent in depth. Contribution process exists but is informal.
+**Ad-hoc.** Evidence: components live in product repos or a shared folder rather than a published package; there is no token source, or a single flat file of raw values; no contribution route or process document; documentation is absent or differs per component.
 
-**Systematic.** Token tiers are enforced: primitives and semantics, plus component tokens where the system uses them. Components follow a consistent API contract. Documentation follows a standard format. Contribution and deprecation processes are documented. Release cadence is predictable.
+**Managed.** Evidence: a published, versioned library (a version number and semver are table stakes here, not a mark of maturity); a token source with primitives and at least some semantic tokens; documentation for most components, uneven in depth; some contribution route exists (an issue template, a channel, a named person) even if informal.
 
-**Measured.** Adoption is tracked quantitatively. Drift is detected and classified. System health is assessed across dimensions. Recurring reviews happen on a cadence. Decisions are recorded.
+**Systematic.** Evidence: tier references are enforced, so no semantic or component token holds a raw value and lint or review catches it; a written API contract that components follow (naming, variant/size/state props, event conventions); one documentation template that every component uses; written contribution and deprecation processes; a CHANGELOG or release notes with a predictable cadence.
 
-**Optimised.** The system operates as platform infrastructure. Component APIs are versioned with semver. AI-ready metadata is maintained. Machine-readable manifests exist. Consumer contract testing is in place. The system's quality bar is calibrated to the team's specific needs.
+**Measured.** Evidence: adoption is counted from data (instances or imports per team) on a cadence, not estimated; drift findings are classified and tracked to closure; a recurring health review with dated outputs; decision records exist and are cited in later decisions.
 
-The `system-health` skill should include a maturity stage assessment. The `stakeholder-brief` skill should frame progress in terms of maturity stage transitions.
+**Optimised.** Evidence: machine-readable metadata (a manifest, per-component metadata) is maintained and something consumes it (tooling, agents, docs); breaking changes ship with codemods or consumer contract tests; quality gates run in CI (accessibility, token compliance, API diff); the team sets and revisits its own targets from measured data.
+
+The `system-health` skill includes a maturity stage assessment. The `stakeholder-brief` skill may frame progress as a stage transition when the stage was inferred from evidence, never from the team's self-rating.
 
 ---
 

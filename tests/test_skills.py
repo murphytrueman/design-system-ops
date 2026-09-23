@@ -196,7 +196,7 @@ class TestSkillSelfCheck(unittest.TestCase):
     def test_resync_repairs_an_edited_block(self):
         path = os.path.join(dsops.SKILLS_DIR, "token-audit", "SKILL.md")
         original = dsops.read_text(path)
-        edited = original.replace("stop — the install", "pause — the install", 1)
+        edited = original.replace("stop: the install", "pause: the install", 1)
         self.assertNotEqual(original, edited, "probe edit did not apply")
         self.assertEqual(0, edited.count(dsops.REFERENCE_CHECK_BLOCK))
         self.assertEqual(original, sync_selfcheck.synced(edited, has_references=True))

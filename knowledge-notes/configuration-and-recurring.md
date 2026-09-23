@@ -6,7 +6,7 @@ type: knowledge
 # Configuration, integrations, and recurring runs
 
 **Knowledge note for Design System Ops**
-**Auto-loaded by:** session-memory. Every skill with a Configuration section reads it when a `.ds-ops-config.yml` file exists — most runs have no config file and never need it.
+**Loaded by:** every skill that lists this note in its frontmatter `references:` (the tests keep that list accurate; this header does not repeat it).
 
 This note holds the procedure every configurable skill shares. Each skill's own Configuration, Auto-pull and Recurring sections list only what is specific to that skill: which keys it reads, what it pulls from each integration, and what its trend section compares.
 

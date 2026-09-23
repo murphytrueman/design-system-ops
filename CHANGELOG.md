@@ -1,10 +1,21 @@
 # Changelog
 
-All notable changes to Design Systems OS will be documented in this file.
+All notable changes to Design System Ops will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+
+- **The knowledge notes were checked against their sources.** A full review of the pack (every skill, note, sample and doc, read against the DTCG 2025.10 spec, npm and the Figma plugin docs) found that errors in the shared notes had spread into every skill that loads them. The notes are fixed first so the skills inherit the corrections:
+  - **DTCG resolvers.** `token-architecture` described resolvers as defining "modes" and called a token with no mode-specific value a coverage gap. The Resolver module has `sets`, `modifiers` with `contexts`, and a `resolutionOrder`; a context that doesn't redefine a token inherits the earlier value by design. The note now describes the real structure and draws the line the skills need: a theme-dependent token that silently inherits is a gap, a spacing token that inherits is not. The skills that repeated the old model (`token-audit`, `theme-audit`, `figma-variable-audit`) are corrected in the next pass.
+  - **Six composite types, not five.** `strokeStyle` is composite. The note also now states the spec's name rules (no leading `$`, no `{`, `}` or `.` in a name) and that Style Dictionary is on 5.x, with Terrazzo as the DTCG-native alternative.
+  - **`default`, `base` and t-shirt sizes are not naming violations.** The note banned them outright, which contradicted its own `button.background.default` example and mainstream practice, and the fixture sample had to apologise for flagging them. They're now flagged only when they are the entire role.
+  - **Maturity model.** `component-governance` put "APIs versioned with semver" at Optimised, the top stage; any published package has semver. Each stage is now an evidence checklist a skill can verify from the repo, semver sits at Managed, the CMMI lineage is credited, and the stage is inferred from evidence rather than asked of the team.
+  - **Figma descriptions.** `ai-readiness` said Figma's description field "does not render markdown" and gave 300–600 words while `ai-component-description` said 400–700 and wrote `descriptionMarkdown`. Figma stores both a plain `description` and a rich-text `descriptionMarkdown`; the note and the skill now say the same thing, and the length is 300–600 words.
+  - **"Auto-loaded by" headers** on the notes listed the wrong skills (five were stale). They no longer list skills at all: the `references:` frontmatter is the source of truth and a test already checks it.
+- **The install self-check block is a third of its length.** The block sits at the top of 36 skills; the 130-word version is now 75 words with the same rule and the same stop condition. Resynced with `tests/sync_selfcheck.py`.
 
 ### Fixed
 

@@ -6,7 +6,7 @@ type: knowledge
 # Executive communication
 
 **Knowledge note for Design System Ops**
-**Auto-loaded by:** system-pitch, stakeholder-brief
+**Loaded by:** every skill that lists this note in its frontmatter `references:` (the tests keep that list accurate; this header does not repeat it).
 
 ---
 

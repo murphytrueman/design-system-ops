@@ -6,7 +6,7 @@ type: knowledge
 # Documentation coverage principles
 
 **Knowledge note for Design System Ops**
-**Auto-loaded by:** docs-coverage
+**Loaded by:** every skill that lists this note in its frontmatter `references:` (the tests keep that list accurate; this header does not repeat it).
 
 ---
 

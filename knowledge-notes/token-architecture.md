@@ -6,7 +6,7 @@ type: knowledge
 # Token architecture principles
 
 **Knowledge note for Design System Ops**
-**Auto-loaded by:** token-audit, token-documentation, token-compliance, drift-detection
+**Loaded by:** every skill that lists this note in its frontmatter `references:` (the tests keep that list accurate; this header does not repeat it).
 
 ---
 
@@ -72,10 +72,10 @@ Token names should be readable as hierarchical paths: `category.role.variant.sta
 
 Not all segments are required for every token. A primitive may only need `category.scale-value`. A semantic token needs at minimum `category.role`. A component token needs `component.property.state`.
 
-Reserved terms to avoid in semantic token names:
-- Colour names (`blue`, `green`, `red`) — describe appearance, not intent
-- Size terms used ambiguously (`large`, `small`, `medium`) — use the scale value or a role
-- Generic qualifiers (`main`, `default` at semantic level, `base`) — these describe nothing
+Terms to flag in semantic token names, and the exceptions that are normal practice:
+- Colour names (`blue`, `green`, `red`) describe appearance, not intent. Always flag at the semantic tier.
+- Size terms as the whole role (`color.large`, `text.big`) say nothing about purpose. A t-shirt or numeric *scale* is not this: `spacing.sm`, `radius.lg` and `font-size.3` are the standard way to name a scale and must not be flagged.
+- Generic qualifiers that stand alone (`misc`, `other`, `alt`, `main` with no role) describe nothing. `default` and `base` are fine as a state or level segment next to a role: `color.action.default`, `color.surface.base` and `button.background.default` (above) are mainstream. Flag them only when they are the entire role (`color.default`, `spacing.base` with no scale).
 
 Compound words should use the system's established casing convention throughout. Common approaches: kebab-case (`color-action-primary`), dot-notation (`color.action.primary`), camelCase (`colorActionPrimary`). Whichever is chosen, apply it without exception.
 
@@ -109,7 +109,9 @@ Use the `decision-record` skill for any of these.
 
 The Design Tokens Community Group released the first stable specification (DTCG 2025.10) in October 2025. Design System Ops token skills should recognise and work with this format natively.
 
-**Token types.** DTCG 2025.10 defines 13 token types: color, dimension, fontFamily, fontWeight, duration, cubicBezier, number, strokeStyle, border, transition, shadow, gradient, and typography. The last five are composite types — they combine multiple sub-values into a single token. `fontStyle` is not a defined type (the spec lists it only as a possible future addition).
+**Token types.** DTCG 2025.10 defines 13 token types: color, dimension, fontFamily, fontWeight, duration, cubicBezier, number, strokeStyle, border, transition, shadow, gradient, and typography. Six are composite types that combine sub-values into one token: strokeStyle (which also accepts a plain keyword such as `"dashed"`), border, transition, shadow, gradient and typography. `fontStyle` is not a defined type (the spec lists it only as a possible future addition).
+
+**Names.** Token and group names must not begin with `$`, and must not contain `{`, `}` or `.` because those characters make up the alias syntax. The dotted paths this note uses in prose (`color.action.primary`) denote group nesting in a DTCG file, not literal dots in a name.
 
 **Type resolution.** A token's type comes from, in order: its own `$type`; if its value is an alias, the resolved type of the token it references; otherwise the closest parent group's `$type`. Only a token with none of these is untyped. Skills should resolve all three before flagging a token as untyped — an alias or a token inside a typed group is valid without its own `$type`.
 
@@ -120,13 +122,15 @@ The Design Tokens Community Group released the first stable specification (DTCG 
 
 A file using string values (`"#ff0000"`, `"16px"`) is in an older draft format, not 2025.10. That's a migration signal, not a broken file.
 
-**Resolver system.** DTCG 2025.10 introduces resolvers (`.resolver.json` files) that organise tokens into sets and enable theming. A resolver can compose multiple token files, define modes (light/dark, brand variants), and control which tokens resolve differently across contexts. Skills should recognise resolver files and use them to validate theming contracts — if a semantic token is declared in a resolver but missing a mode-specific value, that is a coverage gap.
+**Resolvers.** The 2025.10 Resolver module adds `.resolver.json` documents that compose token files for theming. A resolver declares `version: "2025.10"`, `sets` (named collections of token sources, inline or external files), `modifiers` (each with a required `contexts` map such as `theme: { light: [...], dark: [...] }` and an optional `default`), and a `resolutionOrder` listing sets and modifiers in the order they apply. Later sources win on conflict; a token that a context does not redefine keeps its earlier value. The spec's term is *context*; it never says "mode". Use resolvers to learn which tokens a theme is *meant* to change. A theme-dependent token (colour, shadow, border colour) that a context does not redefine, so it silently keeps the default theme's value, is a coverage gap. A spacing, radius or duration token that inherits across contexts is normal and is not a finding.
 
-**Sets and composition.** A token set is a collection of tokens that can be declared inline or referenced from external files. Sets enable multi-file token architectures where primitives, semantics, and component tokens live in separate files and are composed at build time. Skills should map set membership when auditing token coverage.
+**Sets and composition.** Sets enable multi-file token architectures where primitives, semantics, and component tokens live in separate files and are composed at build time. Skills should map set membership when auditing token coverage, and report a token file that no resolver includes.
 
-**Composite token validation.** Composite tokens (typography, shadow, border, transition, gradient) contain sub-values that must reference other tokens correctly. A typography composite where `fontSize` is a hardcoded value but `fontFamily` is a proper token reference is a partial violation — skills should flag sub-value compliance, not just top-level compliance.
+**Composite token validation.** Composite tokens contain sub-values that must reference other tokens correctly. A typography composite where `fontSize` is a hardcoded value but `fontFamily` is a proper token reference is a partial violation — skills should flag sub-value compliance, not just top-level compliance.
 
 **Migration signal.** Teams using older Style Dictionary or custom JSON formats should be flagged with an informational note about DTCG 2025.10 alignment. This is not a violation — it is a maturity signal. The token-audit skill should include a DTCG alignment assessment as a separate section.
+
+**Tooling.** Style Dictionary 4 added DTCG support behind `usesDtcg`; Style Dictionary 5 (current) reads DTCG files natively, and its config and hook API differ from 3. Terrazzo is the DTCG-native build and lint tool. Either will validate a file's aliases by building it, which is more reliable than hand-checking; skills should run the tool the repo already has before reasoning about the file themselves.
 
 ---
 

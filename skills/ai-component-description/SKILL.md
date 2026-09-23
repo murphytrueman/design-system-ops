@@ -15,7 +15,7 @@ A skill for generating structured component descriptions optimised for consumpti
 
 ## Before you begin: verify references
 
-Before doing anything else, confirm that every file listed in this skill's frontmatter `references:` field exists at its relative path from this SKILL.md. If any are missing, stop — the install is incomplete. This usually means a third-party installer (for example `npx skills install`) flattened the skill into a standalone folder and dropped the repo-root `knowledge-notes/` directory this skill depends on. Tell the user to reinstall using a supported method from `1-INSTALL.md` (git clone, or the `.plugin` bundle in Cowork) and to run `verify-install.sh` from the install root to confirm the fix. Only proceed without the references if the user explicitly says to — and if they do, state clearly in your output that it was produced in degraded mode without the pack's reference material.
+Confirm that every path in this skill's frontmatter `references:` exists relative to this SKILL.md. If any is missing, stop: the install is incomplete, usually because a flattening installer (for example `npx skills install`) dropped the repo-root `knowledge-notes/` directory. Tell the user to reinstall by a method in `1-INSTALL.md` and run `verify-install.sh` from the install root. Proceed without the references only if the user explicitly says to, and then say in the output that it was produced without the pack's reference material.
 
 ## Context
 
@@ -220,9 +220,9 @@ If any section exceeds 100 words and contains information duplicated elsewhere, 
 
 ## Step 3: Format for Figma MCP
 
-The final description should be written as a single continuous text block suitable for pasting into Figma's component description field. Structure it with clear section headers in plain text (e.g. PURPOSE, PROPS, ANTI-PATTERNS) so an LLM scanning the description via MCP can locate sections without parsing markdown.
+The final description should be written as a single continuous text block suitable for pasting into Figma's component description field. Structure it with uppercase section headers in plain text (PURPOSE, PROPS, ANTI-PATTERNS, COMPOSITION, ACCESSIBILITY, EXAMPLES) so an LLM scanning the description via MCP can locate sections without parsing markdown. Figma keeps both a plain `description` and a rich-text `descriptionMarkdown`; tools may return either, so the plain form has to stand on its own (see the ai-readiness note).
 
-Total length: 400 to 700 words. Long enough to be comprehensive, short enough that the full description fits within a reasonable token budget when loaded alongside other components.
+Total length: 300 to 600 words. Long enough to be comprehensive, short enough that the full description fits within a reasonable token budget when loaded alongside other components.
 
 If JSON metadata is needed as well, hand off to `metadata-schema-generator`, which owns the machine-readable component files. This skill produces prose only.
 

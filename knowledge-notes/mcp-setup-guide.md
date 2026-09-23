@@ -6,7 +6,7 @@ type: knowledge
 # MCP setup guide
 
 **Knowledge note for Design System Ops**
-**Auto-loaded by:** ai-component-description, context-engine-builder, system-health
+**Loaded by:** every skill that lists this note in its frontmatter `references:` (the tests keep that list accurate; this header does not repeat it).
 
 ---
 

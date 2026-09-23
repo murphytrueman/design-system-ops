@@ -6,7 +6,7 @@ type: knowledge
 # AI-readiness patterns
 
 **Knowledge note for Design System Ops**
-**Auto-loaded by:** ai-component-description, pattern-documentation, usage-guidelines, system-health
+**Loaded by:** every skill that lists this note in its frontmatter `references:` (the tests keep that list accurate; this header does not repeat it).
 
 ---
 
@@ -94,9 +94,8 @@ Figma's MCP server allows AI tools to read component descriptions directly from 
 
 For the MCP integration to work well, component descriptions in Figma must:
 - Be structured consistently so an LLM can locate sections reliably
-- Be dense enough to be useful without being so long that the token budget is consumed by a single component
-- Use plain section headers (PURPOSE, PROPS, ANTI-PATTERNS, COMPOSITION, ACCESSIBILITY, EXAMPLES) rather than markdown formatting — Figma's description field does not render markdown
-- Fit within approximately 300 to 600 words per component to leave budget for multiple components in a single context window
+- Be dense enough to be useful without being so long that the token budget is consumed by a single component: 300 to 600 words per component
+- Use plain uppercase section headers (PURPOSE, PROPS, ANTI-PATTERNS, COMPOSITION, ACCESSIBILITY, EXAMPLES). Figma stores a component description in two forms: `description` (plain text) and `descriptionMarkdown` (rich text, which Figma's UI renders with basic formatting). MCP servers and the REST API may hand an agent either form, so the plain-text form has to read well on its own. Uppercase headers give structure without depending on markdown; when a skill writes through a tool that accepts `descriptionMarkdown`, it can send a markdown-headed version as well.
 
 The `ai-component-description` skill produces output formatted for this context.
 
