@@ -1,6 +1,6 @@
 ---
 name: theme-audit
-description: "Audit theme parity: tokens missing or unchanged per theme, component tokens bypassing semantics, contrast within each theme, resolver modes, theme-switch regressions. Triggers: dark mode audit, theme coverage, brand variant parity. For general token structure use token-audit."
+description: "Audit theme parity: tokens missing or unchanged per theme, component tokens bypassing semantics, contrast within each theme, resolver contexts, theme-switch regressions. Triggers: dark mode audit, theme coverage, brand variant parity. For general token structure use token-audit."
 references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/output-discipline.md
@@ -28,7 +28,7 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 
 - `system.theming` — if false, exit early with a note that this skill applies only to systems with theming enabled. If true, proceed.
 - `severity.*` — overrides for theme-specific findings (e.g. `missing_theme_value: critical` for a system about to launch dark mode)
-- `integrations.style_dictionary` — parse tokens via Style Dictionary v4 to extract all semantic and component tokens and their resolver-defined mode values
+- `integrations.style_dictionary` — parse tokens via Style Dictionary (4 or 5) to extract all semantic and component tokens and their per-context values
 - `integrations.figma` — Figma variables and their modes as the theme source
 - `recurring.*` — the previous theme audit, for trend comparison
 
@@ -37,7 +37,7 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 Before auditing, discover what themes the system actually defines:
 
 **Discover themes:**
-1. **Resolver files** — if DTCG format, scan the project for `.resolver.json` files and extract mode names (e.g. `light`, `dark`, `brand-a`, `brand-b`)
+1. **Resolver files** — if DTCG format, scan the project for `.resolver.json` files and read each modifier's `contexts` (e.g. a `theme` modifier with `light` and `dark`, a `brand` modifier with `a` and `b`). Each context is a theme; the spec calls them contexts, not modes
 2. **CSS custom property scopes** — if using CSS variables, scan for theme selectors like `:root`, `.dark`, `[data-theme="light"]`, `[data-theme="dark"]`, `[data-brand="brand-a"]` — each scope is a theme variant
 3. **SCSS variable maps** — if using SCSS, look for `$themes: (...)` or separate theme files (`_theme-light.scss`, `_theme-dark.scss`)
 4. **JavaScript theme objects** — if using CSS-in-JS, look for exported theme objects or theme switching functions (e.g. `export const lightTheme = { ... }; export const darkTheme = { ... }`)
@@ -65,9 +65,9 @@ If no themes are discovered and theming is marked as `true` in config, ask the u
 Gather the semantic and component tiers across all discovered themes:
 
 **For DTCG format:**
-- Parse resolver files and extract all semantic tokens and their mode-specific values
-- Extract all component tokens and their mode-specific values
-- Verify that every token in every set has values defined for every declared mode
+- Parse each resolver's `sets`, `modifiers` and `resolutionOrder`. Resolve the default (the sets, plus each modifier's `default` context, in resolution order) to get the reference set of semantic and component tokens
+- For every other context, list which tokens its sources redefine. Everything else inherits the earlier value in the resolution order; that is how resolvers work, not a gap
+- Note any alias whose target is defined in no set at all: that token never resolves in any context
 
 **For CSS custom properties:**
 - Extract `:root` (or default theme scope) as the reference set of all semantic tokens
@@ -105,8 +105,8 @@ This checkpoint reveals the scale of coverage problems before the detailed audit
 ## Step 2: Theme coverage check
 
 Inheriting the default is correct for tokens that shouldn't change between themes — spacing, radius, font sizes, durations usually don't. Flag only:
-- **Theme-dependent tokens that aren't themed** — colour, shadow, border colour, and anything else the theme is meant to change, which inherit the default (CSS/SCSS/JS) or hold the same value as the default (resolver modes, Figma modes). A dark theme inheriting the light `--color-text-default` is a real gap
-- **Tokens undefined in some theme** — defined only in a non-default scope, or missing a value for a declared resolver mode, so they don't resolve at all there
+- **Theme-dependent tokens that aren't themed** — colour, shadow, border colour, and anything else the theme is meant to change, which inherit the default (CSS/SCSS/JS scopes, resolver contexts) or hold the same value as the default (Figma modes). A dark theme inheriting the light `--color-text-default` is a real gap
+- **Tokens undefined in some theme** — defined only in a non-default scope, or aliasing a target that no resolver set defines, so they don't resolve at all there
 
 If the team has said a token is deliberately the same across themes (a fixed brand colour), treat it as accepted.
 
@@ -126,13 +126,16 @@ Brand B: no gaps
 ```
 
 For each gap, flag:
-- Finding ID (e.g. TC-01)
+- Finding ID (e.g. TH-01; the `TH-` prefix keeps these distinct from token-compliance's `TC-` findings when both reports are read together)
+- Evidence: the file and line (or resolver context, or Figma collection and mode) where the token is defined, and where the theme scope fails to redefine it
 - Severity: 🔴 Critical if the token is undefined in a shipped theme, or a component token consumes it without its own per-theme override; 🟠 High if used by multiple components; 🟡 Medium if used by few components; ⚪ Low if no in-repo consumers were found
 - Description: Semantic token [name] is not defined in [theme]
 - Impact: Which components depend on this token and may render incorrectly
 - Recommended action: Define the token in the missing theme. If the token should not apply to this theme, document that decision.
 
 ## Step 3: Component tier propagation check
+
+Tier leakage as an architectural finding belongs to `token-audit`. If a token-audit report exists for this system, take its list of component tokens that reference primitives and don't re-derive it; cite the finding IDs. What this skill adds is the theming consequence: whether each leaking token is overridden per theme, and what breaks if it isn't. Report each leak once, here, in those terms.
 
 Verify that component tokens correctly inherit from the semantic tier across all themes:
 
@@ -146,7 +149,7 @@ Verify that component tokens correctly inherit from the semantic tier across all
 Flag any component token that references a primitive (rather than a semantic token):
 
 ```
-TC-10 | 🔴 Critical | Tier leakage | button.background.default references {color.blue.500} (primitive) instead of semantic tier, with no per-theme override
+TH-10 | 🔴 Critical | Tier leakage | button.background.default references {color.blue.500} (primitive) instead of semantic tier, with no per-theme override (tokens/component.tokens.json:14)
 - Impact: Button background will not change on theme switch (dark mode will show blue on blue)
 - Recommended action: Redefine as button.background.default: {color.action.primary}
 ```
@@ -193,44 +196,32 @@ Run visual spot-checks on high-impact token groups:
 
 Flag violations:
 ```
-TC-22 | 🟡 Medium | Consistency | Dark theme: color.background.default and color.surface.primary are identical (#121212)
+TH-22 | 🟡 Medium | Consistency | Dark theme: color.background.default and color.surface.primary are identical (#121212) (src/styles/tokens.css:41,44)
 - This may be intentional (both are neutral backgrounds), but it reduces visual hierarchy
 - Recommended action: Review with design team. If intentional, document the decision. If not, adjust surface token.
 ```
 
 ## Step 5: DTCG resolver validation
 
-If the system uses DTCG format with resolver files:
+If the system uses DTCG format with resolver files. Structural validation of the resolver document (well-formed JSON, `version: "2025.10"`, every `resolutionOrder` entry naming a real set or modifier, every source path resolving) is `schema-validator`'s job; run it or cite it. This step reads the resolver for what it says about theming:
 
-**Resolver file structure check:**
-1. Verify `.resolver.json` files exist and are well-formed JSON
-2. Extract the `sets` and `modes` blocks
-3. Verify that every semantic token listed in `sets` has a value defined for every declared `mode`
+**Context coverage per theme-dependent token:**
 
-**Mode coverage per token:**
-
-For each semantic token:
+For each semantic and component token the theme is meant to change, show what each context does with it. A context that redefines the token has themed it; a context that doesn't inherits the earlier value in the resolution order. Inheritance is the spec's design, so it is a gap only for theme-dependent tokens (colour, shadow, border colour), and it is the same gap Step 2 already reports. Don't report it twice: list it here in the matrix and cite the Step 2 finding.
 ```
-color.action.primary:
-  light: {color.blue.500}    ✓
-  dark:  {color.blue.300}    ✓
-  brand-a: {color.purple.600}  ✓
-  brand-b: [missing]         ✗
-```
-
-Flag missing mode values:
-```
-TC-30 | 🔴 Critical | Resolver coverage | color.action.primary missing value in brand-b mode
-- When brand-b theme is active, color.action.primary will resolve to light mode default (fallback)
-- Recommended action: Add mode-specific value to brand-b mode in resolver
+color.action.primary  (theme modifier)
+  light (default): {color.blue.500}   themed
+  dark:            {color.blue.300}   themed
+color.border.subtle
+  light (default): {color.gray.200}   themed
+  dark:            inherits light     ← theme-dependent, see TH-03
+spacing.inset.md
+  dark:            inherits light     fine, not theme-dependent
 ```
 
 **Set composition check:**
-- Verify that all semantic tokens are included in at least one resolver set
-- Identify tokens declared in token files but not included in any resolver set
-- If component tokens exist, verify they are composed into the same resolver sets as their semantic dependencies
-
-Tokens outside every resolver set are maintenance burden — they appear in IDE autocomplete but produce no runtime value.
+- Identify token files in the repo that no resolver set includes; they appear in IDE autocomplete but produce no runtime value
+- If component tokens exist, check they are composed after the semantic sets they alias in the `resolutionOrder`, or their aliases won't resolve
 
 ## Step 6: Theme switching regression check
 
@@ -240,7 +231,7 @@ Identify patterns in the codebase that are likely to break on theme switch:
 
 Search for common failures:
 
-1. **Hardcoded values in component code** — even if tokens exist, if components use raw colours/spacing instead of tokens, theme switches are invisible to those components
+1. **Hardcoded values in component code** — even if tokens exist, if components use raw colours instead of tokens, theme switches are invisible to those components. The per-value sweep is `token-compliance`'s job: if its report exists, take its count of hardcoded colour values and cite it; if not, run one positive-controlled search for colour literals and report the count as a regression risk, then recommend token-compliance for the per-file list. Don't produce a second violation table here
 2. **Opacity hacks** — `rgba(var(--color-action-primary), 0.5)` only works if the token holds bare RGB channels (`37, 99, 235`). If it holds a hex or `rgb()` value, as most colour tokens do, the declaration is invalid and silently dropped. Check what each referenced token actually holds in every theme
 3. **CSS calc() on token values** — `padding: calc(var(--spacing-component-gap) * 2)` works when the token carries units (`16px * 2` is `32px`). It fails when a theme defines the token as a unitless number, because the result isn't a length. Check that every theme gives these tokens units
 4. **Inline styles with theme assumptions** — `style={{ backgroundColor: isDark ? darkColor : lightColor }}` is not using the token system at all
@@ -250,11 +241,11 @@ Search for common failures:
 
 Flag high-risk patterns:
 ```
-TC-40 | 🟠 High | Regression | Found 23 instances of hardcoded hex values in component code
+TH-40 | 🟠 High | Regression | 23 hardcoded colour values in component code (from token-compliance TC-01..TC-23, or: positive-controlled search over src/components)
 - These will NOT change on theme switch even though token values exist
-- Recommended action: Replace hardcoded values with token references
+- Recommended action: work through the token-compliance list; each is a one-line replacement
 
-TC-41 | 🟡 Medium | Regression | Found 7 instances of rgba(var(--token), alpha) where the token holds a hex value
+TH-41 | 🟡 Medium | Regression | 7 instances of rgba(var(--token), alpha) where the token holds a hex value (src/components/Badge.module.css:12, …)
 - The declaration is invalid, so the browser drops it and falls back
 - Recommended action: Use `color-mix(in srgb, var(--color-action-primary) 50%, transparent)`, which works with any colour format. If named opacity steps are needed, add tokens like `color.action.primary-alpha-50` (no `%` in token names — it isn't valid in a CSS custom property name without escaping)
 ```
@@ -358,11 +349,9 @@ List any violations:
 #### DTCG resolver status (if applicable)
 
 **Resolver files found:** [count and paths]
-**Mode coverage:** [summary of mode-to-token coverage]
-**Tokens outside every resolver set:** [count and examples]
-**Missing mode values:** [count and severity by theme]
-
-Include resolver-specific findings with severity ratings.
+**Contexts:** [each modifier and its contexts, with the default]
+**Theme-dependent tokens that inherit across contexts:** [count, citing the Coverage findings]
+**Token files outside every resolver set:** [count and paths]
 
 ---
 
@@ -385,7 +374,7 @@ Each category should include:
 **Tier 1 — Fix immediately:**
 - Tier leakage (blocks theme switching entirely)
 - Missing semantic tokens in active themes (causes fallback errors)
-- Resolver coverage gaps in production modes
+- Theme-dependent tokens that inherit in a shipped context
 
 **Tier 2 — Fix before next theme launch:**
 - Visual consistency violations within themes
@@ -440,7 +429,9 @@ Follows the recurring-run procedure in the configuration-and-recurring note. Spe
 - Visual consistency checks reference specific token values, not generic observations
 - Regression patterns include specific code examples or counts, not abstract descriptions
 - Remediation priority is honest about which findings actually block theming
-- DTCG resolver findings (if applicable) validate mode-to-token coverage, not just file structure
+- DTCG resolver findings (if applicable) report what each context does with theme-dependent tokens, and treat inheritance of a non-theme-dependent token as normal
+- Tier leakage and hardcoded values are cited from token-audit and token-compliance where those reports exist, not re-derived; each appears once
+- Every finding carries evidence: a file and line, resolver context, or Figma collection and mode
 - Small-system note is present and contextualised if applicable
 - Contrast findings are computed from resolved values against the stated WCAG baseline
 - If values were not available for visual consistency check, the report notes which checks were skipped

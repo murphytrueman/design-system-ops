@@ -15,7 +15,7 @@ The goal is communication proportional to impact. This skill distinguishes betwe
 
 ## Boundaries
 
-This skill communicates changes that have already been decided. It does not decide what to change, plan a deprecation lifecycle, or execute a migration — use `deprecation-process` for deprecation planning and `codemod-generator` for migration execution. If the change has not been finalised, ask the user to confirm the change details before producing communication. If the change affects no consuming teams (internal refactor with no API surface change), a communication package is unnecessary — confirm with the user and stop.
+This skill communicates changes that have already been decided. It does not decide what to change, plan a deprecation lifecycle, or execute a migration — use `deprecation-process` for deprecation planning and `codemod-generator` for migration execution. It is, however, the single owner of the migration guide: `deprecation-process` hands it a mapping table and `version-bump-advisor` a list of breaking changes with before/after rows, and this skill renders the guide once so the announcement, the release notes and the docs all say the same thing. If the change has not been finalised, ask the user to confirm the change details before producing communication. If the change affects no consuming teams (internal refactor with no API surface change), a communication package is unnecessary — confirm with the user and stop.
 
 ---
 

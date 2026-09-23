@@ -120,7 +120,7 @@ The five stages follow the shape of capability-maturity models (CMMI's initial â
 
 **Ad-hoc.** Evidence: components live in product repos or a shared folder rather than a published package; there is no token source, or a single flat file of raw values; no contribution route or process document; documentation is absent or differs per component.
 
-**Managed.** Evidence: a published, versioned library (a version number and semver are table stakes here, not a mark of maturity); a token source with primitives and at least some semantic tokens; documentation for most components, uneven in depth; some contribution route exists (an issue template, a channel, a named person) even if informal.
+**Managed.** Evidence: a published library with a version number of some kind (semver is common but far from universal, and neither its presence nor its absence says much about maturity); a token source with primitives and at least some semantic tokens; documentation for most components, uneven in depth; some contribution route exists (an issue template, a channel, a named person) even if informal.
 
 **Systematic.** Evidence: tier references are enforced, so no semantic or component token holds a raw value and lint or review catches it; a written API contract that components follow (naming, variant/size/state props, event conventions); one documentation template that every component uses; written contribution and deprecation processes; a CHANGELOG or release notes with a predictable cadence.
 

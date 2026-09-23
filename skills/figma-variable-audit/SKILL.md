@@ -113,16 +113,15 @@ Figma groups variables with `/` — a variable named `color/action/primary` appe
 - FAIL example: `color/semantic/blue` (describes colour, not intent)
 - PASS example: `color/action/primary` (describes role)
 
-**Reserved term avoidance** — flag colour names in semantic tiers (blue, red, green) and size terms (small, medium, large)
-- These belong only in the primitive tier
-- Flag each occurrence with suggested rename
+**Reserved terms** — apply the naming rules in the token-architecture note, which `token-audit` uses for code tokens, so the two audits agree: colour names at the semantic tier are always flagged; a size term is flagged only when it is the whole role (`color/large`), not when it names a scale step (`spacing/component/gap/sm` above is a PASS); `default` and `base` are fine as a level or state segment beside a role
+- Flag each occurrence with a suggested rename
 
 **Naming consistency** — are casing, separators, and phrase ordering consistent across collections?
 - Check for: camelCase vs snake_case vs kebab-case within segments, `/` groups vs dots or hyphens used as separators, segment order (role/variant/state vs variant/role/state)
 - If inconsistency exists, identify the dominant pattern and flag deviations
 
 **Ambiguity checks** — flag names that could mean multiple things:
-- Examples: `default`, `base`, `normal`, `alt`, `variant`, `misc`, `other`
+- Examples: `normal`, `alt`, `variant`, `misc`, `other`, or `default`/`base` standing alone as the entire role
 - Each flagged token should include a suggested rename or clarification
 
 ---
@@ -186,7 +185,7 @@ Button        0         1    (button/border/focus)
 
 ## Step 6: Cross-reference with code tokens (if available)
 
-If `.ds-ops-config.yml` specifies `integrations.code_tokens`, pull the code token source and compare:
+This step is the single owner of the Figma-versus-code comparison; `token-audit` points here rather than running its own. If `.ds-ops-config.yml` specifies `integrations.code_tokens`, or a token-audit report has already listed the code token source, pull the code tokens and compare:
 
 **Name alignment** — do Figma variable names match code token names?
 - Normalise before comparing: treat `/`, `.`, `-` and `_` as the same separator, drop prefixes like `$` and `--`, and compare case-insensitively. `color/action/primary`, `$color-action-primary` and `--color-action-primary` are the same name
@@ -239,9 +238,7 @@ If the team is considering or has declared DTCG migration, run these checks:
 - How would these be represented in DTCG format?
 - Recommendation: define composite variable structures and naming
 
-**Mode compatibility** — DTCG resolver files require mode consistency. Check:
-- Are semantic variables actually themed in each mode (the unthemed-values check in Step 5)?
-- Are mode names DTCG-compatible (no spaces, no slashes)?
+**Resolver export** — in a DTCG resolver each Figma mode becomes a context under a modifier (a `Theme` collection with `Light` and `Dark` modes exports as a `theme` modifier with `light` and `dark` contexts). Contexts inherit whatever they don't redefine, so the unthemed values from Step 5 export as inherited values, not errors; the only question is whether they *should* be themed, which Step 5 already answers. Mode names carry no spec restriction; they become context keys, so pick the casing the code side uses.
 
 **Migration effort estimate:**
 - Count variables needing type inference
@@ -275,7 +272,7 @@ List each finding with:
 - Severity: 🔴 Critical / 🟠 High / 🟡 Medium / ⚪ Low
 - Category: Naming / Structure / Coverage / DTCG
 - Description: One sentence
-- Evidence: Specific variables or collections affected
+- Evidence: the variable names and collection, with each variable's id (from `figma_get_variables`) so a Step 10 fix or a later run can find it after a rename
 - Remediation: Specific and actionable
 
 Example:
@@ -325,7 +322,7 @@ For files with fewer than 50 variables:
 If the Figma Console MCP from Southleft is connected (check for `figma_rename_variable`, `figma_update_variable`, and `figma_add_mode` tool availability), offer to fix findings directly in Figma after presenting the audit report. This turns the audit from a report into a remediation session.
 
 **What can be fixed in place:**
-- **Naming violations:** Use `figma_rename_variable` to rename variables that violate conventions. Rename preserves all values, modes, and alias references.
+- **Naming violations:** Use `figma_rename_variable` to rename variables that violate conventions. Rename preserves all values, modes, and alias references inside Figma. It does not update anything outside Figma: exported code token names, Code Connect mappings and any docs that quote the old name all break. Before renaming a variable that Step 6 matched to a code token, say so and get the user to confirm the code side will be renamed too (a `token-migration` run), or skip it.
 - **Missing modes:** Use `figma_add_mode` to add modes that should exist but don't (e.g. a collection has Light but not Dark).
 - **Missing semantic variables:** Use `figma_create_variable` to create semantic-tier variables that the audit identified as gaps.
 - **Incorrect values:** Use `figma_update_variable` to correct values in specific modes.

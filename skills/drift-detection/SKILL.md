@@ -74,6 +74,8 @@ Ask for or confirm (skip questions already answered by auto-pull):
 
 The more specific the scope, the more actionable the report. A drift detection across "the whole system" surfaces patterns but produces a long list of findings with limited prioritisation signal. Scoping to a specific product or a specific component category produces a more actionable output.
 
+**Drift needs a consumer.** If the only code in reach is the design system's own repository, there is nothing to have drifted from it. Stop and say so, then point to the skills that do apply: `token-compliance` for raw values in the system's own components, `component-audit` for duplication and gaps inside the library, `design-to-code-check` for one component against its spec. Ask for a consuming product (a path, a repo, or a Figma file of a product) before continuing.
+
 **Small-system note (fewer than 5 components):** For systems this size, scope to the full system — there is no need to sample. Drift patterns are different in small systems: teams are typically smaller and more aligned, so drift is less likely to be accidental and more likely to be intentional divergence (Classification A) or a system gap (Classification E) — though each still needs the evidence Step 4 asks for. Simplify the output to a per-component checklist rather than a full drift report. If all components show no drift, state that as the finding and recommend a review cadence.
 
 ## Step 2: Establish the reference point
@@ -105,11 +107,9 @@ Behavioural drift is often the hardest to detect without direct testing, but it 
 Components implemented with different props, different prop names, or different prop semantics than the design system's published API. This is most common when teams implement a component locally rather than consuming it from the system, or when a local version was built before the system component existed and was never migrated.
 
 ### Token drift
-Raw values used where design tokens should be referenced. Tokens referenced at the wrong tier. Local token overrides that conflict with semantic intent. Token names used inconsistently across implementations.
+Raw values used where design tokens should be referenced, local token overrides that conflict with semantic intent, and token names used inconsistently across implementations.
 
-Detection depends on the styling approach. Exclude the token source files themselves — raw values belong there. Don't flag values that aren't design decisions: `0`, `100%`, `auto`, `inherit`, `initial`, `currentColor`, `transparent`, `none`. In CSS custom properties, look for raw values outside `var()`, including in inline styles (`style={{ color: '#333' }}` in JSX, `style="..."` in templates). In SCSS, look for raw literals not using `$` variables. In Tailwind, look for arbitrary value brackets (`h-[12px]`, `bg-[#ff0000]`) — standard utility classes that resolve to configured tokens are not drift. In CSS-in-JS, look for raw values outside theme object references. When SCSS variables are the token system, tier can be inferred from naming patterns (e.g. `$color-blue-500` → primitive, `$color-action-primary` → semantic) even without a full SCSS parser.
-
-Before reporting a product as free of token drift, run a positive control: confirm the search finds a raw value you've planted or already know about (a hex value in the token source is a good test). If it can't, the result is unconfirmed, not clean.
+The per-file search for raw values is `token-compliance`'s job, with its styling-approach rules and positive control. Don't re-implement it here. If a token-compliance report exists for the product, import its violation table as the token dimension. If not, run `token-compliance` on the consuming product first, then continue. What this skill adds is the consumer-versus-system reading of each violation: a raw value that equals a system token's resolved value is usually class C or D (someone typed the number instead of the name); a raw value that matches nothing in the system is class A or E and needs the evidence rule in Step 4. Local overrides of system tokens (`--color-action-primary: #...` redefined in the product, `!important` on token-driven properties) aren't in token-compliance's remit, so search for those here with a positive control.
 
 ## Step 4: Classify each drift instance
 
@@ -162,41 +162,19 @@ After classifying each drift instance, route it to the appropriate response:
 | Classification | Primary response | Skill to run next |
 |---|---|---|
 | A — Intentional divergence | Document as a decision record | `decision-record` |
-| B — Version lag | Offer migration path with effort estimate | `deprecation-process` (for migration guidance) |
+| B — Version lag | Point at the release's migration guide; if the gap is mechanical, offer a codemod | `codemod-generator`, or the `token-migration` command for token renames |
 | C — Accidental drift | Fix the implementation + review docs that failed to prevent it | `design-to-code-check` |
 | D — Misunderstanding | Update documentation + notify affected teams | `change-communication` |
 | E — System gap | Route to contribution workflow | `contribution-workflow` |
 | Unclassified | Ask the team the question that would classify it | — |
 
-## Step 4b: Breaking change impact modelling
+## Step 4b: Version lag, grouped
 
-For drift classified as B (version lag), model the migration impact:
+For drift classified as B, group the instances by the release that introduced the change (read the system's CHANGELOG or git tags between the consumer's installed version and the latest). For each group say three things, all from evidence: how many files in the consumer are affected (count them); whether the change is mechanical (a rename or prop swap a codemod could do) or structural; and whether the release shipped a migration guide. A breaking release with no migration guide is a governance finding in its own right; flag it separately. Don't estimate hours or T-shirt sizes; the count of files and the mechanical/structural call are what the team needs to plan.
 
-**Per-instance migration cost:**
-- How many files/components are affected by this specific drift?
-- Is the migration a simple find-and-replace (prop rename, token swap) or a structural refactor (API redesign, composition change)?
-- What is the testing surface area — does migrating this instance require regression testing across the consuming application?
+## Step 4c: Cross-system drift (only when more than one system is in scope)
 
-**Aggregate migration debt:**
-- Total instances of version lag across all assessed products
-- Estimated effort to bring all instances current (rough T-shirt sizing: S/M/L per migration)
-- Identify migration batches — drift instances that can be resolved together because they share a root cause (e.g., all products still on v2 Button)
-
-**Migration path clarity:**
-- For each version lag instance, is the migration path documented? If the design system shipped a breaking change without a migration guide, that is a governance finding (flag it separately).
-- Are there migration codemods or scripts available? If not, recommend whether the migration warrants one.
-
-This modelling converts drift from "a list of problems" to "a prioritised migration plan with estimated effort." Include it as a section in the drift report.
-
-## Step 4c: Cross-system drift (multi-system environments)
-
-For organisations with multiple design systems (brand-specific, platform-specific, sub-systems), assess drift between systems:
-
-- **Shared primitive divergence:** Do systems that share a primitive tier (colour palette, spacing scale) still agree on those primitives? Drift at the primitive level propagates to everything above it.
-- **Semantic inconsistency:** Do the same semantic token names mean different things in different systems? `color.action.primary` resolving to blue in one system and green in another is a cross-system drift that confuses teams working across products.
-- **Component contract conflicts:** Do components with the same name in different systems have different APIs? A `Button` in the marketing system and a `Button` in the product system should either share an API or have different names.
-
-Cross-system drift is typically invisible until a team works across system boundaries. Surface it proactively.
+If the user has put two or more design systems in scope (brand systems, platform systems), also compare them to each other: shared primitives that no longer agree, the same semantic name resolving to different intents, and same-named components with different APIs. Skip this step, and say so under Scope, when a single system is in scope.
 
 ## Step 5: Produce the drift report
 
@@ -225,9 +203,11 @@ For each finding:
 
 | ID | Location | Dimension | Classification | Severity | Description | Recommended action |
 |---|---|---|---|---|---|---|
-| DF-01 | [product/team/component] | [visual/behavioural/API/token] | [A–E / Unclassified] | 🔴/🟠/🟡/⚪ | [specific description] | [specific action] |
+| DF-01 | [repo path:line, or Figma node id; and the component] | [visual/behavioural/API/token] | [A–E / Unclassified] | 🔴/🟠/🟡/⚪ | [specific description: the system value and the consumer value] | [specific action] |
 
-**Severity key:** 🔴 Critical · 🟠 High · 🟡 Medium · ⚪ Low
+Location is evidence, not a label: a file and line the reader can open, or a Figma node. A finding with no location is a suspicion, and goes in the Unclassified list with the question that would confirm it.
+
+**Severity key:** 🔴 Critical · 🟠 High · 🟡 Medium · ⚪ Low (rubric in Step 4a)
 
 ---
 
@@ -311,6 +291,9 @@ End the report with:
 ## Quality checks
 
 - Every finding has a classification and a recommended action, not just a description
+- Every finding has a location the reader can open (file and line, or Figma node)
+- Token-dimension findings come from token-compliance's table, not a second search; the report cites its IDs
+- The run stopped, with a redirect, if no consuming product was in scope
 - Severity ratings are justified by the specific impact, not assigned generically
 - Root cause patterns section exists and adds something beyond the individual findings list
 - System gap findings are distinguished from mistakes — product teams whose divergence filled a genuine system gap should not be treated as having done something wrong

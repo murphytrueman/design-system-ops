@@ -91,13 +91,7 @@ Check:
 - Component sizing: width and height where specified, or proportional behaviour where not fixed
 - Responsive behaviour: does the implementation respond to breakpoints as specified?
 
-Flag raw pixel values where spacing tokens should be used.
-
-**Framework-specific notes for spacing checks:**
-- **Vue SFC:** Check `<style>` blocks for raw `px` values. Token references may be SCSS variables (`$space-4`) or CSS custom properties (`var(--space-4)`).
-- **Twig/Fractal:** Spacing is typically applied via BEM modifier classes or utility classes — check the backing SCSS, not just the template markup. Inline `style` attributes with pixel values are always violations.
-- **Emotion/CSS-in-JS:** Check style objects and `css` prop values. Token references look like `theme.spacing(4)` or `theme.spacing.md`. String literals like `'16px'` or `'1rem'` are violations.
-- **Tailwind:** Arbitrary values (`p-[13px]`, `bg-[#fff]`) are violations. Standard utility classes mapped to the token scale in the Tailwind config (`p-4`, `bg-primary`) count as token use.
+Where the spec names a token (or the system has one for the value), a raw value in the implementation is a discrepancy even when the number matches: it won't theme or track the scale. Log it against the property the spec covers. Sweeping the whole component for raw values regardless of spec is `token-compliance`'s job, with its per-styling-approach rules for what counts as a token reference (SCSS variables, `var()`, Tailwind utilities versus arbitrary values, Emotion helpers); apply the same rules here and don't widen the check beyond the spec'd properties.
 
 ### Dimension 2: Colour and visual treatment
 
@@ -108,7 +102,7 @@ Check:
 - Opacity: correct values and applied to the correct element
 - Gradient or background treatments if present
 
-Flag any raw hex values, rgba values, or other hardcoded colour references where tokens should be used.
+Flag raw colour values on the properties the spec covers, as in Dimension 1.
 
 ### Dimension 3: Typography
 

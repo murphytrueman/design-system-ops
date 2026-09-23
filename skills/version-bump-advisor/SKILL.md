@@ -91,27 +91,15 @@ Produce a changelog entry in markdown format, organised by category, ready for C
 
 Keep descriptions to one line per item. Use [migration: ...] notation for breaking changes to highlight what consumers must change.
 
-### 5. Generate Migration Notes for Breaking Changes
+### 5. List the Migration Inputs for Breaking Changes
 
-For every breaking change, include migration guidance. Format:
+The migration guide is written once, by `change-communication`. For every breaking change, give it one row: the before and after in a line each, and the rationale.
 
-````markdown
-**Migration: ComponentName prop change**
+| Change | Before | After | Rationale |
+|---|---|---|---|
+| Button prop rename | `<Button oldProp="value" />` | `<Button newProp="value" />` | [from the PR or decision record, or `[ask author]`] |
 
-Before (v2.x):
-```jsx
-<Button oldProp="value" />
-```
-
-After (v3.0):
-```jsx
-<Button newProp="value" />
-```
-
-Rationale: oldProp was confusing because it only applied in certain states. newProp is clearer and works in all states.
-````
-
-Consumers deserve to know why the change was necessary, but the reason has to come from the user, the PR description or a linked decision record. If none gives one, write `Rationale: [ask author]` and list it with the other open placeholders. Don't invent a plausible reason.
+Consumers deserve to know why the change was necessary, but the reason has to come from the user, the PR description or a linked decision record. If none gives one, write `[ask author]` and list it with the other open placeholders. Don't invent a plausible reason, and don't expand the rows into a guide here.
 
 ### 6. Generate Decision Record Snippet (for major bumps only)
 

@@ -1,14 +1,13 @@
 ---
 name: naming-audit
-description: "Audit naming consistency and clarity across component, token and pattern names, with rename suggestions. Triggers: naming review, are my names consistent, fix our naming. For token tier structure use token-audit; for Figma variable names use figma-variable-audit."
+description: "Audit component and pattern naming for consistency and clarity, with rename suggestions. Triggers: naming review, are our component names consistent, fix our naming. Token names: token-audit. Prop names: component-api-validator. Figma variable names: figma-variable-audit."
 references:
-  - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/output-discipline.md
 ---
 
 # Naming audit
 
-A skill for auditing naming conventions across a design system's components, tokens, and patterns. Produces a violation report with specific examples, ambiguity flags, and rename suggestions with rationale.
+A skill for auditing naming conventions across a design system's components and documented patterns. Produces a violation report with specific examples, ambiguity flags, and rename suggestions with rationale. Token names are audited by `token-audit`, prop names by `component-api-validator` and Figma variable names by `figma-variable-audit`; this skill cites their findings rather than repeating them.
 
 ## Before you begin: verify references
 
@@ -20,7 +19,7 @@ Naming is the primary interface between a design system and its consumers. A nam
 
 Naming problems accumulate. A single ambiguous component name is an inconvenience. Twenty ambiguous names spread across a library, with some following one convention and others following three others, is a system that new team members cannot navigate and experienced team members cannot trust.
 
-This audit covers naming for components, tokens, and any documented patterns. It does not mandate a specific naming convention — it assesses whether the naming is consistent, unambiguous, and fit for its purpose.
+This audit covers naming for components and any documented patterns. It does not mandate a specific naming convention — it assesses whether the naming is consistent, unambiguous, and fit for its purpose.
 
 ## Step 0: Identify what you're looking at
 
@@ -40,12 +39,12 @@ Before auditing names, determine what kind of shared UI this is. The library typ
 ## Step 1: Gather the name inventory
 
 Pull names from the source before asking:
-- **Component names** — the public barrel exports (`index.ts` / `index.js` at the package root, or each package's entry point in a monorepo). Exports are the names consumers actually type; internal files aren't. Fall back to component directories if there's no barrel
-- **Token names** — the token source files (JSON/DTCG, CSS custom properties, SCSS variables, Tailwind config, TS theme objects). If the primitive tier is large, focus on the semantic and component tiers
+- **Component names** — the public barrel exports (`index.ts` / `index.js` at the package root, or each package's entry point in a monorepo). Exports are the names consumers actually type; internal files aren't. Fall back to component directories if there's no barrel. Record the file and line of each export: that is the finding's evidence
 - **Pattern names** — the docs site or Storybook hierarchy, if documented
 - **Existing naming convention documentation** — README, CONTRIBUTING, ADRs
+- **Neighbouring reports** — a `token-audit` report (token naming findings) or `component-api-validator` report (prop naming) if either has been run; cite their IDs in the summary rather than re-auditing
 
-Only ask the user for a list if you can't reach the source, and say which names came from where.
+Only ask the user for a list if you can't reach the source, and say which names came from where. If no barrel, component directory or docs hierarchy can be found, stop and ask where the components live rather than auditing file names.
 
 If naming convention documentation exists, assess against it. If it does not, derive the implicit conventions from the existing names and note where they are inconsistent with each other.
 
@@ -56,7 +55,7 @@ If naming convention documentation exists, assess against it. If it does not, de
 If no naming convention documentation exists, don't stop to establish one first. Derive the dominant convention from the inventory — the pattern most names already follow — and show it in the report's convention inventory so the team can confirm or correct it:
 
 - **Components:** casing, specificity direction (`ButtonPrimary` vs `PrimaryButton`), abbreviation use, prefix/suffix rules
-- **Tokens:** separator, semantic pattern (`category.role.state` or similar), state vocabulary (`hover/active` vs `hover/pressed`)
+- **Patterns:** whether names describe the user's task (`Sign in`, `Filter a list`) or the components involved (`Form with validation`), and whether the docs tool's hierarchy is followed
 
 Audit against that derived convention, and say it's derived. Where no convention dominates, report that as the finding rather than picking one. At the end, offer to capture the convention as a decision record using the `decision-record` skill.
 
@@ -94,32 +93,17 @@ Common patterns to check:
 
 Flag any component that should have a prefix or suffix based on the system's conventions but does not.
 
-## Step 3: Assess token naming
+## Step 3: Assess pattern naming
 
-Token naming has additional criteria beyond general consistency. See the token-architecture knowledge note for the full three-tier model.
+Only if the system documents patterns (a docs site section, a Storybook "Patterns" hierarchy, a `patterns/` folder). Skip and say so otherwise.
 
-### Semantic token naming
+- **Task versus assembly** — a pattern name should say what the user is doing (`Confirm a destructive action`), not list the parts (`Modal with two buttons`). Flag assembly names only where two patterns would be indistinguishable by their names
+- **Consistency with the docs tool** — Storybook hierarchies and Fractal folder numbering impose an order; flag patterns filed outside it
+- **Collisions with components** — a pattern and a component sharing a name (`Wizard` the pattern, `Wizard` the component) confuse search and Figma; flag and suggest which one to rename
 
-Semantic tokens must describe intent, not appearance. Flag any semantic token that:
-- Uses a colour name: `color.semantic.blue`, `color.secondary.green`
-- Uses a visual descriptor: `color.light`, `spacing.large`, `font.bold`
-- Is ambiguous between multiple potential uses: `color.accent`, `color.highlight`, `color.important`
+### Cross-checks with other audits
 
-For each flagged token: propose a rename that encodes intent rather than appearance.
-
-### Tier consistency check
-
-Are tokens within each tier named consistently with each other?
-
-- Primitive tier: do all primitives follow the same pattern? (`color.blue.500` and `color.red.500` not `color.blue-500` and `color.red500`)
-- Semantic tier: do semantic tokens follow a consistent category.role.state pattern?
-- Component tier: do component tokens follow a consistent component.property.state pattern?
-
-Flag any token that breaks from the dominant pattern within its tier.
-
-### Cross-tier collision check
-
-Are any token names used at multiple tiers with different meanings? This is rare but creates genuine confusion when it occurs. A semantic token named the same as a primitive it does not reference, or a component token named identically to a semantic token it does not correspond to, is a naming error.
+Token naming belongs to `token-audit`, prop naming to `component-api-validator`. If either report exists, quote the count and IDs of its naming findings in the summary so the reader sees the whole naming picture in one place. If neither exists and the user asked for "all our naming", say which parts this report doesn't cover and offer to run them.
 
 ## Step 4: Produce the naming audit report
 
@@ -130,7 +114,7 @@ Open with a headline sentence. Example: "Your component naming is consistent but
 ### Naming audit report
 
 **Date:** [date]
-**Covers:** [components / tokens / patterns / all]
+**Covers:** [components / patterns / both], plus [token-audit / component-api-validator findings cited, or "not run"]
 **Convention documentation:** [exists and used as reference / does not exist — conventions derived from inventory]
 
 ---
@@ -151,17 +135,21 @@ What naming conventions are currently in use? List the dominant conventions and 
 
 **Component naming violations**
 
-| ID | Component name | Issue | Rename suggestion | Priority |
-|---|---|---|---|---|
-| NA-01 | [name] | [specific issue] | [suggested name] | 🟠/🟡/⚪ |
+| ID | Component name | Evidence | Issue | Rename suggestion | Severity |
+|---|---|---|---|---|---|
+| NA-01 | [name] | [export file:line] | [specific issue] | [suggested name] | 🔴/🟠/🟡/⚪ |
 
-**Token naming violations**
+**Pattern naming violations** (if patterns are documented)
 
-| ID | Token name | Issue | Rename suggestion | Priority |
-|---|---|---|---|---|
-| NA-[n] | [token name] | [specific issue] | [suggested name] | 🟠/🟡/⚪ |
+| ID | Pattern name | Evidence | Issue | Rename suggestion | Severity |
+|---|---|---|---|---|---|
+| NA-[n] | [name] | [docs path or story id] | [specific issue] | [suggested name] | 🔴/🟠/🟡/⚪ |
 
-**Priority key:** 🟠 High (ambiguity creates real misuse risk) · 🟡 Medium (inconsistent but not misleading) · ⚪ Low (minor, low impact)
+**Severity rubric:**
+- 🔴 Critical — the name actively misleads: it describes something the component doesn't do, or two exported components share a name
+- 🟠 High — ambiguity creates real misuse risk (two components a consumer can't tell apart by name)
+- 🟡 Medium — inconsistent with the dominant convention but not misleading
+- ⚪ Low — a casing or abbreviation slip with no effect on understanding
 
 ---
 
@@ -175,14 +163,14 @@ Renaming components and tokens is a breaking change. Recommendations:
 1. Fix new additions first — apply the correct conventions going forward
 2. Rename in order of severity: high-priority violations before medium and low
 3. Use the deprecation process for component renames — the old name should be deprecated with a migration path, not removed immediately
-4. Token renames should follow the same process as any other breaking change — see the `change-communication` skill
+4. Announce renames as breaking changes — see the `change-communication` skill
 
-**Connection to decision-record:** Every naming convention established or changed during this audit should be documented as a decision record using the `decision-record` skill. The naming convention is the most frequently referenced governance decision in any design system — it deserves a formal record.
+**Connection to decision-record:** Offer to capture a newly derived or changed convention as a decision record using the `decision-record` skill. It's the governance decision consumers look up most often, so it earns a record, but the offer is the user's to take.
 
 ---
 
 **Scope**
-- **Inspected:** [barrel exports, token files, docs sources actually read]
+- **Inspected:** [barrel exports and docs sources actually read; neighbouring reports cited]
 - **Not inspected:** [what was out of reach, e.g. Figma layer names, internal-only components]
 - **How "none found" was checked:** [for any "no violations" claim, how the check was shown to work — omit if the report makes no absence claims]
 - **Assumptions:** [e.g. the derived convention is the intended one]
@@ -201,7 +189,8 @@ End the report with:
 
 ## Quality checks
 
-- Every violation has a specific rename suggestion with rationale, not just a flag
+- Every violation has evidence (the export's file and line, or the docs path) and a specific rename suggestion with rationale, not just a flag
+- Token and prop naming are cited from their owning skills, never re-audited here
 - Rename suggestions follow the system's established conventions — they improve the naming while maintaining consistency
 - The convention inventory section describes what the system is actually doing, not what it should be doing
 - Severity ratings reflect real impact: a misleading name is high priority, a minor casing inconsistency is low

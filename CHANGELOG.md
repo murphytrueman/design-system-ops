@@ -16,11 +16,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - **Figma descriptions.** `ai-readiness` said Figma's description field "does not render markdown" and gave 300–600 words while `ai-component-description` said 400–700 and wrote `descriptionMarkdown`. Figma stores both a plain `description` and a rich-text `descriptionMarkdown`; the note and the skill now say the same thing, and the length is 300–600 words.
   - **"Auto-loaded by" headers** on the notes listed the wrong skills (five were stale). They no longer list skills at all: the `references:` frontmatter is the source of truth and a test already checks it.
 - **The install self-check block is a third of its length.** The block sits at the top of 36 skills; the 130-word version is now 75 words with the same rule and the same stop condition. Resynced with `tests/sync_selfcheck.py`.
+- **Every check has one owner.** Run against the test fixture, `token-audit`, `token-compliance` and `theme-audit` all led with the same finding (`card.border` aliasing a primitive), and a user asking "are our token names OK?" had three skills to choose from. Each check now lives in one skill and the others cite it:
+  - Tier leakage and token naming: `token-audit`. `theme-audit` reports only the theming consequence of a leak and cites the token-audit ID; `figma-variable-audit` applies the same naming rules from the note; `naming-audit` no longer audits tokens at all and is now the component and pattern naming skill (prop names belong to `component-api-validator`).
+  - Hardcoded values: `token-compliance`. `drift-detection` imports its table as the token dimension instead of running a second search; `theme-audit` cites its count as a regression risk; `design-to-code-check` checks only the properties the spec covers.
+  - DTCG structural validation: `schema-validator`. `token-audit`'s DTCG section now rates what schema-validator finds and adds the two checks that need the tier map.
+  - The dependency graph: `codebase-index`. `token-audit` and `component-audit` read `.ai/index/` or ask for it to be built, rather than each building a graph its own way.
+  - Figma-versus-code comparison and Figma writes: `figma-variable-audit`. `token-audit`'s Figma step is a pointer.
+  - AI readiness and maturity stage: `system-health`. `component-audit` cites them or lists them as not inspected.
+  - Migration guides: `change-communication`. `deprecation-process` supplies a mapping table and `version-bump-advisor` a before/after list; the guide is rendered once.
+- **`theme-audit` findings are `TH-`**, not `TC-`, so a theme-audit and a token-compliance report read together don't both have a TC-01.
+- **`drift-detection` stops when there's no consumer.** Run on a design system's own repo, there is nothing to have drifted from it; the skill now says so and points at the skills that apply. Its findings table requires a file and line or a Figma node, its version-lag step counts affected files instead of estimating hours, and class B routes to a codemod rather than a deprecation plan.
+- **The resolver model is fixed in the skills too.** `token-audit`, `theme-audit` and `figma-variable-audit` no longer treat a token a context doesn't redefine as a Critical or High gap; they report theme-dependent tokens that inherit, and treat everything else inheriting as the spec's design.
 
 ### Fixed
 
+- **`component-audit` no longer judges AI readiness.** It judged five of the six dimensions the `ai-readiness` note defines, so it and `system-health` used different yardsticks. Rather than add the sixth, the section is gone: system-health owns that dimension and component-audit cites it.
 - **Five skills ran shell commands they didn't pre-approve.** `codebase-index`, `component-api-validator`, `deprecation-process`, `schema-validator` and `token-compliance` told Claude to run commands such as `git log`, `rg` or `npm pack`, but their frontmatter didn't list them, so those steps were blocked in Cowork and headless runs. Each now declares exactly what it runs. The test that checks this now covers every skill that runs a shell command, not only those that already declared a tool list, which is how these five were missed.
-- **`component-audit` judged AI readiness on five of the six dimensions** the `ai-readiness` note defines, so it and `system-health` used different yardsticks. It now includes the sixth: correct usage examples.
 - **`figma-variable-audit` pointed to a knowledge note it doesn't load** (`mcp-setup-guide`). The limits it pointed to are stated in the skill, so the pointer is gone.
 
 ## [1.4.0] - 2026-09-24

@@ -230,7 +230,7 @@ This connection improves prioritisation — gaps with drift evidence indicate te
 
 Build a dependency graph of component composition relationships. This is the blast-radius view for component changes.
 
-**How to build the graph.** If `.ai/index/` exists from a codebase-index run and its commit SHA matches `HEAD`, reuse its uses/usedBy graph rather than rebuilding it; if it's stale, rebuild or rerun codebase-index. Otherwise use whatever source is available, in order of reliability: (1) Component source code — look for import statements that reference other system components, JSX/template renders of system components, and component-tier token references in styled-components, CSS modules, or Tailwind classes. (2) Storybook story index — stories often reveal composition through `subcomponents` declarations and story decorators. (3) Figma component variants — layer structure shows composition visually. (4) Manual inventory — if none of the above are accessible, ask the team to list composition relationships. The skill should state which method was used, as it affects confidence.
+**Where the graph comes from.** `codebase-index` is the graph's only producer; it writes `uses`/`usedBy` edges and token bindings to `.ai/index/` with the commit they were computed at. If `.ai/index/` exists and its commit matches `HEAD`, read it. If it's missing or stale, run `codebase-index` first (it is read-only and quick) and then read it. Don't build a second graph by hand here: two graphs built two ways disagree, and the reader can't tell which to trust. When the codebase isn't accessible at all (Figma-only or a manual inventory), say so, skip this step, and list it under "Not inspected". What this step adds is the analysis below.
 
 **For each component, identify:**
 - **Composes** — which other system components does this component render internally? (e.g., `Card` composes `Text`, `Button`, `Icon`)
@@ -246,35 +246,15 @@ Build a dependency graph of component composition relationships. This is the bla
 - Standalone components (fan-in 0 and fan-out 0) — both root and leaf. Never a removal signal on its own; only usage evidence from Dimension 1 can make a component a removal candidate
 
 **Token-to-component dependency:**
-- Map which tokens each component binds to (from the component's source or from component-tier token names)
-- Identify shared token hotspots — tokens referenced by 10+ components are the most dangerous to change
-- Cross-reference with the token-audit's dependency map if both audits are running in the same session
+- From the index's token bindings, identify shared token hotspots: tokens bound by many components in this repo are the most dangerous to change. Give the count; don't pick a threshold, since a 12-component library and a 200-component one differ
 
 **Answering "if I change X, what breaks?"** The graph should be queryable. For any component or token, the report should make it possible to trace: (1) direct consumers — components that import/compose this component, (2) indirect consumers — components that compose the direct consumers, and (3) product-level impact — if integration data is available, which products/teams are affected. Example: "Changing `Icon` directly affects 14 components (Button, Card, NavItem, Alert, ...). Indirectly affects 23 components through Button alone. Products affected: Checkout (12 Icon instances), Dashboard (34 instances), Mobile (8 instances)."
 
 Include the composition graph as a section in the report. For systems with 20+ components, produce a summarised version (top 10 highest fan-in, all hub components, standalone components) with the full graph available as a supplementary output.
 
-## Step 3c: AI-readiness assessment
+## Step 3c: AI readiness and maturity stage
 
-Assess the library's readiness for AI consumption. This identifies what work is needed to make the system machine-readable.
-
-**Per-component checklist:**
-For each component, check whether the following exist:
-- **Purpose clarity:** Does the component have a description that distinguishes it from similar components?
-- **Prop documentation:** Are all props documented with types, defaults, and intent?
-- **Anti-pattern coverage:** Are component-specific misuse patterns documented?
-- **Composition rules:** Are placement constraints and containment rules explicit?
-- **Accessibility documentation:** Are keyboard patterns, ARIA contracts, and focus management documented?
-- **Usage examples:** Are there correct, copyable examples an agent could generate from, covering the common configurations?
-
-**System-level indicators:**
-- Component manifest: Does a machine-readable JSON index of components exist? (Y/N)
-- Structured metadata: Do most components have machine-readable metadata beyond text descriptions?
-- Description consistency: Do most components follow a consistent description format?
-- Figma-code sync: Do Figma descriptions match code documentation?
-- Challenge Rating coverage: Do components have an assigned CR for documentation depth calibration?
-
-Produce a summary table showing which components have which checklist items. Flag components missing three or more items as priorities for AI-readiness work. Include specific recommendations for each missing area.
+Neither is assessed here. AI readiness is `system-health`'s sixth dimension, judged against the six-dimension checklist in the ai-readiness note; the maturity stage is inferred by system-health from evidence across all dimensions. If a system-health report exists, cite its AI-readiness status and stage in the summary. If not, list both under "Not inspected" and suggest system-health. One audit judging one slice of the system with a different yardstick is how the two reports came to disagree.
 
 ## Maturity stage
 

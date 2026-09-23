@@ -170,9 +170,13 @@ Component tokens should reference semantic tokens, not primitives.
 - PASS example: `button.background.default: {color.action.primary}` — correct reference chain
 
 **Ambiguity flags**
-Token names that could mean multiple things or require context to interpret:
-- Examples to flag: `default`, `base`, `normal`, `alt`, `variant`, `misc`, `other`
+Token names that could mean multiple things or require context to interpret (the token-architecture note has the full rule and its exceptions):
+- Examples to flag: `normal`, `alt`, `variant`, `misc`, `other`, and `default` or `base` when they are the entire role (`color.default`)
+- Not flagged: `default`/`base` as a state or level segment beside a role (`color.action.default`, `color.surface.base`), and t-shirt or numeric scale steps (`spacing.sm`, `radius.lg`)
 - Each flagged token should include a suggested rename
+
+**Convention consistency** (this skill owns token naming; `naming-audit` covers components and patterns)
+Within each tier, identify the dominant casing, separator and segment order, and flag the tokens that break from it: `color.blue-500` beside `color.blue.500`, `hover/active` beside `hover/pressed`, `button.background-hover` beside `button.background.hover`. Report the dominant convention in the findings so the team can confirm it's the intended one.
 
 **Platform suffix abuse**
 Token names that encode platform specifics in the name rather than in the transformation layer:
@@ -207,15 +211,13 @@ If the system has adopted component tokens and they exist for some components bu
 
 **Skip this section entirely** if the token source is not DTCG format and the team has not mentioned DTCG migration. Most teams don't need this. Include it when the token source uses DTCG format, when the team asks about DTCG compliance, or when migration planning is the purpose of the audit.
 
-If the token source uses DTCG format, or if the team is considering DTCG migration, run these additional checks:
+If the token source uses DTCG format, or if the team is considering DTCG migration:
 
-**Type declarations.** Resolve each token's type before flagging it: its own `$type`, then the resolved type of the token it aliases, then the closest parent group's `$type` (see the token-architecture note). Only a token with none of these is untyped. Flag untyped tokens and `$type` values not in the 13 DTCG types. Also flag values in pre-2025.10 string form (`"#ff0000"`, `"16px"`) as a migration signal, not a break. Severity: untyped tokens are ⚪ Low if the team is pre-DTCG (count them for the migration signal), 🟠 High if the team has declared DTCG adoption (they break tooling interoperability).
+**Structural validation is `schema-validator`'s job.** Type resolution, `$type` values outside the 13 types, 2025.10 value shapes, composite sub-value integrity, broken and circular aliases, and resolver document validity all belong there. If a schema-validator report exists, cite its finding IDs in this section; if not, run it (it's quick and mechanical) rather than re-checking by hand. This section reports what those results *mean* for the architecture, and adds the two checks below that need the tier map.
 
-**Composite token integrity.** For composite types (typography, shadow, border, transition, gradient), validate sub-value compliance. A typography token where `fontSize` is a hardcoded value (`"16px"`) but `fontFamily` is a proper reference (`{font.family.body}`) is a partial violation — the composite is inconsistent. A typography token where all sub-values are hardcoded is a full violation — it cannot participate in theming. Report sub-value compliance rate per composite type. Example finding: `TA-14 | 🟡 Medium | Composite integrity | typography.body: fontSize hardcoded (16px), fontFamily references {font.family.body} — partial violation. Remap fontSize to {dimension.font.size.body}.`
+**Alias tier in composites.** A composite token whose sub-values mix references and raw values (`typography.body` with `fontFamily: {font.family.body}` but `fontSize: "16px"`) is the composite form of a raw value at the semantic tier: it can't theme. schema-validator reports the shape; this audit rates it. Severity: 🟡 Medium, 🟠 High if the composite is used by a themed component.
 
-**Resolver and set coverage.** If `.resolver.json` files exist, validate that every semantic token has a value in every declared mode. A semantic token declared in a resolver but missing a mode-specific value falls back to the default mode unpredictably, which may produce incorrect contrast ratios or broken layouts in the missing mode. Map which sets are composed and identify tokens not included in any resolver. Severity: missing mode values for colour tokens are 🟠 High (contrast risk), missing mode values for spacing tokens are 🟡 Medium (visual inconsistency but not an accessibility failure).
-
-**Color space declarations.** DTCG 2025.10 supports modern color spaces. Check whether color tokens declare their color space explicitly or rely on implicit sRGB. Flag tokens using hex values where the system could benefit from wider gamut (P3, Lab, OKLab). Severity: ⚪ Low for all color space findings — this is a forward-looking check, not a compliance failure.
+**Resolver contexts and theming.** If `.resolver.json` files exist, read each modifier's `contexts` and its `resolutionOrder` (the note describes the structure; the spec's term is context, not mode). A context that doesn't redefine a token inherits the earlier value, which is the design, not a gap. What this audit reports: theme-dependent semantic tokens (colour, shadow, border colour) that no non-default context redefines, so the theme silently keeps the default value; and token files that no set includes. Severity: 🟠 High for an inherited colour token in a shipped theme (contrast risk), ⚪ Low for a token file outside every set. `theme-audit` goes deeper on this when the team has more than one theme; cite it rather than duplicating.
 
 **Migration signal (informational).** For teams not yet on DTCG 2025.10, give one paragraph: how many tokens would need `$type` (after type resolution), how many composites need restructuring into object values, whether string values need converting to object shapes, and whether resolver files would be needed for theming. Name the lowest-risk first step (usually annotating primitives with `$type`, which changes no resolved values). Then offer the full phased migration plan with effort ranges if they want it — don't produce it unasked.
 
@@ -223,15 +225,7 @@ If the token source uses DTCG format, or if the team is considering DTCG migrati
 
 **Skip this section** if there is no codebase access or if the audit is focused on token naming/structure only. Include it when the user has a codebase connected and wants to understand blast radius before making changes.
 
-Build a map of which components depend on which tokens. This is the blast radius view — before changing `color.action.primary`, you need to know every component that binds to it.
-
-- List each semantic token with its consuming component tokens (direct references)
-- List each component token with the component(s) it belongs to
-- Identify high-fan-out tokens (referenced by 10+ components) — these are the most dangerous to change
-- Mark the orphan candidates from Step 0b on the map — don't run a second orphan search
-- If Figma integration is available, cross-reference: tokens that exist in code but not in Figma (or vice versa) are consistency gaps
-
-Include the dependency map as a section in the report, or as a supplementary output if the map is large.
+The dependency graph has one producer: `codebase-index`, which writes token-to-component edges to `.ai/index/`. If that directory exists, read the token edges from it, mark the orphan candidates from Step 0b on them, and list the high-fan-out tokens (bound by many components in this repo; say how many, and remember consumers outside the repo aren't counted). If it doesn't exist, say the blast-radius view wasn't built and suggest running `codebase-index` first; don't build a second graph here. Token-versus-Figma consistency is `figma-variable-audit` Step 6's job.
 
 ## Step 4: Produce the audit report
 
@@ -297,17 +291,9 @@ Follows the recurring-run procedure in the configuration-and-recurring note. Spe
 - Flag persistent findings left unaddressed for 2+ cycles.
 - Add a "Trend since last audit" section to the report header with the violation count delta (+/- n) and the list of newly introduced violations (these are the priority — they are recent debt).
 
-## Step 5: Sync with Figma variables (when Figma Console MCP is available)
+## Step 5: Figma variables
 
-If the Figma Console MCP from Southleft is connected (check for `figma_get_variables` and `figma_create_variable` tool availability), extend the audit to include Figma variable synchronisation.
-
-**Read:** Use `figma_get_variables` to pull the full variable set from Figma, including resolved values and mode data. Compare against the code token files audited in Steps 1–4. Flag discrepancies — tokens that exist in code but not Figma, tokens that exist in Figma but not code, and value mismatches between the two.
-
-**Export:** Use `figma_get_variables` with `export_formats` to export Figma variables as CSS custom properties, Sass variables, Tailwind config, or TypeScript objects. Present these alongside audit findings so the user can see the exact Figma values in their code's format.
-
-**Create missing variables:** If the audit identified missing semantic-tier tokens (Step 3), offer to create them in Figma using `figma_create_variable`. Only create variables that were explicitly identified as gaps — do not speculatively generate new tokens. Confirm with the user before creating: "The audit found 4 missing semantic colour tokens. Want me to create them in Figma?"
-
-**When only the official Figma MCP is connected:** its read tools are selection-scoped (`get_variable_defs` returns only the variables a selected node uses), so a full code-vs-Figma comparison isn't possible. Compare what the selection exposes, say the comparison is partial, and note which tokens would need to be created manually.
+Comparing code tokens with Figma variables, and creating or renaming variables in Figma, is `figma-variable-audit`'s job (its Step 6 does the cross-reference, its Step 10 the writes). If a Figma file is configured or the user mentions Figma, say the code-side audit is done and offer to run figma-variable-audit against the same token source, so the two reports line up by name. Don't compare or write to Figma from here.
 
 ## Closing note (include in every report)
 
@@ -322,6 +308,6 @@ End the report with:
 - Remediations are specific: "rename `color.semantic.blue` to `color.action.primary`" not "improve naming"
 - The tier structure assessment covers primitive and semantic tiers, and the component tier where the system uses one
 - If values were not available, the report notes which checks were skipped and why they matter
-- If Figma variables were compared, code-vs-Figma discrepancies are listed with specific variable names
+- Structural DTCG checks, the dependency graph and the Figma comparison are cited from schema-validator, codebase-index and figma-variable-audit, not redone here
 - Orphan claims show their positive control and say which consumers weren't checked
 - The Scope block and the closing note about intentional deviations are present

@@ -186,7 +186,7 @@ If the system uses or is migrating to DTCG 2025.10 format, include a specificati
 - Document each token set: its purpose, which tokens it contains, and which files it references
 - Document each mode: its name, purpose, and which sets it activates
 - Document the composition order: when multiple sets are active, which takes precedence?
-- Include a visual map of sets and modes if the resolver is complex (3+ sets or modes)
+- Include a visual map of sets, modifiers and their contexts if the resolver is complex (3+ sets or contexts)
 
 **Migration status.** For systems partially migrated to DTCG:
 - Which token categories are DTCG-compliant and which are not?

@@ -160,23 +160,23 @@ Not every deprecation has a clean 1:1 replacement. When the replacement does not
 
 The key principle: never deprecate without a path. A deprecation that leaves teams with no alternative is not a deprecation — it is an abandonment.
 
-#### Migration guidance
+#### Migration inputs
 
-Provide step-by-step migration instructions at a level of specificity that a developer can follow without additional context.
+The migration guide itself is written once, by `change-communication`, as part of the breaking-change package; this plan supplies what that guide needs, so the two never disagree. Record here:
 
-For a component migration:
-1. Find all instances of [deprecated component] in your codebase
-2. Replace with [replacement component]
-3. Map the deprecated props to replacement props: [prop mapping table]
-4. Check for [specific behavioural differences that need testing]
-5. Remove any local overrides that compensated for [deprecated component's known weaknesses]
+- **Replacement:** [component, token or pattern], and the cases it doesn't cover (from the decision tree above)
+- **Mapping table:** every deprecated prop or token against its replacement, with `[no equivalent]` where there is none
 
-For a token migration:
-1. Find all references to [deprecated token name]
-2. Replace with [replacement token name]
-3. Verify the computed value matches expectations — [deprecated token] resolved to [value], [replacement token] resolves to [value]. [Note any differences and why they exist.]
+  | Deprecated | Replacement | Note |
+  |---|---|---|
+  | `<Old size="compact">` | `<New size="sm">` | value rename only |
+  | `--color-legacy-teal` | `--color-action-secondary` | resolved values differ: `#0f766e` → `#0d9488` |
 
-If the migration is complex, note where to find additional help: a migration script, a specific Slack channel, a pairing offer from the design systems team.
+- **Behavioural differences to test:** [what changes at runtime, from the source of both]
+- **Local overrides to remove:** [known workarounds consumers added for the deprecated item's weaknesses]
+- **Help:** a codemod (Step 3, below), a channel, a pairing offer
+
+Then run `change-communication` with this plan; its migration guide goes in the announcement and the docs.
 
 #### Timeline
 
@@ -227,7 +227,7 @@ Who needs to know, and how will they be told?
 - **In-system warning:** Add deprecation notice to the component's documentation and, if possible, a code-level deprecation warning in the component itself
 - **Follow-up reminders:** Two weeks before soft removal, two weeks before hard removal
 
-Write the communication announcement as a draft ready to send. See the `change-communication` skill if a full change communication package is needed.
+The announcement and migration guide are `change-communication`'s output; hand it this plan rather than drafting a second announcement here. This section fixes the channels and the reminder dates that the announcement will carry.
 
 #### Exceptions and edge cases
 
