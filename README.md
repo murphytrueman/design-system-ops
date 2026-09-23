@@ -136,7 +136,7 @@ Sample outputs are in [`sample-outputs/`](sample-outputs/). `docs-coverage-carbo
 - **[example-health-dashboard.html](sample-outputs/example-health-dashboard.html)** — An interactive HTML dashboard generated from audit findings: health radar, severity distribution, priority matrix, metric cards. Open in any browser.
 - **[docs-coverage-carbon-react.md](sample-outputs/docs-coverage-carbon-react.md)** — A docs-coverage audit run against a real public Storybook (IBM Carbon's React build): coverage-by-rung, git-based staleness findings with both change dates, and the "37 undocumented → 5 real candidates" triage that keeps the skill from crying wolf. Every finding carries a join-confidence tier.
 
-The folder also holds system-health, component-audit, drift-detection and stakeholder-brief samples — [2-WHATS-INCLUDED.md](2-WHATS-INCLUDED.md) lists all eight.
+Five `fixture-*` samples are unedited runs against the small test design system in `tests/fixtures/`, so you can see exactly what the skills produce and regenerate them yourself with the evals. The folder also holds system-health, component-audit, drift-detection and stakeholder-brief samples — [2-WHATS-INCLUDED.md](2-WHATS-INCLUDED.md) lists all thirteen.
 
 ---
 

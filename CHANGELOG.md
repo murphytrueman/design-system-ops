@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **Five unedited sample outputs** — `fixture-token-audit`, `fixture-token-compliance`, `fixture-docs-coverage`, `fixture-accessibility-per-component` and `fixture-theme-audit`, produced by the evals against the test design system in `tests/fixtures/`. Unlike the anonymised samples, nothing in them is edited, and anyone can regenerate them. Each was checked as a sample, not just as a pass: the skill loaded, and the planted problem appears as a real finding.
+
 ### Fixed
+
+- **The eval grader read words, not findings.** It passed a case if the planted problem was mentioned anywhere and failed it if a correct thing shared a line with a word like "violation" — so an exclusions note saying `currentColor` and `transparent` "are not violations" failed a correct run. It now grades only what appears inside findings.
 
 - **The evals weren't reliably testing the skills.** The runner denied the Skill tool, so a run either read `SKILL.md` by hand or answered without the skill at all — one passing case said outright that it couldn't load the skill. The Skill tool is now allowed, the runner reads Claude Code's event stream, and a case fails unless the skill under test was actually loaded. It also checks the plugin is complete with `verify-install.sh` before running, instead of guessing from the model's wording.
 - **`token-compliance` listed some values twice with two labels.** A hardcoded value that matched no token appeared in the violation table with a severity and again in a separate ⚠️ WARN list. Each value now appears once, with off-system values marked in the Notes column.

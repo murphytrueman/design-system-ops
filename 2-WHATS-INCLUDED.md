@@ -12,7 +12,7 @@ Design System Ops is a toolkit that gives Claude (the AI) deep expertise in desi
 
 Instead of starting from scratch every time you ask Claude for help with your design system, these skills give it the frameworks, mental models, and structured processes that a staff-level design systems practitioner would use.
 
-**What is in the pack:** 40 skills (individual tools that each do one thing well), 4 agents (chained workflows that run multiple skills in sequence), 14 knowledge notes (expert frameworks that power the skills), 8 sample outputs (anonymised examples so you know what to expect), and an optional configuration file.
+**What is in the pack:** 40 skills (individual tools that each do one thing well), 4 agents (chained workflows that run multiple skills in sequence), 14 knowledge notes (expert frameworks that power the skills), 13 sample outputs (anonymised examples and unedited fixture runs, so you know what to expect), and an optional configuration file.
 
 ---
 
@@ -994,7 +994,7 @@ You do not need to ask for staff-level output — the skills assess your system'
 
 ## Sample outputs
 
-The `sample-outputs/` directory contains 8 sample outputs. Use these to understand the depth and format of what the skills produce.
+The `sample-outputs/` directory contains 13 sample outputs. The five `fixture-*` files are unedited runs against the small test design system in `tests/fixtures/`; anyone can regenerate them with the evals. Use these to understand the depth and format of what the skills produce.
 
 | Sample | Skill used | What it shows |
 |---|---|---|
@@ -1006,6 +1006,11 @@ The `sample-outputs/` directory contains 8 sample outputs. Use these to understa
 | `stakeholder-brief-meridian-q1.md` | stakeholder-brief | One-page executive brief: situation, recommendation, a sourced capacity ask, and open placeholders listed at the top |
 | `docs-coverage-carbon-react.md` | docs-coverage | Docs coverage audit of a real public Storybook (IBM Carbon React): coverage by rung, git-based staleness, and join-confidence tiers |
 | `example-health-dashboard.html` | visual-report | Interactive HTML dashboard built from audit findings: health radar, severity distribution, priority matrix. Open in a browser |
+| `fixture-token-audit.md` | token-audit | Unedited run against the test fixture: tier leakage in `card.border` found and traced to the dark-mode break it causes |
+| `fixture-token-compliance.md` | token-compliance | Unedited run against the test fixture: an off-palette hex logged once with its nearest token, exempt keywords correctly left alone |
+| `fixture-docs-coverage.md` | docs-coverage | Unedited run against the test fixture: an exported component with no story, with path-resolved join confidence |
+| `fixture-accessibility-per-component.md` | accessibility-per-component | Unedited run against the test fixture: a tooltip with no `aria-describedby` link and no hover or focus behaviour, nothing marked PASS on code inference alone |
+| `fixture-theme-audit.md` | theme-audit | Unedited run against the test fixture: a border with no dark value found, correct dark elevation and inherited spacing left alone |
 
 ---
 
@@ -1177,13 +1182,18 @@ design-system-ops/
 │   ├── output-discipline.md
 │   └── token-architecture.md
 │
-├── sample-outputs/           ← 8 sample outputs
+├── sample-outputs/           ← 13 sample outputs
 │   ├── component-audit-react-library.md
 │   ├── docs-coverage-carbon-react.md
 │   ├── drift-detection-harbor-consumer-app.md
 │   ├── example-component-description.md
 │   ├── example-health-dashboard.html
 │   ├── example-token-audit.md
+│   ├── fixture-accessibility-per-component.md
+│   ├── fixture-docs-coverage.md
+│   ├── fixture-theme-audit.md
+│   ├── fixture-token-audit.md
+│   ├── fixture-token-compliance.md
 │   ├── stakeholder-brief-meridian-q1.md
 │   └── system-health-meridian.md
 │

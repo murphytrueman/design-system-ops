@@ -365,7 +365,7 @@ The knowledge notes are the canonical source in `knowledge-notes/`. Skills refer
 
 ## Step 7: Use the sample outputs as benchmarks
 
-The `sample-outputs/` directory contains 8 sample outputs:
+The `sample-outputs/` directory contains 13 sample outputs. The five `fixture-*` files are unedited runs against the test design system in `tests/fixtures/`:
 
 | File | What it demonstrates |
 |---|---|
@@ -377,6 +377,11 @@ The `sample-outputs/` directory contains 8 sample outputs:
 | `drift-detection-harbor-consumer-app.md` | Drift analysis of a consumer app: hardcoded values, local re-implementations, and suggested fixes, each classified by cause. |
 | `stakeholder-brief-meridian-q1.md` | One-page executive brief with every figure sourced and open placeholders listed at the top. |
 | `docs-coverage-carbon-react.md` | Docs coverage audit of a real public Storybook: coverage by rung, git-based staleness, and join-confidence tiers. |
+| `fixture-token-audit.md` | Unedited run against the test fixture: tier leakage in `card.border` found and traced to the dark-mode break it causes. |
+| `fixture-token-compliance.md` | Unedited run against the test fixture: an off-palette hex logged once with its nearest token, exempt keywords correctly left alone. |
+| `fixture-docs-coverage.md` | Unedited run against the test fixture: an exported component with no story, with path-resolved join confidence. |
+| `fixture-accessibility-per-component.md` | Unedited run against the test fixture: a tooltip with no `aria-describedby` link and no hover or focus behaviour, nothing marked PASS on code inference alone. |
+| `fixture-theme-audit.md` | Unedited run against the test fixture: a border with no dark value found, correct dark elevation and inherited spacing left alone. |
 
 **How to use them:** Compare your first skill run against the sample. The sample demonstrates the expected depth, specificity, and structure. If your output is significantly less detailed, check that the knowledge notes loaded correctly (the skill should mention reading them in its process).
 

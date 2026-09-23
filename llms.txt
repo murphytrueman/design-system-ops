@@ -20,5 +20,5 @@ The pack only works with its folders side by side. Every skill under `skills/<na
 ## Optional
 
 - [3-SETUP-AND-CONFIG.md](3-SETUP-AND-CONFIG.md): framework compatibility, monorepos, and troubleshooting
-- [sample-outputs/](sample-outputs/): sample skill outputs showing expected depth and format (anonymised)
+- [sample-outputs/](sample-outputs/): sample skill outputs showing expected depth and format (anonymised, plus unedited fixture runs)
 - [CHANGELOG.md](CHANGELOG.md): version history
