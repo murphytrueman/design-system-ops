@@ -73,7 +73,7 @@ def plugin_is_complete(plugin, tmp):
         shutil.unpack_archive(plugin, root, "zip")
     result = subprocess.run(["bash", os.path.join(root, "verify-install.sh"), root],
                             capture_output=True, text=True)
-    return result.returncode == 0, result.stdout.strip().splitlines()[-1:] or [""]
+    return result.returncode == 0, result.stdout.strip().splitlines()[-1:] or [""], root
 
 
 def fresh_fixture(fixture, tmp):
@@ -87,12 +87,24 @@ def fresh_fixture(fixture, tmp):
     return target
 
 
-def run_case(case, plugin, fixture, model, timeout):
+def flatten_into(repo, root, skill):
+    """Install one skill the way flattening installers do (npx skills install):
+    just its SKILL.md, in its own folder, with no knowledge-notes/ beside it."""
+    target = os.path.join(repo, ".claude", "skills", skill)
+    os.makedirs(target)
+    shutil.copy(os.path.join(root, "skills", skill, "SKILL.md"), target)
+
+
+def run_case(case, plugin, root, fixture, model, timeout):
     with tempfile.TemporaryDirectory(prefix="dsops-eval-") as tmp:
         repo = fresh_fixture(fixture, tmp)
+        if case.get("layout") == "flattened":
+            flatten_into(repo, root, case["skill"])
+            source = []  # the flattened copy is the only install
+        else:
+            source = ["--plugin-dir", plugin]
         command = [
-            "claude", "-p", case["prompt"],
-            "--plugin-dir", plugin,
+            "claude", "-p", case["prompt"], *source,
             "--output-format", "stream-json", "--verbose",
             "--permission-mode", "dontAsk",
             "--allowedTools", *ALLOWED_TOOLS,
@@ -185,12 +197,25 @@ def findings(report):
     return [(lines[0], "\n".join(lines)) for lines in found]
 
 
+# A health assessment looks like dimension statuses. A skill that stopped on a
+# broken install must not produce one.
+ASSESSMENT = re.compile("(\U0001F7E2|\U0001F7E1|\U0001F7E0|\U0001F534)\\s*\\**\\s*(Strong|Functional|Weak|Absent)")
+
+
 def check(case, output, calls):
     lowered = output.lower()
     problems = []
     if not skill_was_loaded(case["skill"], calls):
         used = sorted({name for name, _ in calls}) or ["none"]
         problems.append("the %s skill was never loaded (tools used: %s)" % (case["skill"], ", ".join(used)))
+    if case.get("expect") == "stop":
+        # The broken-install case: the skill must refuse to run without its
+        # references and say why, not answer anyway.
+        if "incomplete" not in lowered and "reinstall" not in lowered:
+            problems.append("didn't say the install is incomplete")
+        if ASSESSMENT.search(output):
+            problems.append("produced an assessment anyway instead of stopping")
+        return problems
     blocks = findings(output)
     anchor = case["finds"][0].lower()
     if not any(anchor in text.lower() for _, text in blocks):
@@ -239,7 +264,7 @@ def main():
     failed = 0
     with tempfile.TemporaryDirectory(prefix="dsops-eval-build-") as build_tmp:
         plugin = os.path.abspath(args.plugin) if args.plugin else build_bundle(build_tmp)
-        complete, summary = plugin_is_complete(plugin, build_tmp)
+        complete, summary, root = plugin_is_complete(plugin, build_tmp)
         if not complete:
             print("SETUP\n    the plugin under test is incomplete: %s" % summary[0])
             return 2
@@ -247,7 +272,7 @@ def main():
             print("%-26s %-28s " % (case["id"], case["skill"]), end="", flush=True)
             started = time.time()
             try:
-                code, output, errors = run_case(case, plugin, spec["fixture"], args.model, args.timeout)
+                code, output, errors = run_case(case, plugin, root, spec["fixture"], args.model, args.timeout)
             except subprocess.TimeoutExpired:
                 print(" FAIL\n    timed out after %ds" % args.timeout)
                 failed += 1

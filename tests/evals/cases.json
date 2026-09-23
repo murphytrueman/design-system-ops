@@ -71,6 +71,17 @@
         ]
       ],
       "why": "--card-border is a raw value with no dark override, so cards keep a light border in dark mode. Correct behaviour that must not be flagged: the raised surface is lighter than the base in dark mode, and spacing inherits from :root."
+    },
+    {
+      "id": "flattened-install",
+      "skill": "system-health",
+      "layout": "flattened",
+      "expect": "stop",
+      "prompt": "Use the system-health skill to assess the health of this design system.",
+      "finds": [
+        "incomplete"
+      ],
+      "why": "Reproduces the reported bug: system-health installed on its own, as npx skills install does, with no knowledge-notes/ beside it. The skill must stop at its self-check and say the install is incomplete, not produce an assessment without its reference material."
     }
   ]
 }
