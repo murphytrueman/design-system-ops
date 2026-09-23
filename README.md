@@ -132,11 +132,13 @@ Sample outputs are in [`sample-outputs/`](sample-outputs/). `docs-coverage-carbo
 - **[example-health-dashboard.html](sample-outputs/example-health-dashboard.html)** — An interactive HTML dashboard generated from audit findings: health radar, severity distribution, priority matrix, metric cards. Open in any browser.
 - **[docs-coverage-carbon-react.md](sample-outputs/docs-coverage-carbon-react.md)** — A docs-coverage audit run against a real public Storybook (IBM Carbon's React build): coverage-by-rung, git-based staleness findings with both change dates, and the "37 undocumented → 5 real candidates" triage that keeps the skill from crying wolf. Every finding carries a join-confidence tier.
 
+The folder also holds system-health, component-audit, drift-detection and stakeholder-brief samples — [2-WHATS-INCLUDED.md](2-WHATS-INCLUDED.md) lists all eight.
+
 ---
 
 ## Configuration
 
-Every skill works out of the box with no configuration. If you want to customise behaviour — severity overrides, Figma integration, GitHub API access, recurring trend tracking — create a `.ds-ops-config.yml` in your project root. An annotated template is included in the skill pack.
+Every skill works out of the box with no configuration. If you want to customise behaviour — severity overrides, Figma integration, GitHub API access, recurring trend tracking — copy the annotated template, [`ds-ops-config.example.yml`](ds-ops-config.example.yml), to your project root as `.ds-ops-config.yml`. It documents every key the skills read.
 
 See [3-SETUP-AND-CONFIG.md](3-SETUP-AND-CONFIG.md) for the full configuration reference.
 
@@ -147,7 +149,7 @@ See [3-SETUP-AND-CONFIG.md](3-SETUP-AND-CONFIG.md) for the full configuration re
 Several skills become more powerful when Claude can read your Figma file directly. Two options:
 
 - **[Figma Console MCP](https://github.com/southleft/figma-console-mcp)** (recommended) — Read and write access. Skills can write descriptions back into components, rename variables, create tokens.
-- **[Standard Figma MCP](https://help.figma.com/hc/en-us/articles/32132100833559-Guide-to-the-Figma-MCP-server)** — Reads are scoped to your current selection, and it can write through its `use_figma` tool. Skills pull component data and the variables a selection uses; collection-wide variable audits need the Console MCP.
+- **[Official Figma MCP](https://help.figma.com/hc/en-us/articles/32132100833559-Guide-to-the-Figma-MCP-server)** — Reads are scoped to your current selection, and it can write through its `use_figma` tool. Skills pull component data and the variables a selection uses; collection-wide variable audits need the Console MCP.
 
 Setup details in [1-INSTALL.md](1-INSTALL.md#setting-up-figma-integration).
 
@@ -168,6 +170,7 @@ Setup details in [1-INSTALL.md](1-INSTALL.md#setting-up-figma-integration).
 | [1-INSTALL.md](1-INSTALL.md) | Full installation guide with entry points by use case |
 | [2-WHATS-INCLUDED.md](2-WHATS-INCLUDED.md) | Complete product documentation — every skill, agent, and knowledge note |
 | [3-SETUP-AND-CONFIG.md](3-SETUP-AND-CONFIG.md) | Deep-dive setup, framework compatibility, monorepo handling, troubleshooting |
+| [CHANGELOG.md](CHANGELOG.md) | What changed in each release, and why |
 
 ---
 
@@ -181,7 +184,9 @@ Run the test suite before opening a pull request:
 ./tests/run.sh
 ```
 
-Stdlib Python, nothing to install. It validates skill frontmatter, reference paths, slash-command targets, documentation links, and the built plugin bundle. CI runs the same suite on every pull request — see [tests/README.md](tests/README.md).
+Stdlib Python, nothing to install. It checks skill frontmatter and references, that every count and config key the docs mention matches the files, that commands pre-approve the tools their skills use, that no output template asks for a numeric score, and that the built plugin bundle is complete and installs cleanly. CI runs the same suite on every pull request.
+
+Before a release, `python3 tests/evals/run_evals.py` runs key skills against a small design system with known problems planted in it and checks they find them. It calls Claude, so it isn't part of CI — see [tests/README.md](tests/README.md).
 
 ---
 
