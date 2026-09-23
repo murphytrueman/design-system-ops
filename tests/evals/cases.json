@@ -82,6 +82,88 @@
         "incomplete"
       ],
       "why": "Reproduces the reported bug: system-health installed on its own, as npx skills install does, with no knowledge-notes/ beside it. The skill must stop at its self-check and say the install is incomplete, not produce an assessment without its reference material."
+    },
+    {
+      "id": "route-token-compliance",
+      "skill": "token-compliance",
+      "expect": "route",
+      "prompt": "Are there any hardcoded colours or spacing values in our components that should be using design tokens?",
+      "finds": [],
+      "why": "A plain request that doesn't name a skill must route to token-compliance, not a neighbouring skill."
+    },
+    {
+      "id": "route-token-audit",
+      "skill": "token-audit",
+      "expect": "route",
+      "prompt": "Is our design token architecture set up well? Look at how the tiers are structured.",
+      "finds": [],
+      "why": "A plain request that doesn't name a skill must route to token-audit, not a neighbouring skill."
+    },
+    {
+      "id": "route-design-to-code",
+      "skill": "design-to-code-check",
+      "expect": "route",
+      "prompt": "Does our Card component match its design spec? The spec: 16px padding, 8px corner radius, a 1px border in the default border colour, and the title in the default text colour.",
+      "finds": [],
+      "why": "A plain request that doesn't name a skill must route to design-to-code-check, not a neighbouring skill."
+    },
+    {
+      "id": "route-drift",
+      "skill": "drift-detection",
+      "expect": "route",
+      "prompt": "Across this codebase, where have we drifted away from what the design system intended?",
+      "finds": [],
+      "why": "A plain request that doesn't name a skill must route to drift-detection, not a neighbouring skill."
+    },
+    {
+      "id": "route-stakeholder-brief",
+      "skill": "stakeholder-brief",
+      "expect": "route",
+      "prompt": "Write a short update for our VP of Product on where the design system stands this quarter.",
+      "finds": [],
+      "why": "A plain request that doesn't name a skill must route to stakeholder-brief, not a neighbouring skill."
+    },
+    {
+      "id": "route-system-pitch",
+      "skill": "system-pitch",
+      "expect": "route",
+      "prompt": "Help me build the business case to fund a dedicated design system team next year.",
+      "finds": [],
+      "why": "A plain request that doesn't name a skill must route to system-pitch, not a neighbouring skill."
+    },
+    {
+      "id": "route-engineering-onboarding",
+      "skill": "engineering-onboarding",
+      "expect": "route",
+      "prompt": "Write a getting-started guide for a frontend engineer who joins our team next week.",
+      "finds": [],
+      "why": "A plain request that doesn't name a skill must route to engineering-onboarding, not a neighbouring skill."
+    },
+    {
+      "id": "route-designer-onboarding",
+      "skill": "designer-onboarding",
+      "expect": "route",
+      "prompt": "Write a getting-started guide for a product designer who joins our team next week.",
+      "finds": [],
+      "why": "A plain request that doesn't name a skill must route to designer-onboarding, not a neighbouring skill."
+    },
+    {
+      "id": "release-chain",
+      "skill": "release-check",
+      "expect": "chain",
+      "prompt": "/design-system-ops:release-check Button — a new component release. Design spec: primary and secondary variants; padding var(--space-gap) by var(--space-inset); 6px corner radius; primary uses the action colour with on-action text; secondary is transparent with an action-coloured label and border.",
+      "chain": [
+        "design-to-code-check",
+        "accessibility-per-component",
+        "token-compliance",
+        "ai-component-description",
+        "usage-guidelines",
+        "change-communication"
+      ],
+      "finds": [
+        "Button"
+      ],
+      "why": "The release pipeline must load all six chained skills and produce one combined report with a single Scope block, per the chained-run rules."
     }
   ]
 }

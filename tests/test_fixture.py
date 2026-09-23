@@ -107,11 +107,22 @@ class TestFixtureHygiene(unittest.TestCase):
         cases = json.loads(dsops.read_text(CASES))["cases"]
         self.assertGreaterEqual(len(cases), 4)
         skills = {os.path.basename(d) for d in dsops.skill_dirs()}
+        commands = {os.path.splitext(os.path.basename(p))[0] for p in dsops.command_files()}
         for case in cases:
             with self.subTest(case=case["id"]):
-                self.assertIn(case["skill"], skills)
-                self.assertIn(case["skill"], case["prompt"])
-                self.assertTrue(case["finds"])
+                expect = case.get("expect")
+                if expect == "route":
+                    # The point is that the prompt doesn't name the skill.
+                    self.assertIn(case["skill"], skills)
+                    self.assertNotIn(case["skill"], case["prompt"])
+                elif expect == "chain":
+                    self.assertIn(case["skill"], commands)
+                    self.assertIn("/design-system-ops:" + case["skill"], case["prompt"])
+                    self.assertTrue(set(case["chain"]) <= skills)
+                else:
+                    self.assertIn(case["skill"], skills)
+                    self.assertIn(case["skill"], case["prompt"])
+                    self.assertTrue(case["finds"])
 
 
 if __name__ == "__main__":

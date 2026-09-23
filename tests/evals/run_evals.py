@@ -115,10 +115,10 @@ def run_case(case, plugin, root, fixture, model, timeout):
             command.append("--bare")
         if model:
             command += ["--model", model]
-        return stream(command, repo, timeout)
+        return stream(command, repo, timeout, stop_at_skill=case.get("expect") == "route")
 
 
-def stream(command, cwd, timeout):
+def stream(command, cwd, timeout, stop_at_skill=False):
     """Run claude and show progress as it works: S when the skill loads, a dot
     for every other tool call. A case takes minutes; silence looks like a hang."""
     process = subprocess.Popen(command, cwd=cwd, stdout=subprocess.PIPE,
@@ -138,6 +138,9 @@ def stream(command, cwd, timeout):
             for block in event.get("message", {}).get("content", []):
                 if isinstance(block, dict) and block.get("type") == "tool_use":
                     print("S" if block.get("name") == "Skill" else ".", end="", flush=True)
+                    if stop_at_skill and block.get("name") == "Skill":
+                        # Routing is decided: no need to pay for the full run.
+                        process.kill()
         errors = process.stderr.read()
         code = process.wait()
     finally:
@@ -202,9 +205,48 @@ def findings(report):
 ASSESSMENT = re.compile("(\U0001F7E2|\U0001F7E1|\U0001F7E0|\U0001F534)\\s*\\**\\s*(Strong|Functional|Weak|Absent)")
 
 
+def skills_loaded(calls):
+    """Skill names loaded in order, via the Skill tool or by reading SKILL.md."""
+    loaded = []
+    for name, arguments in calls:
+        if name == "Skill":
+            loaded.append(str(arguments.get("skill", "")).split(":")[-1])
+        elif name == "Read":
+            match = re.search(r"skills/([a-z0-9-]+)/SKILL\.md$", str(arguments.get("file_path", "")))
+            if match:
+                loaded.append(match.group(1))
+    return loaded
+
+
+SCOPE_BLOCK = re.compile(r"(?m)^\s*(\*\*Scope\*\*|#+\s*Scope\b)")
+
+
 def check(case, output, calls):
     lowered = output.lower()
     problems = []
+    if case.get("expect") == "route":
+        # A plain request that names no skill: the first skill Claude loads
+        # must be the right one.
+        picked = [str(args.get("skill", "")).split(":")[-1] for name, args in calls if name == "Skill"]
+        if not picked:
+            problems.append("no skill was loaded; Claude answered without one")
+        elif picked[0] != case["skill"]:
+            problems.append("routed to %s instead of %s" % (picked[0], case["skill"]))
+        return problems
+    if case.get("expect") == "chain":
+        # A workflow command: every chained skill must actually load, and the
+        # result is one report (one Scope block), not a stack of reports.
+        loaded = set(skills_loaded(calls))
+        for skill in case["chain"]:
+            if skill not in loaded:
+                problems.append("chained skill never loaded: %s" % skill)
+        scopes = len(SCOPE_BLOCK.findall(output))
+        if scopes != 1:
+            problems.append("expected one combined Scope block, found %d" % scopes)
+        for term in case.get("finds", []):
+            if term.lower() not in lowered:
+                problems.append("missed: %r" % term)
+        return problems
     if not skill_was_loaded(case["skill"], calls):
         used = sorted({name for name, _ in calls}) or ["none"]
         problems.append("the %s skill was never loaded (tools used: %s)" % (case["skill"], ", ".join(used)))
@@ -286,9 +328,11 @@ def main():
             report, calls = parse_stream(output)
             with open(os.path.join(OUT, case["id"] + ".md"), "w", encoding="utf-8") as handle:
                 handle.write(report)
+            # A routing case is killed on purpose once a skill loads.
+            stopped_on_purpose = case.get("expect") == "route" and any(n == "Skill" for n, _ in calls)
             problems = (
                 check(case, report, calls)
-                if code == 0
+                if code == 0 or stopped_on_purpose
                 else ["claude exited %d: %s" % (code, (errors or output).strip()[:300])]
             )
             if problems:
