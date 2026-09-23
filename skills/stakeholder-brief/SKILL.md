@@ -1,6 +1,6 @@
 ---
 name: stakeholder-brief
-description: "One-page brief translating design system status or a single recommendation into business language for leadership. Triggers: stakeholder update, exec brief, leadership summary. For a full investment case with ROI use system-pitch; for charts use visual-report."
+description: "Turns design system status or a recommendation into a one-page brief in business language. Use it whenever someone wants an update, summary or note on the system for a VP, exec or stakeholder, however short. Investment case: system-pitch. Charts: visual-report."
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/executive-communication.md

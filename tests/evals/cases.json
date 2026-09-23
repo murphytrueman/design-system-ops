@@ -183,6 +183,22 @@
         "BLOCKED"
       ],
       "why": "Tooltip isn't a working tooltip yet (the bubble is always visible, and its trigger isn't linked with aria-describedby), so a gate must block it: the release is BLOCKED and the documentation and announcement steps never run. Either gate may catch it — design-to-code checks focus and keyboard behaviour too."
+    },
+    {
+      "id": "route-design-to-code-2",
+      "skill": "design-to-code-check",
+      "expect": "route",
+      "prompt": "Can you check our Button implementation lines up with what design specified? They asked for 8px by 16px padding, a 6px radius and the action colour for the primary variant.",
+      "finds": [],
+      "why": "A second wording that doesn't name a skill must also route to design-to-code-check. It guards against tuning the description to one test sentence."
+    },
+    {
+      "id": "route-stakeholder-brief-2",
+      "skill": "stakeholder-brief",
+      "expect": "route",
+      "prompt": "Our CPO keeps asking how the design system is going. Can you write something I could send her this week?",
+      "finds": [],
+      "why": "A second wording that doesn't name a skill must also route to stakeholder-brief. It guards against tuning the description to one test sentence."
     }
   ]
 }
