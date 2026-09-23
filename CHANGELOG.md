@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- **The evals weren't reliably testing the skills.** The runner denied the Skill tool, so a run either read `SKILL.md` by hand or answered without the skill at all — one passing case said outright that it couldn't load the skill. The Skill tool is now allowed, the runner reads Claude Code's event stream, and a case fails unless the skill under test was actually loaded. It also checks the plugin is complete with `verify-install.sh` before running, instead of guessing from the model's wording.
+- **`token-compliance` listed some values twice with two labels.** A hardcoded value that matched no token appeared in the violation table with a severity and again in a separate ⚠️ WARN list. Each value now appears once, with off-system values marked in the Notes column.
+
 ## [1.3.1] - 2026-09-23
 
 ### Fixed

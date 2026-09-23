@@ -84,7 +84,7 @@ Token compliance has the most value on messy codebases — the ones with years o
 
 4. **Intentional override detection.** Not every hardcoded value is a violation:
    - Values with comments like `/* override */` or `/* intentional */`: list them separately as "Marked intentional in code", with the comment, so the team can confirm.
-   - Values that match no token: report as off-system (⚠️ WARN) with the nearest token. They may be one-off design requirements or a gap in the scale — either way the team should decide, not the tool.
+   - Values that match no token are still violations, logged once in the violation log with their severity like any other. In the Correct token column, write "none — nearest: `<token>`" and mark the row off-system in Notes: the value may be a one-off design requirement or a gap in the scale, and the team should decide which, not the tool.
 
 ---
 
@@ -209,7 +209,7 @@ Group by check type. For each violation:
 |---|---|---|---|---|---|---|
 | TC-01 | Colour | 🔴 Critical / 🟠 High / 🟡 Medium / ⚪ Low | [file path or context] | `#0066CC` | `var(--color-action-primary)` | |
 
-Off-system values (match no token) go in a separate list marked ⚠️ WARN, each with the nearest token.
+Each value appears once. Off-system values (no matching token) stay in this table with their severity; put "none — nearest: `<token>`" in the Correct token column and "off-system" in Notes. Don't repeat them in a separate list.
 
 **Excluded as structural:** one line listing the values left out and why — e.g. `max-width: 960px` (layout container), `border: 1px solid` (divider), test-wrapper padding. Don't log these as violations.
 

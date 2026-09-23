@@ -16,8 +16,9 @@ Usage:
   python3 tests/evals/run_evals.py --plugin installable/design-system-ops.zip
   python3 tests/evals/run_evals.py --model claude-sonnet-5
 
-Outputs are saved to tests/evals/out/<case>.md (gitignored) so you can read
-what each skill actually produced, and reuse a good one as a sample output.
+Outputs are saved to tests/evals/out/ (gitignored): <case>.md is the report the
+skill produced, <case>.jsonl the full event stream. A case fails unless the
+skill under test was actually loaded through the Skill tool.
 
 Exit: 0 all cases pass, 1 any case fails, 2 setup problem.
 """
@@ -37,8 +38,10 @@ OUT = os.path.join(HERE, "out")
 
 # Read-only tools only: a skill run must never change anything, even in a
 # throwaway copy. Anything else is denied without prompting (dontAsk).
+# "Skill" is what loads a skill: without it, a run either reads SKILL.md by
+# hand or answers without the skill at all, and the case tests nothing.
 ALLOWED_TOOLS = [
-    "Read", "Grep", "Glob",
+    "Skill", "Read", "Grep", "Glob",
     "Bash(ls:*)", "Bash(cat:*)", "Bash(find:*)", "Bash(grep:*)", "Bash(rg:*)",
     "Bash(wc:*)", "Bash(head:*)", "Bash(git log:*)", "Bash(git ls-files:*)",
 ]
@@ -87,7 +90,7 @@ def run_case(case, plugin, fixture, model, timeout):
         command = [
             "claude", "-p", case["prompt"],
             "--plugin-dir", plugin,
-            "--output-format", "text",
+            "--output-format", "stream-json", "--verbose",
             "--permission-mode", "dontAsk",
             "--allowedTools", *ALLOWED_TOOLS,
         ]
@@ -101,9 +104,37 @@ def run_case(case, plugin, fixture, model, timeout):
     return result.returncode, result.stdout, result.stderr
 
 
-def check(case, output):
+def parse_stream(stream):
+    """Split a stream-json run into (final report text, tool calls made)."""
+    report, calls = "", []
+    for line in stream.splitlines():
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        if event.get("type") == "assistant":
+            for block in event.get("message", {}).get("content", []):
+                if isinstance(block, dict) and block.get("type") == "tool_use":
+                    calls.append((block.get("name", ""), block.get("input", {})))
+        elif event.get("type") == "result":
+            report = event.get("result") or ""
+    return report, calls
+
+
+def skill_was_loaded(skill, calls):
+    """The case only means something if the skill under test actually ran."""
+    for name, arguments in calls:
+        if name == "Skill" and skill in json.dumps(arguments):
+            return True
+    return False
+
+
+def check(case, output, calls):
     lowered = output.lower()
     problems = []
+    if not skill_was_loaded(case["skill"], calls):
+        used = sorted({name for name, _ in calls}) or ["none"]
+        problems.append("the %s skill was never loaded (tools used: %s)" % (case["skill"], ", ".join(used)))
     for term in case["finds"]:
         if term.lower() not in lowered:
             problems.append("missed: %r" % term)
@@ -156,10 +187,13 @@ def main():
                 print("SETUP\n    claude couldn't authenticate: %s" % (output + errors).strip()[:200])
                 print("    Sign in with `claude` interactively (or set ANTHROPIC_API_KEY), then re-run.")
                 return 2
-            with open(os.path.join(OUT, case["id"] + ".md"), "w", encoding="utf-8") as handle:
+            with open(os.path.join(OUT, case["id"] + ".jsonl"), "w", encoding="utf-8") as handle:
                 handle.write(output)
+            report, calls = parse_stream(output)
+            with open(os.path.join(OUT, case["id"] + ".md"), "w", encoding="utf-8") as handle:
+                handle.write(report)
             problems = (
-                check(case, output)
+                check(case, report, calls)
                 if code == 0
                 else ["claude exited %d: %s" % (code, (errors or output).strip()[:300])]
             )

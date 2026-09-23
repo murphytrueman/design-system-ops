@@ -47,7 +47,7 @@ one-command fix for the self-check block, and the tests check it too.
 
 ## Evals: what the skills actually do
 
-The tests above check what the skills *say*. `tests/evals/run_evals.py` checks what they *do*: it runs skills headlessly with the `claude` CLI against a fresh copy of `fixtures/sample-ds/` — a small design system with problems planted in it — and checks each output names the planted problem without flagging the things that are correct. Cases live in `evals/cases.json`, outside the fixture, so a skill run can't read the answers.
+The tests above check what the skills *say*. `tests/evals/run_evals.py` checks what they *do*: it runs skills headlessly with the `claude` CLI against a fresh copy of `fixtures/sample-ds/` — a small design system with problems planted in it — and checks each output names the planted problem without flagging the things that are correct. A case also fails unless the skill under test was actually loaded through the Skill tool, and the runner checks the plugin under test with `verify-install.sh` before any case runs. Cases live in `evals/cases.json`, outside the fixture, so a skill run can't read the answers.
 
 ```bash
 python3 tests/evals/run_evals.py                      # every case, against a fresh build
