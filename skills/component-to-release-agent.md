@@ -65,13 +65,15 @@ Classify the change before proceeding. The classification flows through every su
 
 ## Phase 1: Validate
 
+Steps 1–3 are gates. **When a gate blocks, the pipeline stops there:** don't run the remaining steps. Produce the release package with the decision BLOCKED, the blocking findings and what would fix each one, and list the steps that didn't run in the Scope block. Documentation and announcements for a component that has to change first would be written for the wrong component.
+
 ### Step 1 — Design-to-code check (`design-to-code-check`)
 
 Compare the implementation against the design specification. Capture:
 - Discrepancy log with classifications (Type I: implementation error / Type II: spec gap / Type III: system inconsistency / Type IV: accepted divergence)
 - Any critical or high severity findings
 
-**Gate:** If critical findings exist (accessibility regression, significant visual divergence), stop here. The component is not ready to proceed to accessibility audit. Fix the critical findings first and re-run.
+**Gate:** Critical findings (accessibility regression, significant visual divergence) block. Stop the pipeline here.
 
 If only medium and low findings exist: document them, proceed, and include them in the release notes as known minor differences if they are not being corrected before release.
 
@@ -81,9 +83,7 @@ Run the full five-dimension accessibility audit. Capture:
 - Overall status (✅ PASS / ⚠️ WARN / ❌ FAIL)
 - Any FAIL findings across keyboard navigation, screen reader, colour contrast, focus management, ARIA
 
-**Gate:** Any FAIL finding on keyboard navigation, focus management, or ARIA is a release blocker. A component that fails these dimensions should not ship. Fix and re-run.
-
-FAIL findings on colour contrast should be treated as release blockers unless the failing state is explicitly documented as an accepted exception with a timeline for correction.
+**Gate:** Any FAIL on keyboard navigation, focus management or ARIA blocks, unless `gates.accessibility.keyboard_blocks_release` is false. A colour contrast FAIL blocks too, unless `gates.accessibility.contrast_blocks_release` is false or the failing state is documented as an accepted exception with a timeline for correction. When this gate blocks, stop the pipeline here.
 
 WARN findings should be documented in the release notes.
 
@@ -94,7 +94,7 @@ Check for hardcoded values, wrong-tier token references, and inconsistent token 
 - Any wrong-tier references (architecturally critical)
 - Any hardcoded values that would break under theming
 
-**Gate:** Wrong-tier references and hardcoded colour values are release blockers for systems with active theming. For systems without theming, they are High priority items to be noted in the release notes with a remediation plan.
+**Gate:** Wrong-tier references and hardcoded colour values block for systems with active theming (see `gates.token_compliance.*`); when they do, stop the pipeline here. For systems without theming, they are High priority items to be noted in the release notes with a remediation plan.
 
 ### Step 3b — Blast radius (breaking changes only)
 
@@ -164,7 +164,7 @@ Open with one headline sentence: is this component clear to release, and if not,
 
 **Component:** [name]
 **Release type:** [New component / Enhancement / Breaking change / Bug fix — from Phase 0]
-**Status:** READY FOR REVIEW — requires human sign-off before publication
+**Sign-off:** a person must approve this package before anything is published, whatever the release decision below.
 
 ---
 
@@ -176,7 +176,9 @@ Open with one headline sentence: is this component clear to release, and if not,
 | Accessibility | ✅ PASS / ⚠️ WARN / ❌ FAIL | [count] | [key findings] |
 | Token compliance | ✅ PASS / ⚠️ WARN / ❌ FAIL | [count] | [key findings] |
 
-**Release decision:** CLEAR TO RELEASE / BLOCKED (list blocking findings) / CLEAR WITH NOTES (list tracked items)
+**Release decision:** CLEAR TO RELEASE / BLOCKED (list blocking findings) / CLEAR WITH NOTES (list tracked items). This is the only verdict in the package.
+
+If a gate stopped the pipeline, the package ends after the validation summary and the blocking findings: leave out the documentation and communication sections, and list the steps that didn't run in the Scope block.
 
 ---
 
@@ -232,11 +234,11 @@ One combined Scope block covering every step (per output-discipline), including 
 
 ## Quality checks
 
-- All three gates (Steps 1–3) are applied — critical and blocking findings stop the pipeline at the relevant step
+- All three gates (Steps 1–3) are applied — a blocking finding stops the pipeline at that step, and the steps that didn't run are listed in Scope
 - Breaking changes have a Step 3b blast radius with the searched repositories listed
 - Package opens with one headline sentence, has one combined Scope block and one closing note, and ends with the provenance footer
 - Nothing is written to Figma or published; the Figma write-back is on the sign-off checklist
 - Documentation is internally consistent — AI description and usage guidelines do not contradict each other
 - Provenance markers are present on all AI-generated documentation
-- Release package clearly states READY FOR REVIEW — the human sign-off requirement is not implicit
+- The package states that a person must sign off before publication, and the release decision is its only verdict
 - The sign-off checklist is specific to this component, not generic

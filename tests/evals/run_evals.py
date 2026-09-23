@@ -252,6 +252,10 @@ def check(case, output, calls):
         for skill in case["chain"]:
             if skill not in loaded:
                 problems.append("chained skill never loaded: %s" % skill)
+        # A blocking gate must stop the pipeline: later steps must not run.
+        for skill in case.get("not_after_gate", []):
+            if skill in loaded:
+                problems.append("ran %s after the gate should have stopped the pipeline" % skill)
         scopes = len(SCOPE_BLOCK.findall(output))
         if scopes != 1:
             problems.append("expected one combined Scope block, found %d" % scopes)

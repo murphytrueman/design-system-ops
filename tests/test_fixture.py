@@ -81,6 +81,33 @@ class TestControls(unittest.TestCase):
         dark = css_block(fixture("src", "styles", "tokens.css"), '[data-theme="dark"]')
         self.assertNotIn("--space-", dark)
 
+    def test_button_passes_contrast_in_both_themes(self):
+        # The full release-chain case needs Button to clear every gate, so it
+        # must not fail contrast in either theme.
+        css = fixture("src", "styles", "tokens.css")
+        themes = {"light": css_block(css, ":root"), "dark": css_block(css, '[data-theme="dark"]')}
+
+        def value(theme, name):
+            for block in (themes[theme], themes["light"]):
+                match = re.search(r"--%s:\s*(#[0-9a-fA-F]{6})" % name, block)
+                if match:
+                    return match.group(1)
+            raise AssertionError("no value for --%s" % name)
+
+        def ratio(a, b):
+            high, low = sorted((luminance(a), luminance(b)), reverse=True)
+            return (high + 0.05) / (low + 0.05)
+
+        for theme in ("light", "dark"):
+            action, text = value(theme, "color-action-primary"), value(theme, "color-text-on-action")
+            for label, fg, bg in (
+                ("primary label", text, action),
+                ("secondary label on base", action, value(theme, "color-surface-base")),
+                ("secondary label on raised", action, value(theme, "color-surface-raised")),
+            ):
+                with self.subTest(theme=theme, pairing=label):
+                    self.assertGreaterEqual(ratio(fg, bg), 4.5)
+
     def test_button_uses_only_exempt_keywords(self):
         css = fixture("src", "components", "Button", "Button.module.css")
         self.assertIn("transparent", css)
@@ -119,6 +146,7 @@ class TestFixtureHygiene(unittest.TestCase):
                     self.assertIn(case["skill"], commands)
                     self.assertIn("/design-system-ops:" + case["skill"], case["prompt"])
                     self.assertTrue(set(case["chain"]) <= skills)
+                    self.assertTrue(set(case.get("not_after_gate", [])) <= skills)
                 else:
                     self.assertIn(case["skill"], skills)
                     self.assertIn(case["skill"], case["prompt"])

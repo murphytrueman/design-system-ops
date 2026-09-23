@@ -2,6 +2,8 @@
   "color": {
     "$type": "color",
     "blue": {
+      "300": { "$value": { "colorSpace": "srgb", "components": [0.576, 0.773, 0.992], "hex": "#93c5fd" } },
+      "400": { "$value": { "colorSpace": "srgb", "components": [0.376, 0.647, 0.980], "hex": "#60a5fa" } },
       "500": { "$value": { "colorSpace": "srgb", "components": [0.145, 0.388, 0.922], "hex": "#2563eb" } },
       "600": { "$value": { "colorSpace": "srgb", "components": [0.114, 0.306, 0.847], "hex": "#1d4ed8" } }
     },

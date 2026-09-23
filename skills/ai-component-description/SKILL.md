@@ -1,6 +1,7 @@
 ---
 name: ai-component-description
 description: "Write a six-section prose description (purpose, props, anti-patterns, composition, accessibility, examples) for a Figma component's description field so LLMs read it via MCP. Triggers: describe this component for AI, Figma MCP description. JSON metadata files: use metadata-schema-generator."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 references:
   - ../../knowledge-notes/ai-readiness.md
   - ../../knowledge-notes/component-bestiary-reference.md

@@ -1158,9 +1158,7 @@ design-system-ops/
 │   ├── governance-review-agent.md         ← Agent chain
 │   └── migration-agent.md                 ← Agent chain
 │
-├── commands/                 ← 6 slash commands
-│   ├── describe-component.md
-│   ├── drift-check.md
+├── commands/                 ← 4 slash commands
 │   ├── full-diagnostic.md
 │   ├── governance-review.md
 │   ├── migration.md

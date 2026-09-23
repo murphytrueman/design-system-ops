@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- **Removed the last two single-skill commands, `/drift-check` and `/describe-component`.** Routing evals showed Claude choosing `drift-check` over the `drift-detection` skill it wraps, and the wrapper restated the skill's instructions: it still said to force every drift finding into class A–E, undoing the rule that findings the code can't classify are marked "Unclassified — needs team input". Run the skills directly as `/design-system-ops:drift-detection` and `/design-system-ops:ai-component-description`; their pre-approved tools moved into the skills. Commands now exist only for the four chained workflows, and a test enforces it.
+
+### Fixed
+
+- **The release pipeline didn't stop at a blocking gate.** Only the first of its three gates said to stop; the others said "fix and re-run" or nothing, so a run marked a release BLOCKED and then wrote documentation and announcements for the component anyway. The rule is now stated once and every gate points to it: a blocking gate stops the pipeline, and the skipped steps are listed in the Scope block.
+- **The release package said "READY FOR REVIEW" next to "BLOCKED".** The status line printed on every package regardless of the verdict. It's now a sign-off requirement, and the release decision is the package's only verdict.
+- **Evals:** the fixture's dark theme now defines its action colours, so Button passes contrast and the full release chain can run; a new case checks the pipeline stops at the accessibility gate for Tooltip.
+
 ## [1.3.2] - 2026-09-23
 
 ### Added

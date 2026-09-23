@@ -44,7 +44,7 @@ After cloning, the directory structure should look like:
 ```
 design-system-ops/
 ├── skills/              40 skills organised by category
-├── commands/            6 command definitions
+├── commands/            4 command definitions
 ├── knowledge-notes/     14 reference documents (canonical)
 ├── sample-outputs/      example outputs for reference
 ├── .claude-plugin/      plugin manifest for Cowork

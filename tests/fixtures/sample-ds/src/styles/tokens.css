@@ -20,6 +20,9 @@
 
 /* Dark theme overrides. */
 [data-theme="dark"] {
+  --color-action-primary: #60a5fa;
+  --color-action-primary-hover: #93c5fd;
+  --color-text-on-action: #111827;
   --color-surface-base: #111827;
   --color-surface-raised: #1f2937;
   --color-border-default: #374151;

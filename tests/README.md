@@ -59,7 +59,7 @@ There are four kinds of case:
 - **Finds** (default): the skill must name the planted problem inside a finding, without flagging the correct controls.
 - **Stop** (`flattened-install`): a skill installed on its own with no `knowledge-notes/`, the way flattening installers leave it. It must stop and say the install is incomplete.
 - **Route** (`route-*`): a plain request that doesn't name a skill. The first skill Claude loads must be the right one, not a neighbour. The run stops as soon as a skill loads, so these take seconds.
-- **Chain** (`release-chain`): a workflow command. Every chained skill must load, and the result must be one combined report with a single Scope block.
+- **Chain** (`release-chain`, `release-gate-stop`): a workflow command. Every chained skill must load and the result must be one combined report with a single Scope block. `release-gate-stop` runs the release pipeline on a component that fails accessibility, and the steps after that gate must not run.
 
 It calls Claude, so it costs real usage and isn't part of `./tests/run.sh` or CI. Run it before a release. Outputs land in `tests/evals/out/` (gitignored). A run that can't sign in stops with exit 2 rather than blaming the skill. Without `ANTHROPIC_API_KEY`, disable any installed copy of the plugin first so only the build under test loads.
 

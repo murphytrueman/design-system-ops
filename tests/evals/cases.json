@@ -164,6 +164,27 @@
         "Button"
       ],
       "why": "The release pipeline must load all six chained skills and produce one combined report with a single Scope block, per the chained-run rules."
+    },
+    {
+      "id": "release-gate-stop",
+      "skill": "release-check",
+      "expect": "chain",
+      "prompt": "/design-system-ops:release-check Tooltip — a new component release. Design spec: a small bubble with var(--space-gap) padding, a 4px corner radius, the default text colour as its background and the base surface colour as its text.",
+      "chain": [
+        "design-to-code-check",
+        "accessibility-per-component"
+      ],
+      "not_after_gate": [
+        "token-compliance",
+        "ai-component-description",
+        "usage-guidelines",
+        "change-communication"
+      ],
+      "finds": [
+        "BLOCKED",
+        "aria-describedby"
+      ],
+      "why": "Tooltip's trigger isn't linked to it with aria-describedby, an ARIA failure, so the accessibility gate must stop the pipeline: the release is BLOCKED and the documentation and announcement steps never run."
     }
   ]
 }

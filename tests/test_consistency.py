@@ -209,6 +209,16 @@ class TestCommandTools(unittest.TestCase):
         commands = {os.path.splitext(os.path.basename(p))[0] for p in dsops.command_files()}
         self.assertEqual(set(), skills & commands)
 
+    def test_commands_are_only_for_chained_workflows(self):
+        # A command that only wraps one skill competes with that skill for
+        # routing, and restates its instructions until they drift apart
+        # (drift-check still forced a guess the skill had stopped making).
+        # Single skills run directly as /design-system-ops:<skill>.
+        for path in dsops.command_files():
+            with self.subTest(command=dsops.rel(path)):
+                loaded = [p for p in PLUGIN_ROOT_PATH.findall(dsops.read_text(path)) if p.endswith("-agent.md")]
+                self.assertTrue(loaded, "a command must load an agent workflow (skills/*-agent.md)")
+
     def test_the_check_catches_an_unapproved_command(self):
         runs = list(shell_invocations("Run `git log -1 --format=%cI -- src/Button.tsx`."))
         self.assertEqual(1, len(runs))
