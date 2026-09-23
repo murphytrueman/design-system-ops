@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-09-23
+
 ### Added
 
 - **Five unedited sample outputs** — `fixture-token-audit`, `fixture-token-compliance`, `fixture-docs-coverage`, `fixture-accessibility-per-component` and `fixture-theme-audit`, produced by the evals against the test design system in `tests/fixtures/`. Unlike the anonymised samples, nothing in them is edited, and anyone can regenerate them. Each was checked as a sample, not just as a pass: the skill loaded, and the planted problem appears as a real finding.
