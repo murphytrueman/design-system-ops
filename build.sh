@@ -34,6 +34,15 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   echo "      current files on disk, not the last commit." >&2
 fi
 
+# New files that aren't staged yet are silently left out of the bundle, and a
+# local test run can't notice (it builds the same way). Say so loudly.
+UNTRACKED="$(git ls-files --others --exclude-standard | grep -Ev "$EXCLUDES" || true)"
+if [ -n "$UNTRACKED" ]; then
+  echo "warning: these files aren't tracked by git, so they are NOT in the bundle:" >&2
+  printf '  %s\n' "$UNTRACKED" >&2
+  echo "         git add them first, then re-run ./build.sh" >&2
+fi
+
 FILES="$(git ls-files | grep -Ev "$EXCLUDES")"
 
 mkdir -p "$OUT_DIR"
