@@ -331,6 +331,14 @@ def run_one(case, attempt, label, plugin, root, spec, args):
         if code == 0 or stopped_on_purpose
         else ["claude exited %d: %s" % (code, (errors or output).strip()[:300])]
     )
+    if case.get("known_gap"):
+        # A documented limitation: report it, don't fail the run on it, and
+        # say so loudly if it starts passing.
+        if problems:
+            print(" known gap (%s)" % elapsed(started))
+            return True
+        print(" ok (%s) — this known gap now passes; remove known_gap from the case" % elapsed(started))
+        return True
     if problems:
         print(" FAIL (%s)" % elapsed(started))
         for problem in problems:
