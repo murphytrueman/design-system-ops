@@ -118,6 +118,11 @@ def run_case(case, plugin, root, fixture, model, timeout):
         return stream(command, repo, timeout, stop_at_skill=case.get("expect") == "route")
 
 
+# How many tool calls a routing case may make before it counts as "no skill".
+# Passing routes load their skill within the first three steps.
+ROUTE_BUDGET = 6
+
+
 def stream(command, cwd, timeout, stop_at_skill=False):
     """Run claude and show progress as it works: S when the skill loads, a dot
     for every other tool call. A case takes minutes; silence looks like a hang."""
@@ -126,6 +131,7 @@ def stream(command, cwd, timeout, stop_at_skill=False):
     timer = threading.Timer(timeout, process.kill)
     timer.start()
     lines = []
+    other_calls = 0
     try:
         for line in process.stdout:
             lines.append(line)
@@ -141,6 +147,12 @@ def stream(command, cwd, timeout, stop_at_skill=False):
                     if stop_at_skill and block.get("name") == "Skill":
                         # Routing is decided: no need to pay for the full run.
                         process.kill()
+                    elif stop_at_skill:
+                        other_calls += 1
+                        if other_calls >= ROUTE_BUDGET:
+                            # The routing decision comes early. This many steps
+                            # without a skill means Claude chose to go without.
+                            process.kill()
         errors = process.stderr.read()
         code = process.wait()
     finally:
@@ -229,7 +241,7 @@ def check(case, output, calls):
         # must be the right one.
         picked = [str(args.get("skill", "")).split(":")[-1] for name, args in calls if name == "Skill"]
         if not picked:
-            problems.append("no skill was loaded; Claude answered without one")
+            problems.append("no skill loaded within the first %d steps; Claude did the work without one" % ROUTE_BUDGET)
         elif picked[0] != case["skill"]:
             problems.append("routed to %s instead of %s" % (picked[0], case["skill"]))
         return problems
@@ -275,6 +287,42 @@ def check(case, output, calls):
     return problems
 
 
+def run_one(case, attempt, label, plugin, root, spec, args):
+    """Run one case once. True if it passed, False if not, None on a setup error."""
+    print("%-30s %-28s " % (label, case["skill"]), end="", flush=True)
+    started = time.time()
+    try:
+        code, output, errors = run_case(case, plugin, root, spec["fixture"], args.model, args.timeout)
+    except subprocess.TimeoutExpired:
+        print(" FAIL\n    timed out after %ds" % args.timeout)
+        return False
+    if any(marker in (output + errors) for marker in AUTH_FAILURES):
+        print(" SETUP\n    claude couldn't authenticate: %s" % (output + errors).strip()[:200])
+        print("    Sign in with `claude` interactively (or set ANTHROPIC_API_KEY), then re-run.")
+        return None
+    stem = case["id"] if attempt is None else "%s.%d" % (case["id"], attempt)
+    with open(os.path.join(OUT, stem + ".jsonl"), "w", encoding="utf-8") as handle:
+        handle.write(output)
+    report, calls = parse_stream(output)
+    with open(os.path.join(OUT, stem + ".md"), "w", encoding="utf-8") as handle:
+        handle.write(report)
+    # A routing case is stopped on purpose once routing is decided.
+    stopped_on_purpose = case.get("expect") == "route" and bool(calls)
+    problems = (
+        check(case, report, calls)
+        if code == 0 or stopped_on_purpose
+        else ["claude exited %d: %s" % (code, (errors or output).strip()[:300])]
+    )
+    if problems:
+        print(" FAIL (%s)" % elapsed(started))
+        for problem in problems:
+            print("    " + problem)
+        print("    expected: " + case["why"])
+        return False
+    print(" ok (%s)" % elapsed(started))
+    return True
+
+
 def elapsed(started):
     seconds = int(time.time() - started)
     return "%dm%02ds" % (seconds // 60, seconds % 60)
@@ -286,6 +334,8 @@ def main():
     parser.add_argument("--plugin", help="plugin directory or .zip to test (default: a fresh build)")
     parser.add_argument("--model", help="model to run the skills with")
     parser.add_argument("--timeout", type=int, default=900, help="seconds per case (default 900)")
+    parser.add_argument("--repeat", type=int, default=1,
+                        help="run each case this many times and report a pass rate; skill use varies run to run")
     args = parser.parse_args()
 
     if not shutil.which("claude"):
@@ -310,40 +360,22 @@ def main():
         if not complete:
             print("SETUP\n    the plugin under test is incomplete: %s" % summary[0])
             return 2
+        results = {}
         for case in cases:
-            print("%-26s %-28s " % (case["id"], case["skill"]), end="", flush=True)
-            started = time.time()
-            try:
-                code, output, errors = run_case(case, plugin, root, spec["fixture"], args.model, args.timeout)
-            except subprocess.TimeoutExpired:
-                print(" FAIL\n    timed out after %ds" % args.timeout)
-                failed += 1
-                continue
-            if any(marker in (output + errors) for marker in AUTH_FAILURES):
-                print(" SETUP\n    claude couldn't authenticate: %s" % (output + errors).strip()[:200])
-                print("    Sign in with `claude` interactively (or set ANTHROPIC_API_KEY), then re-run.")
-                return 2
-            with open(os.path.join(OUT, case["id"] + ".jsonl"), "w", encoding="utf-8") as handle:
-                handle.write(output)
-            report, calls = parse_stream(output)
-            with open(os.path.join(OUT, case["id"] + ".md"), "w", encoding="utf-8") as handle:
-                handle.write(report)
-            # A routing case is killed on purpose once a skill loads.
-            stopped_on_purpose = case.get("expect") == "route" and any(n == "Skill" for n, _ in calls)
-            problems = (
-                check(case, report, calls)
-                if code == 0 or stopped_on_purpose
-                else ["claude exited %d: %s" % (code, (errors or output).strip()[:300])]
-            )
-            if problems:
-                failed += 1
-                print(" FAIL (%s)" % elapsed(started))
-                for problem in problems:
-                    print("    " + problem)
-                print("    expected: " + case["why"])
-            else:
-                print(" ok (%s)" % elapsed(started))
-    print("\n%d of %d cases passed. Outputs: %s" % (len(cases) - failed, len(cases), os.path.relpath(OUT, REPO)))
+            for attempt in range(1, args.repeat + 1):
+                label = case["id"] if args.repeat == 1 else "%s #%d" % (case["id"], attempt)
+                outcome = run_one(case, attempt if args.repeat > 1 else None, label, plugin, root, spec, args)
+                if outcome is None:
+                    return 2
+                results.setdefault(case["id"], []).append(outcome)
+    runs = sum(len(r) for r in results.values())
+    passed = sum(sum(r) for r in results.values())
+    if args.repeat > 1:
+        print("\nPass rate per case:")
+        for case_id, outcomes in results.items():
+            print("  %-28s %d of %d" % (case_id, sum(outcomes), len(outcomes)))
+    print("\n%d of %d runs passed. Outputs: %s" % (passed, runs, os.path.relpath(OUT, REPO)))
+    failed = runs - passed
     return 1 if failed else 0
 
 
