@@ -1,6 +1,6 @@
 ---
 name: drift-detection
-description: "System-wide sweep for divergence: local re-implementations, token overrides, forked patterns, classified by cause. Triggers: find drift, where are teams going off-system, what's out of sync. Not for one component vs its spec (design-to-code-check)."
+description: "Finds where consuming code has drifted from what the design system intended: local re-implementations, token overrides, forked patterns, classified by cause. Use it whenever someone asks where a codebase, product or team has drifted or gone off-system. One component vs spec: design-to-code-check."
 allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(diff:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npm view:*)
 references:
   - ../../knowledge-notes/token-architecture.md
