@@ -1,6 +1,6 @@
 ---
 description: Periodic governance package linking adoption to drift causes, with a leadership brief ready for review
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npm view:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npm view:*), Bash(rg:*), Bash(grep:*), Bash(git log:*), Bash(diff:*)
 ---
 
 Run the governance review — a periodic (usually quarterly) assessment that produces an internal review, adoption analysis, drift summary, and stakeholder-ready brief.

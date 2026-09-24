@@ -1,12 +1,12 @@
 ---
 name: stakeholder-brief
 description: "Turns design system status or a recommendation into a one-page brief in business language. Use it whenever someone wants an update, summary or note on the system for a VP, exec or stakeholder, however short. Investment case: system-pitch. Charts: visual-report."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(ls:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/executive-communication.md
   - ../../knowledge-notes/output-discipline.md
 ---
-
 
 # Stakeholder brief
 
@@ -46,7 +46,7 @@ Ask for or confirm:
 
 The brief should have a single primary purpose. A brief that tries to deliver a status update and make an investment ask and announce a new feature is three briefs, and it will not do any of them well.
 
-**Small-system note (fewer than 5 components):** For systems with fewer than 5 components, the brief needs to frame the system as a deliberate, focused investment rather than something that is small because it is under-resourced. Use "specialised system" or "targeted component library" framing. The ROI argument shifts from scale efficiency ("20 teams reuse the same components") to quality consistency ("every customer-facing surface uses the same interaction patterns") and speed ("new features compose from proven components instead of starting from scratch"). Avoid metrics that make a small system look weak by enterprise standards — "3 components" sounds unimpressive without context. Instead, lead with what those components cover: "Our component library handles [share of interface patterns, from an inventory or audit], ensuring consistent experience across all product surfaces."
+**Small-system note (fewer than 5 components):** For systems with fewer than 5 components, the brief needs to frame the system as a deliberate, focused investment rather than something that is small because it is under-resourced. Use "specialised system" or "targeted component library" framing. The ROI argument shifts from scale efficiency ("20 teams reuse the same components") to quality consistency ("every customer-facing surface uses the same interaction patterns") and speed ("new features compose from proven components instead of starting from scratch"). Give the size plainly and give it context in the same sentence: "three components, covering [share of interface patterns, from an inventory or audit]". Choosing which true figures to show is framing; leaving out a figure because it sounds small is the "only good news" anti-pattern in the executive-communication note, and a reader who later learns the number stops trusting the brief.
 
 ---
 
@@ -135,15 +135,11 @@ At the staff level, frame the design system as infrastructure, not as a design c
 
 If a system-health assessment has been completed, use the maturity stage it gave, by name: Ad-hoc, Managed, Systematic, Measured or Optimised. Never numbered levels. Explain the stage in one plain sentence, cite the assessment, and frame the recommendation as the transition to the next stage. If no assessment exists, don't infer a stage for the brief; leave maturity out or ask the user.
 
-**What each transition requires** (from the component-governance note):
-- **Ad-hoc → Managed:** "Establish a governed component library. Set up the token foundations (primitives and some semantics) and document most components."
-- **Managed → Systematic:** "Enforce the token tiers and a consistent component API. Standardise documentation. Document the contribution and deprecation processes. Make the release cadence predictable."
-- **Systematic → Measured:** "Track adoption quantitatively. Detect and classify drift. Assess system health on a cadence and record decisions."
-- **Measured → Optimised:** "Version component APIs with semver. Maintain AI-ready metadata and machine-readable manifests. Add consumer contract testing."
+What the next stage requires comes from the evidence checklist in the component-governance note; quote the one or two items the system is missing, not the whole list.
 
 Example: "We are currently at the Managed stage — the system exists and is used, but governance is informal and documentation is inconsistent (Q1 system-health assessment). The recommendation moves us to Systematic, which requires documented contribution and deprecation processes."
 
-**AI-readiness as a competitive or efficiency argument:** if relevant to the organisation, include the angle in plain terms: "Design systems that are machine-readable enable AI-assisted development — code generation, automated testing, and design-to-code workflows. Our current system is not structured for AI consumption. The proposed investment includes making it machine-readable, which positions the organisation to benefit from AI tooling without a separate initiative."
+**AI readiness:** mention it only if the reader has asked about AI tooling, and only with the system-health AI-readiness status as the source, in one plain sentence about what it enables (coding agents that pick the right component and use the right tokens). Don't add it as an unprompted selling point; it reads as a pitch in a status brief.
 
 ---
 

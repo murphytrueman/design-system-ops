@@ -133,7 +133,7 @@ Write the component usage guidelines. Draw on validation findings:
 - Edge cases section should include any states that had WARN findings in the accessibility or design-to-code checks
 - Accessibility section should be directly informed by the audit output from Step 2
 
-The usage guidelines and AI component description should be consistent — the same anti-patterns, the same accessibility guidance, the same prop descriptions. If they contradict each other, the AI component description takes precedence as the canonical contract.
+The usage guidelines and AI component description should be consistent — the same anti-patterns, the same accessibility guidance, the same prop descriptions. Both read `.ai/metadata/<Component>.metadata.json` when it exists, which is why they agree; if they still contradict each other, the source-derived metadata wins and both are corrected.
 
 ---
 
@@ -143,9 +143,7 @@ The usage guidelines and AI component description should be consistent — the s
 
 Classify the change and produce the communication package.
 
-For a new component: Minor enhancement classification. Release notes + announcement.
-For a breaking API change: Breaking change classification. Full package including migration guide.
-For a non-breaking update to an existing component: Minor enhancement or Patch, depending on scope.
+The classification comes from `version-bump-advisor`, run on the diff for every release type, not decided here: a new component is normally a minor, but the skill confirms it from the exported surface (a new component that also changes a shared token or an existing export isn't). Breaking → the full package with the migration guide; minor → release notes and an announcement; patch → release notes.
 
 The release notes should reference:
 - Any known issues from the validation phase that are not blocking release (with timelines for resolution)

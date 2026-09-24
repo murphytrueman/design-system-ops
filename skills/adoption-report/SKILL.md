@@ -1,11 +1,11 @@
 ---
 name: adoption-report
 description: "Adoption report: coverage (what the system provides), reach (teams with access) and adoption (teams shipping with it), design vs engineering, trend and at-risk teams. Triggers: adoption report, usage metrics, which teams use the system. Not docs coverage — use docs-coverage."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(grep:*), Bash(rg:*), Bash(git log:*), Bash(npm view:*)
 references:
   - ../../knowledge-notes/output-discipline.md
   - ../../knowledge-notes/adoption-measurement.md
 ---
-
 
 # Adoption report
 
@@ -25,6 +25,8 @@ Coverage, reach and adoption are three different things, and treating them as on
 
 A system can reach all twenty product teams while only eight of them ship with it. Both facts are true; only one tells you how the system is performing. And if the system provides only a fraction of what those eight teams need, the constraint is coverage, not adoption. Low coverage is a supply problem the system team fixes by building; low adoption with good coverage is a demand problem the system team fixes by understanding why teams aren't consuming what exists (see the adoption-measurement note).
 
+One caution on the word: Figma's library analytics and tools such as Omlet use "coverage" for the share of instances on a screen that come from the system. This pack uses it for supply. State the definition at the top of every report so a reader who knows the other usage isn't misled.
+
 This skill holds the three measures separately throughout. It also separates adoption across two dimensions that are frequently conflated: design adoption (are designers using the Figma library?) and engineering adoption (is the code being consumed from the system?). High design adoption with low engineering adoption is a specific kind of problem — the design side is working but the handoff is broken. The reverse is also a specific kind of problem.
 
 ---
@@ -41,17 +43,15 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 ## Auto-pull integrations
 
 **npm registry** (`integrations.npm.enabled: true`):
-- Pull weekly/monthly download statistics for `integrations.npm.package_name` over the reporting period
+- Pull weekly/monthly download statistics for `integrations.npm.package_name` over the reporting period. On a private registry (`integrations.npm.registry_url`) download stats are usually unavailable; say so and skip
 - Calculate trend direction from download data: increasing, flat, or declining
 - For monorepos: pull per-package downloads from `integrations.npm.scoped_packages` — directional signals only (see monorepo caveat in component-audit)
 - Compare current period downloads against previous period for the engineering adoption trend. Downloads show direction, never a count of adopting teams (see the note's npm caution)
 
-**Figma MCP** (`integrations.figma.enabled: true`):
-- Pull library analytics from `integrations.figma.file_key` if available via the Figma REST API
-- Extract: number of files using the library, component insertion counts, detach rates
+**Figma** (`integrations.figma.enabled: true`):
+- Library analytics (files using the library, insertion counts, detach rates per component) come only from the REST Library Analytics API on an Enterprise plan. If the team has it, pull them; if not, say design adoption wasn't measured and ask the design lead which teams' files use the library
 - Detach rates are a design adoption quality signal — high detach rates mean designers are pulling components but modifying them, which is partial adoption at best
-- Use library file count as the numerator for design adoption percentage
-- Track which teams are using the library by analysing team membership in Figma workspace analytics if available
+- The API doesn't attribute usage to teams; team attribution comes from file ownership the user supplies
 
 **GitHub** (`integrations.github.enabled: true`):
 - Find which repositories import the design system packages — these are the actively adopting engineering teams (see the note's GitHub caution before counting)
@@ -106,7 +106,15 @@ Before proceeding, audit which adoption signals are available and their reliabil
 
 Document which signals are available and which are unavailable. Adoption assessment is only as strong as the signals used — if only one signal is available, note that the adoption assessment is based on limited data and may be incomplete.
 
-If data is limited: the adoption report can be conducted as a structured assessment based on available signals rather than hard metrics. Label every figure measured (with its source), estimated (with the reasoning) or reported by the team.
+**If no team has a measured signal, stop.** Don't fill a team-by-team table with estimates. Output a data-collection plan instead: for each team, which signal to collect (the code recipe below, library analytics, a five-question survey), how, and who. Label every figure that does appear measured (with its source), or reported by the team; there is no "estimated" row in an adoption table.
+
+### Step 1c: Measure engineering adoption from code
+
+The one signal almost every team can measure. For each consuming repository in reach:
+1. **Reach:** the system package is a dependency (`package.json`) and is imported somewhere: `rg -l "from '@org/ds" --glob '*.{ts,tsx,js,jsx,vue}'`.
+2. **Adoption depth:** count system component instances against local look-alikes. If the consumer has a `.ai/index/` from `codebase-index`, read the `usedBy` edges and the inventory of local components; otherwise count `<Name[\s/>]` for each system component and for each local component that duplicates one (`LocalButton`, a `Button` under `src/components/` in the consumer). Report "system instances of [total instances of that role]" per component role. `react-scanner` and Omlet produce this share for React codebases; if either is set up, take its numbers and cite the report.
+3. **Token adoption:** the share of token references against raw values in the consumer's styles, from `token-compliance`'s positive-controlled search.
+4. **Positive control:** before reporting any team as "None", confirm the import pattern finds a component you know they use. If it can't, the pattern doesn't fit that repo, and the cell is "not measured", not "None".
 
 ### Step 1b: Frame adoption against the maturity stage
 
@@ -215,7 +223,7 @@ For teams with partial adoption, note which areas of the system they use and whi
 ### At-risk teams
 
 Flag teams where adoption is declining, where there has been no engagement for an extended period, or where known blockers exist. For each, record:
-1. **The signal** — declining usage over time, no recent engagement (6+ weeks without contact), a known issue report, or team communication indicating plans to move away from the system
+1. **The signal** — declining usage over time (measured across two periods), no engagement for longer than the window the team sets for this report (state it), a known issue report, or team communication indicating plans to move away from the system
 2. **The likely cause** if known — from blocker analysis, support conversations, or team feedback
 3. **Recommended next step** — reach out to discuss the blockers, offer support, gather more information, or schedule a working session
 
@@ -279,9 +287,11 @@ One paragraph expanding the headline: direction, how it reads against the maturi
 
 #### Team-by-team breakdown (system team only)
 
-| Team | Stage | Design | Engineering | At risk? | Notes |
-|---|---|---|---|---|---|
-| [Team] | Aware / Installed / Consuming / Contributing / Advocating / Not reached | Active / Partial / None | Active / Partial / None | Yes / No | [components used; local builds, and whether each is a coverage gap or a choice] |
+| Team | Stage | Design | Engineering | Evidence | At risk? | Notes |
+|---|---|---|---|---|---|---|
+| [Team] | Aware / Installed / Consuming / Contributing / Advocating / Not reached | Active / Partial / None | Active / Partial / None | [the signal and its source: "14 system instances of 19 button-role instances, repo X, 2026-09"; "library analytics export"; "team lead, interview 12 Sep"] | Yes / No | [components used; local builds, and whether each is a coverage gap or a choice] |
+
+A row with nothing in Evidence is "not measured" in every status column.
 
 #### At-risk teams (system team only)
 
@@ -307,18 +317,6 @@ One paragraph expanding the headline: direction, how it reads against the maturi
 2. **Blocker remediation, in priority order** — ranked by teams affected, with effort if known and the skill that would execute it (e.g. component-audit for a missing-components gap)
 3. **Coverage and reach extension** — unserved needs to build, and teams to onboard, prioritised by strategic value
 4. **Metrics improvements** — where the data is incomplete and what would improve the next report (e.g. "Enable the GitHub integration to track code imports automatically")
-
-#### Platform reliability (staff-level)
-
-Reliability signals explain why adoption is where it is, and predict where it's going. A system with breaking changes, no migration paths and stale documentation will lose adoption even if current figures look healthy.
-
-- **Release reliability:** releases and breaking changes in the period; whether each breaking change shipped with a migration path; median time from system bug report to fix
-- **Documentation currency:** components whose documentation matches the current released version ([n] of [n]); documentation-related support requests in the period
-- **Time to first production component:** for teams that onboarded this period, the time from deciding to adopt to shipping their first system component, and the most common setup blockers (installation, configuration, framework incompatibility, token integration)
-
-#### AI tooling adoption (staff-level, evidence only)
-
-Include only with evidence: repositories whose AI tooling is configured to use the system's metadata (MCP configuration, rules files referencing the manifest), or reviewed samples of AI-generated code checked for correct component selection and props. Without evidence, omit the section or record it as `[needs data: …]` under metrics improvements. Don't assess the quality of AI-generated output from impressions.
 
 #### Signals used and scope
 
@@ -351,7 +349,8 @@ For reporting, treat partial adoption as "using the system for [share] of patter
 - Coverage (supply), reach (access) and adoption (use) are reported separately throughout, never combined into a single figure
 - Design adoption and engineering adoption are reported separately
 - Trend direction is stated, not implied
-- Every figure names its source and is labelled measured, estimated or team-reported; npm downloads are used for direction only
+- Every figure names its source and is measured or team-reported; there are no estimated adoption figures, and a team with no signal is "not measured"; npm downloads are used for direction only
+- If no team had a measured signal, the run stopped and produced a data-collection plan
 - Maturity is a named stage from system-health or the user, framed qualitatively — no expected adoption ranges
 - Team-level detail is in the system team's version only; a leadership version shows aggregates and ranks no teams
 - Per-team status uses the adoption-measurement stages (Aware → Advocating, or Not reached)
@@ -359,8 +358,7 @@ For reporting, treat partial adoption as "using the system for [share] of patter
 - Adoption blockers are specific and grouped by category, not listed as individual team complaints
 - The adoption definition is documented and will enable consistent comparison in the next reporting period
 - If period-over-period comparison is included, the previous report was actually loaded and compared
-- If platform reliability metrics are included, they are framed as adoption predictors, not separate metrics
-- AI tooling adoption appears only with evidence
+- Release reliability, documentation currency and AI tooling adoption are `system-health`'s dimensions; if they explain an adoption finding, cite that report rather than measuring them here
 - At-risk team recommendations are specific and actionable, not generic
 - Recommendations include which skill would execute the work, where applicable
 - The report ends with the signals used and a Scope block

@@ -40,7 +40,7 @@ Configuration and integrations follow the chained-run rules. Specific to this ch
 - Access to a sample of consuming team work (for drift detection)
 - The reporting period (typically the previous quarter)
 - Any known changes since the last review: new teams onboarded, components released, changes made
-- The system's maturity stage (Ad-hoc / Managed / Systematic / Measured / Optimised). If it isn't in `.ds-ops-config.yml` or a previous review, ask the user
+- The system's maturity stage (Ad-hoc / Managed / Systematic / Measured / Optimised), from a system-health report if one exists (there is no config key for it). If none exists, ask the user, and label the stage as reported
 
 ---
 
@@ -55,7 +55,7 @@ Run the full adoption report for the reporting period. The adoption-report skill
 - At-risk teams
 - Adoption blockers by category
 
-This is the quantitative core of the governance review. If data is limited, the report is explicit about what is measured vs. estimated.
+This is the quantitative core of the governance review. If no team has a measured signal, adoption-report stops with a data-collection plan; this review then stops too, with that plan as its output, rather than writing a brief on estimates.
 
 ### Step 2 — Drift detection (`drift-detection`)
 
@@ -87,6 +87,8 @@ Before producing any external-facing outputs, synthesise what the two skills hav
 **System gaps identified:** What does the drift evidence show the system needs that it does not have?
 
 **What is working:** Governance reviews that only surface problems are not useful. Note what is working well — teams with strong adoption, patterns with high usage, recent releases that are being picked up quickly.
+
+**Stop here.** Present the internal assessment and continue to the brief only once the user confirms it. The brief goes outward; the framing decisions in Step 4 are the user's to make on the evidence, not the agent's.
 
 ---
 
@@ -120,7 +122,7 @@ The brief's ask should be specific to what the internal assessment says is most 
 Open with one headline sentence: how the system is performing for its teams this period, and the one thing to act on.
 
 **Period:** [reporting period] | **Previous review:** [date, if applicable]
-**Status:** READY FOR REVIEW — requires human sign-off before distribution
+**Sign-off:** a person must approve the brief before it is distributed; the internal assessment is for the system team
 
 ---
 
@@ -128,14 +130,15 @@ Open with one headline sentence: how the system is performing for its teams this
 
 **Adoption summary**
 
-| Metric | This period | Last period | Change |
+| Measure | This period | Last period | Change |
 |---|---|---|---|
 | Teams in scope | [n] | [n] | |
-| Coverage | [%] | [%] | [+/-] |
-| Active adoption | [%] | [%] | [+/-] |
-| Design adoption | [%] | [%] | [+/-] |
-| Engineering adoption | [%] | [%] | [+/-] |
+| Teams reached (have access) | [n] of [n] | [n] of [n] | [+/-] |
+| Teams adopting — design | [n] of [n] | [n] of [n] | [+/-] |
+| Teams adopting — engineering | [n] of [n] | [n] of [n] | [+/-] |
 | At-risk teams | [n] | [n] | |
+
+**Coverage** (supply: the share of teams' interface needs the system provides, with its source) is stated in a sentence, as adoption-report defines it; the definitions are adoption-report's, so the two documents agree.
 
 **Trend:** [Growing / Stable / Declining / Mixed]
 
@@ -213,5 +216,6 @@ Loading, saving and pruning follow the chained-run rules. When a previous govern
 - Stakeholder brief is honest about underperformance — not a sanitised summary
 - At-risk team detail is specific: named teams, specific signals, specific next steps
 - Package opens with one headline sentence, has one combined Scope block and one closing note, and ends with the provenance footer
-- Package clearly states READY FOR REVIEW
+- The run stopped for the user's confirmation between the internal assessment and the brief
+- Adoption figures are counts of teams, as adoption-report reports them, never percentages
 - Suggested follow-up is based on findings, not a generic list

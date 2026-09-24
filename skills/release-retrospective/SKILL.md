@@ -1,10 +1,13 @@
 ---
 name: release-retrospective
 description: "Review how a shipped release, migration or deprecation went against its plan: blast radius, comms, migration, timeline, support load, each gap classed. Triggers: release retro, post-mortem, how did the deprecation go. Planning a new deprecation: deprecation-process."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(ls:*), Bash(git log:*), Bash(git tag:*), Bash(git diff:*), Bash(rg:*), Bash(grep:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/output-discipline.md
 ---
+
+# Release retrospective
 
 ## Before you begin: verify references
 
@@ -42,6 +45,15 @@ Before writing the retrospective, gather these inputs:
 **Step 1: Gather inputs**
 
 Request the original plan (deprecation plan, migration guide, communication package or decision record) and the execution data listed above. Don't reconstruct the plan from memory or from what you think it probably said; if the user can't supply it, say the comparison is against their recollection and label it that way.
+
+**Step 1b: Measure what the repository can tell you**
+
+Before asking for figures, take the ones git and a search can give:
+- **Timeline:** `git tag --list --format='%(refname:short) %(creatordate:short)'` for when the release actually shipped, against the plan's dates
+- **Migration completion:** the deprecation plan's usage commands (`rg` for the old component, token or prop) run now over the consumers in reach give the count of references still on the old API; run the same over the plan's baseline commit (`git log -1 --before=<announcement>`) for the starting count. "Completion" is those two counts, not a percentage estimate
+- **Consumer activity:** `git log --since=<announcement> --oneline -- <consumer paths>` shows when each consumer migrated, and whether anyone touched the codemod's output by hand
+
+Anything the repository can't show (support load, who read the announcement) comes from the user or is "not measured".
 
 **Step 2: Compare plan and reality, dimension by dimension**
 
@@ -129,28 +141,12 @@ Example:
 
 ## Recommendations for next release
 
-[Specific, actionable changes to governance or process. Each one solves a gap from above.]
+[Specific, actionable changes to governance or process. Each one solves a gap from above and has an owner and a date, or `[needs data: owner]`.]
 
-Example recommendations:
-
-1. **Add platform-specific migration testing before release announcement.**
-   Currently, we test the codemod in our CI. Next time, test in representative consumer 
-   repos with webpack, custom Rollup, and other non-standard configs. 
-   (Solves: foreseeable gap in webpack compatibility)
-
-2. **Maintain an up-to-date consumer distribution list.**
-   Create a process to update email list quarterly (tie to quarterly business review). 
-   Test distribution in a dry run before major announcements. 
-   (Solves: process gap in communication reach)
-
-3. **Expand FAQ during migration window.**
-   Compile new FAQ entries from first-week support questions. 
-   Publish mid-migration (day 3-5) for fast-moving teams. 
-   (Solves: foreseeable gap in anticipating questions)
-
-4. **Assign dedicated support person + backup.**
-   No single point of failure in support. Rotating backup prevents burnout and ensures coverage. 
-   (Solves: process gap in support load management)
+| Recommendation | Solves | Owner | By |
+|---|---|---|---|
+| Test the codemod in representative consumer repos (webpack, custom Rollup) before the announcement | foreseeable gap in webpack compatibility | [name] | [date or next release] |
+| Refresh the consumer distribution list before each major announcement | process gap in communication reach | [name] | [date] |
 
 ## Decision record update
 
@@ -177,7 +173,8 @@ Link to updated decision record or create one.
 ## Quality Checks
 
 1. **Every gap is classified:** No gaps listed without foreseeable/unforeseeable/process mark. Classification is clear.
-2. **Recommendations are implementation-ready:** Each recommendation can be turned into a task without additional context. Not "communicate better" but "add platform-specific migration testing to CI before release announcement."
+2. **Recommendations are implementation-ready and owned:** Each recommendation can be turned into a task without additional context, and has an owner and a date or an explicit `[needs data: owner]`. Not "communicate better" but "add platform-specific migration testing to CI before release announcement."
+7. **Measured before asked:** timeline and migration completion came from git and the usage search where a repository was in reach; the Scope block says which figures came from the user.
 3. **Plan vs reality references original plan:** Not reconstructed from memory. Links to or quotes from the actual plan document.
 4. **Findings are evidenced, not balanced for tone:** Include what worked where the evidence shows it; don't invent a positive to soften the report. Missing data is "not measured"; reach and completion percentages appear only if measured.
 5. **Support burden identifies patterns, not just totals:** "5 questions about X" is better than "20 total support questions." Patterns drive recommendations.

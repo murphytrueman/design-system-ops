@@ -1,11 +1,18 @@
 ---
 name: change-communication
 description: "Write release notes, a migration guide and a team announcement for a design system change that is already decided, scaled to its impact. Triggers: release notes, announce this change, tell teams about a breaking change. Semver call: version-bump-advisor. Deprecation plan: deprecation-process."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(ls:*), Bash(git log:*), Bash(git tag:*)
+references:
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Change communication
 
 A skill for producing a complete change communication package: release notes, migration guidance where needed, and a team announcement with every open gap listed at the top. Calibrated to the change type so a patch note does not read like a major incident, and a breaking change does not get buried in a routine release update.
+
+## Before you begin: verify references
+
+Confirm that every path in this skill's frontmatter `references:` exists relative to this SKILL.md. If any is missing, stop: the install is incomplete, usually because a flattening installer (for example `npx skills install`) dropped the repo-root `knowledge-notes/` directory. Tell the user to reinstall by a method in `1-INSTALL.md` and run `verify-install.sh` from the install root. Proceed without the references only if the user explicitly says to, and then say in the output that it was produced without the pack's reference material.
 
 ## Context
 
@@ -20,6 +27,8 @@ This skill communicates changes that have already been decided. It does not deci
 ---
 
 ## Step 1: Classify the change
+
+Read before asking: `CHANGELOG.md` and `git log <last tag>..HEAD` for the actual change list; `.changeset/` for pending changesets and their summaries; `.ds-ops-config.yml` for `system.name` and `integrations.npm.package_name`, which the notes and announcement name. A package's own change list is the source; the user's description of it fills gaps.
 
 Ask for or confirm:
 - What changed? (component, token, pattern, API, tooling, governance)
@@ -81,14 +90,14 @@ No announcement needed. Patch notes accumulate in the release log and are review
 
 ---
 
-### For a minor enhancement:
+### For a minor change:
 
 **Release notes entry + brief announcement**
 
 **Release notes entry:**
 ```
-[Component or token name] — [what was added]
-What's new: [one to two sentences describing the addition and its purpose]
+[Component, token or feature] — [what was added or changed]
+What's new: [one to two sentences describing the addition or change and its purpose]
 How to use it: [one sentence or a link to the documentation]
 Action required: None — existing usage is unaffected
 ```
@@ -185,6 +194,16 @@ For significant system-level changes, offer a defined period for questions — e
 
 ---
 
+### The design side
+
+Half of a design system's consumers never read a changelog: they open Figma. For any change that touches the Figma library, the package includes:
+
+- **Library publish notes:** the description entered when the library is published, in the same shape as the release notes entry (what changed, the replacement, the date, the link to the guide). Designers see this in the library update prompt, which is the only announcement many of them get
+- **In-library signals:** for a deprecation or rename, the component or variable renamed with a `[Deprecated]` prefix or moved to a Deprecated page, with its description pointing at the replacement; new components placed and named where designers will find them
+- **The designers' channel:** the announcement posted where designers are, not only where engineers are, with the Figma-side action stated ("update the library; `OldCard` is now under Deprecated")
+
+Write these alongside the code-side notes; a change communicated only to engineers shows up as design-to-code drift a sprint later.
+
 ## Step 3: Choose the channels
 
 Different communication channels serve different purposes. Calibrate by change type:
@@ -192,7 +211,8 @@ Different communication channels serve different purposes. Calibrate by change t
 | Channel | When to use |
 |---|---|
 | Release notes / changelog | Every change, every time |
-| Slack / team channels | Minor enhancements and above |
+| Figma library publish notes | Every change that touches the library |
+| Slack / team channels (engineers and designers) | Minor changes and above |
 | Direct team notification | Breaking changes and system-level changes |
 | Email | Breaking changes with external or cross-org impact |
 | Meeting / live session | System-level changes with significant workflow impact |
@@ -212,6 +232,7 @@ Document this follow-up schedule alongside the communication so it does not get 
 - Change classification comes from `version-bump-advisor` or the user — breaking changes are not communicated as minor enhancements
 - Migration guide is specific enough to follow without additional context
 - Direct notification for breaking changes names the specific consequence of inaction
-- Channels are appropriate to the change type
+- Channels are appropriate to the change type, and any change that touches the Figma library has publish notes and a designers' announcement
+- The change list came from the CHANGELOG, git history or changesets where a repository was in reach
 - A follow-up schedule exists for breaking and system-level changes
 - Fill what's known; list every unresolved placeholder (dates, links, owners, contacts) at the top for the user. Never invent dates, links, owners, rationale or percentages

@@ -1,9 +1,11 @@
 ---
 name: contribution-workflow
 description: "Design or document how new work enters a design system: contribution types, proposal criteria, review stages, sign-off and release. Triggers: contribution process, how should someone contribute, contribution guidelines, adding a new component. Not for audit findings to tickets (backlog-generator)."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(ls:*), Bash(find:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/design-to-code-contract.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Contribution workflow
@@ -20,7 +22,7 @@ Most design systems have one of two contribution problems. Either there is no pr
 
 The goal here is a workflow that is lightweight enough to not be a burden, structured enough to produce consistent quality, and honest enough to tell contributors what will and will not make it into the system.
 
-The six-stage structure below reflects the full lifecycle of a contribution. Not every contribution needs all six stages at the same depth — a small enhancement to an existing component is lighter than a new foundational component. The workflow should scale accordingly, and the output should note where the path diverges by contribution type.
+The six-stage structure below reflects the full lifecycle of a contribution; it is the shape most published contribution models share (Nathan Curtis and Brad Frost have both written it up), not this pack's invention. Not every contribution needs all six stages at the same depth — a small enhancement to an existing component is lighter than a new foundational component. The workflow scales accordingly, and the output notes where the path diverges by contribution type.
 
 ---
 
@@ -32,7 +34,17 @@ Ask for or confirm:
 - What types of contributions are most common? (New components, enhancements, token changes, documentation, bug fixes)
 - What is the team's capacity for reviewing and integrating contributions?
 
-Capacity is the variable most contribution processes ignore. A six-stage review process designed for a four-person dedicated team will break immediately if there is only one part-time maintainer.
+Capacity is the variable most contribution processes ignore. A six-stage review process designed for a four-person dedicated team will break immediately if there is only one part-time maintainer. So decide the shape before writing, from the answers above:
+
+- **Lightweight** (one maintainer, or part-time ownership): Propose (a paragraph) → Build (maintainer review) → Ship (docs and a release note). Three stages, no SLAs beyond "the maintainer replies within [n] days".
+- **Standard** (a small dedicated team, a handful of consuming teams): the six stages, with community review abbreviated to a release-note preview for all but new components.
+- **Full** (a dedicated team, many consuming teams): all six stages at full depth, with the versioning and consumer-check sections.
+
+Say which shape you chose and why in the document's header. Writing the full process and "calibrating it down" afterwards leaves a document nobody follows.
+
+**If nobody owns the system** (the user can't name who would review a proposal), the workflow has no reviewer and there is nothing to write yet. Say so and stop: the first decision is ownership, and `decision-record` can capture it.
+
+Read `CONTRIBUTING.md`, the PR template and `.github/ISSUE_TEMPLATE/` before asking; if a process exists, this skill updates it and says what changed.
 
 **Small-system note (fewer than 5 components):** For systems this size, the full six-stage workflow is almost certainly too heavy. Produce a lightweight three-stage workflow instead: Propose (async, one paragraph) → Build (with review from the maintainer) → Ship (documentation + release note). The community review stage and the detailed assessment stage add overhead that small teams cannot absorb. The contribution criteria should still be documented — but they can be a short checklist, not a policy document. Ask: "Is there one person maintaining this, or is it shared?" If one person, the workflow is essentially "talk to them first."
 
@@ -91,6 +103,8 @@ Path: Full, with extended community review. These changes have the widest blast 
 **Existing awareness:** [What currently exists in the system that partially addresses this? Why is it insufficient?]
 **Ownership:** [Who will own the build, documentation and ongoing maintenance? Name a person or team for each]
 ```
+
+Also write the template where proposals will actually be filed. On GitHub that is an issue form, `.github/ISSUE_TEMPLATE/contribution-proposal.yml`, with one field per line above (the `Evidence` and `Ownership` fields required) and a `contribution` label; on a docs platform, the same fields as that platform's template. A process whose entry point is a wiki page gets proposals in Slack.
 
 **What happens next:**
 The design systems team reviews the proposal within [SLA — e.g. five working days]. Three outcomes are possible:
@@ -226,43 +240,15 @@ Rejection records serve two purposes: they give the contributor a clear, written
 
 ---
 
-#### API versioning contract (larger systems)
+#### Versioning and consumer checks
 
-Include this section and the next only when the system has three or more consuming teams or a dedicated design systems team. For smaller setups, a line pointing to `version-bump-advisor` at the Release stage is enough.
+`version-bump-advisor` makes the semver call at the Release stage for every contribution type; this document doesn't restate its rules. Two expectations belong here: a Type B enhancement is additive (existing props, defaults and behaviour don't change; if they must, it's a breaking change and `deprecation-process` plans the old behaviour's removal), and a Type C component ships with its public API named in the release notes (props, types, defaults) and marked alpha or beta if it may still change.
 
-The contribution workflow treats the component's API as a versioned contract. `version-bump-advisor` makes the semver call; this section only sets expectations per contribution type:
+For Type C and Type D in the **full** shape, add a consumer check between community review and release: in a monorepo, run the consuming applications' test suites against the change; across repositories, ask each consuming team to run theirs on a pre-release tag, and record who did. It turns "we told them" into "we checked".
 
-**For Type B (enhancements):**
-- New props and variants are additive — they must not change existing prop behaviour or defaults
-- Consuming teams should not need to change anything.
-- If the enhancement requires changing an existing prop's type, default, or accepted values, it is a breaking change: run `version-bump-advisor` for the bump and `deprecation-process` for the old behaviour's removal path
+## Step 3: Check the shape against capacity
 
-**For Type C (new components):**
-- The component ships in a minor release of the package with a documented API. If the API is not yet stable, mark it alpha or beta in the docs and release notes so consumers know it may change
-- All props, their types, defaults, and accepted values are part of the public contract
-- Internal implementation details (helper components, internal state) are explicitly not part of the contract
-- The release notes should state what is public API and what is internal
-
-**For Type D (system-level changes):**
-- Blast radius must be assessed before approval: how many components, how many consuming applications, what is the estimated migration effort?
-- If the blast radius exceeds a defined threshold (e.g., affects 50%+ of components or 3+ consuming teams), the change requires a migration plan and extended timeline
-- Breaking token changes should include a codemod or find-and-replace instructions
-
-Include the versioning contract in the contribution workflow document as a section that contributors and reviewers reference at the Build and Release stages.
-
-#### Consumer contract testing (larger systems)
-
-For new components (Type C) and system-level changes (Type D), the workflow should include a consumer contract validation step:
-
-- Before release, verify that consuming applications use the component's public API correctly
-- For breaking changes, run the consuming applications' test suites against the new version to detect breakage
-- If consuming teams have snapshot tests or visual regression tests, coordinate a pre-release validation
-
-This step sits between Stage 5 (Community review) and Stage 6 (Release). It converts "we told them about the change" into "we verified the change works for them."
-
-## Step 3: Calibrate for team capacity
-
-After writing the workflow, add a note on how to calibrate the SLAs and review stages for the team's actual capacity. A part-time maintainer cannot run the same process as a four-person dedicated team. Name where the process can be compressed without compromising quality, and where it cannot.
+Reread the document against the capacity from Step 1: every SLA has a named owner who has the time, and no stage exists that the team can't staff. If a stage doesn't survive that check, remove it rather than leaving it as aspiration.
 
 ## Quality checks
 
@@ -270,5 +256,6 @@ After writing the workflow, add a note on how to calibrate the SLAs and review s
 - Every stage has a clear output and a clear sign-off condition
 - SLA placeholders are flagged and must be filled in before the document is used
 - Decline criteria exist and are documented — the process can say no
-- Capacity note is included
+- The shape (lightweight, standard, full) was chosen from capacity before writing, and every stage has an owner who can staff it
+- The proposal template was written as an issue form or platform template, not only in the document
 - The document is written for contributors, not for the design systems team to hide behind

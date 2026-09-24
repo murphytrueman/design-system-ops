@@ -134,7 +134,7 @@ Cross-reference each dimension status against the evidence:
 - Tokens status should reflect token audit findings (and theme-audit / figma-variable-audit, where they ran — the latter is the design-side view of the same token architecture)
 - Components status should reflect component audit findings
 - Documentation status should reflect docs-coverage findings directly — coverage by rung, staleness, and undocumented components — rather than inferring documentation health from naming
-- Adoption status: this chain doesn't run `adoption-report`, so use adoption data only if the user supplied it. Otherwise infer adoption from the drift findings (widespread drift often signals adoption problems) and mark it as inferred in Scope
+- Adoption status: this chain doesn't run `adoption-report`, so the Adoption dimension is "not assessed" unless the user supplied adoption data, and the report says so under Scope. Don't infer adoption from drift: drift is measured in the consumers that were scanned, adoption is about which teams ship with the system, and the synthesis below would then be reasoning from its own guess
 - Governance status should incorporate whether decision records exist for the problems the other skills surfaced
 
 ---
@@ -151,8 +151,8 @@ Before looking for patterns, use this decision tree to focus the synthesis:
    - Yes → Pattern 1 (Concentrated debt). The root cause is localised.
    - No → Continue.
 
-2. **Is system health strong on core dimensions but adoption or drift weak?**
-   - Yes → Pattern 2 (Documentation gap). The system is good but not legible.
+2. **Are tokens and components strong while docs-coverage shows public components at rung 0 or 1, and the drift that exists is class C or D (accidental, misunderstanding)?**
+   - Yes → Pattern 2 (Documentation gap). The system is good but not legible; teams drift because they can't find or read what exists.
    - No → Continue.
 
 3. **Is drift accumulating faster than it is being resolved?** (Needs adoption or drift history — skip if neither was supplied.)

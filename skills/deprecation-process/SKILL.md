@@ -31,7 +31,7 @@ Clarify:
 - What is being deprecated? (component, token, pattern, variant, API)
 - Why is it being deprecated? (superseded by a better option, unused, causing maintenance burden, design direction change, accessibility non-compliance, etc.)
 - What replaces it, if anything?
-- Is there a hard removal date in mind, or is this open-ended?
+- Is there a removal date in mind, or is this open-ended?
 
 If nothing replaces it: the deprecation plan needs an extra step addressing why the use case should no longer be served and what teams who relied on it should do instead.
 
@@ -94,16 +94,20 @@ Total blast radius:   at least 47 instances across 23 files in 4 applications
 Searched:             apps/, packages/ (pattern confirmed against a known usage)
 ```
 
-If codebase access is not available, ask the user to run the search commands and provide the output. If neither is possible, flag the usage audit as outstanding and required before soft removal.
+**Consumers in other repositories.** The searches above count only what's checked out. To find consumers elsewhere: `gh search code "ComponentName" --owner <org>` locates candidate repositories (approximate, default branch only); then clone or fetch each and count with the same `rg` patterns. List the repositories searched and the ones not reached under Scope, and treat the total as a lower bound.
+
+If codebase access is not available, ask the user to run the search commands and provide the output. If neither is possible, flag the usage audit as outstanding and required before the warnings stage.
 
 **Per-consumer breakdown:** For each consuming application, produce a row showing (illustrative values):
 
-| Consumer | Instances | Critical path? | Estimated migration effort | Contact |
+| Consumer | Instances (evidence) | Critical path? | Estimated migration effort | Contact |
 |---|---|---|---|---|
-| Checkout | 12 | Yes (date selection) | Medium (1–3 days) | [team/person] |
-| Dashboard | 18 | No | Low (<1 day) | [team/person] |
-| Settings | 8 | No | Low (<1 day) | [team/person] |
-| Admin | 9 | No | Medium (prop differences) | [team/person] |
+| Checkout | 12 (`rg` over `apps/checkout`, 2026-09-24) | Yes (date selection, per the team) | Medium (1–3 days) | [team/person] |
+| Dashboard | 18 (`apps/dashboard`) | No | Low (<1 day) | [team/person] |
+| Settings | 8 (`apps/settings`) | No | Low (<1 day) | [team/person] |
+| Admin | 9 (`apps/admin`) | No | Medium (prop differences) | [team/person] |
+
+Critical-path status comes from the team, not from a directory name.
 
 This table is the deprecation plan's most operationally useful artifact. It tells the deprecation owner exactly who to contact, how much work each team faces, and where the blockers will be.
 
@@ -180,12 +184,22 @@ Then run `change-communication` with this plan; its migration guide goes in the 
 
 #### Timeline
 
-**Deprecation notice date:** [date]
+**Deprecation notice date:** [date] — the warnings below ship in a minor release on this date; the item keeps working
 **Migration support window:** [start – end] — during this period, the design systems team will actively support migration
-**Soft removal date:** [date] — deprecated item will generate warnings but remain functional
-**Hard removal date:** [date] — deprecated item is removed from the system
+**Removal date:** [date] — the item is removed, in a major release
 
-Hard removal ships in a major release; use `version-bump-advisor` for the call. Deprecation warnings themselves can ship in a minor.
+Removal ships in a major release; use `version-bump-advisor` for the call. The deprecation notice and its warnings ship in a minor. There is no separate "soft removal" stage: deprecated-with-warnings *is* the state between notice and removal.
+
+#### Deprecation mechanics
+
+Say exactly how the deprecation shows up, in code and in Figma, so it isn't only a message in a channel:
+
+- **Code, at the declaration:** a `@deprecated` JSDoc tag on the export ("Use `NewThing`. Removed in v4.") so IDEs strike it through; for tokens in DTCG files, `"$deprecated": "Use {new.path}"`; for CSS custom properties, the old name aliased to the new one and listed in a Stylelint `declaration-property-value-disallowed-list`; for Sass, `@warn` in the variable's partial
+- **Code, at runtime:** a dev-only `console.warn`, once per session, naming the replacement; never in production builds
+- **Lint:** `@typescript-eslint/no-deprecated` (or `eslint-plugin-deprecation`) fails new uses; after removal, `no-restricted-imports` names the removed path with the replacement. `governance-encoder` writes both
+- **Figma:** rename the component or variable with a `[Deprecated]` prefix (or move it to a Deprecated page), set its description to the replacement and the removal date, and unpublish it at removal. Do this in the same window as the code notice so designers and engineers see the same state
+
+Each of these is a line item in the plan with an owner; a deprecation that exists only in an announcement is invisible three weeks later.
 
 The minimum deprecation window should be proportional to the usage footprint. A rarely-used internal component might have a four-week window. A foundational component used across dozens of products needs at least one full release cycle, possibly two.
 
@@ -205,17 +219,14 @@ gantt
 
     section Migration
     Migration support window        :active, migrate, after notify, [duration]
-    Reminder: 2 weeks to soft removal :milestone, m2, [date], 0d
 
-    section Soft removal
-    Warnings enabled, still functional :crit, soft, [date], [duration]
-    Reminder: 2 weeks to hard removal  :milestone, m3, [date], 0d
+    Reminder: 2 weeks to removal      :milestone, m3, [date], 0d
 
-    section Hard removal
-    Component removed               :milestone, m4, [date], 0d
+    section Removal
+    Component removed (major)       :milestone, m4, [date], 0d
 ```
 
-Replace the bracketed values with the actual dates and durations from the timeline above; where a date isn't agreed yet, leave `[needs data: date]` rather than inventing one. If the team's documentation platform does not render Mermaid, add a one-line text fallback: `Notice [date] → migration support [range] → soft removal [date] → hard removal [date, major version]`.
+Replace the bracketed values with the actual dates and durations from the timeline above; where a date isn't agreed yet, leave `[needs data: date]` rather than inventing one. If the team's documentation platform does not render Mermaid, add a one-line text fallback: `Notice and warnings [date, minor] → migration support [range] → removal [date, major]`.
 
 The visual timeline should be included in both the deprecation plan document and the communication announcement. It is the single most referenced artifact in a deprecation — teams pin it, share it, and check it weekly.
 
@@ -225,7 +236,7 @@ Who needs to know, and how will they be told?
 
 - **Immediate notice:** [channels — e.g. Slack #design-system, release notes, direct outreach to high-usage teams]
 - **In-system warning:** Add deprecation notice to the component's documentation and, if possible, a code-level deprecation warning in the component itself
-- **Follow-up reminders:** Two weeks before soft removal, two weeks before hard removal
+- **Follow-up reminders:** at the midpoint of the migration window, and two weeks before removal
 
 The announcement and migration guide are `change-communication`'s output; hand it this plan rather than drafting a second announcement here. This section fixes the channels and the reminder dates that the announcement will carry.
 
@@ -252,7 +263,7 @@ The timeline should be proportional to the blast radius: not just the usage coun
 Document what happens if the deprecation fails:
 - Under what conditions would the deprecation be reversed? (e.g., migration proves impossible for a critical consumer within the timeline)
 - Can the deprecated item be un-deprecated without data loss or version confusion?
-- Is there a version pinning strategy that allows consumers to stay on the old version beyond the hard removal date if needed?
+- Is there a version pinning strategy that allows consumers to stay on the old version beyond the removal date if needed?
 
 This is not an invitation to avoid deprecations. It is an acknowledgement that infrastructure changes sometimes fail and having a rollback plan is responsible engineering.
 
@@ -264,7 +275,7 @@ The deprecated item's documentation page should be updated immediately with:
 - The planned removal date
 - A link to this deprecation plan
 
-Do not remove the documentation page until hard removal. Teams often discover deprecations through documentation during unrelated work, and the page needs to be there when they look.
+Do not remove the documentation page until removal. Teams often discover deprecations through documentation during unrelated work, and the page needs to be there when they look.
 
 ## Quality checks
 

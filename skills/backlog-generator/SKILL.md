@@ -1,8 +1,10 @@
 ---
 name: backlog-generator
 description: "Turn existing audit findings into sprint-ready tickets with T-shirt estimates, acceptance criteria, dependencies and phases. Triggers: tickets from audit, backlog from findings, sprint planning from report. Not for the contribution process (contribution-workflow)."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(ls:*)
 references:
   - ../../knowledge-notes/component-governance.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Backlog Generator
@@ -40,6 +42,8 @@ Do not assume findings are complete. If a finding is vague ("tokens are broken")
 
 Also ask for team size and sprint length (and, if they have one, the capacity they can give system work per sprint). Phases in step 4 are sized against these; without them, group by dependency and priority only and say the phases aren't capacity-checked.
 
+Ask how the team sizes work. If they use story points, or their own T-shirt definitions, use theirs and say so; the scale in step 3 is the default for teams that don't have one. A backlog in a foreign sizing scale gets re-estimated in the planning meeting, which wastes the estimate.
+
 ### 2. Classify Work Item Type
 
 For each finding, assign one of these work item types:
@@ -60,17 +64,21 @@ For each finding, produce a work item with all of these fields:
 
 **Type:** Bug fix, tech debt, enhancement, migration, or documentation (from step 2).
 
-**Effort estimate:** T-shirt size with sizing rationale.
-- S: <2 hours (single-file change, tests included, no API review needed)
-- M: 2–8 hours (multi-file or 1-day work, API implications, needs review)
-- L: 1–3 days (multi-component impact, migration step, cross-team coordination)
-- XL: 3+ days (system-wide change, major migration, new tooling)
+**Effort estimate:** in the team's own scale (step 1), or this default T-shirt scale with sizing rationale:
+- S: under half a day (single-file change, tests included, no API review needed)
+- M: half a day to two days (multi-file work, API implications, needs review)
+- L: three days to a week (multi-component impact, a migration step, cross-team coordination)
+- XL: more than a week (system-wide change, a major migration, new tooling); split it, or mark it for a scoping spike
+
+Design system work is rarely three days when it crosses components or consumers, so the upper sizes run longer than a generic app scale.
 
 Include 2–3 sentences of sizing rationale (e.g., "M because the Button component changes are isolated to one file, but we need to update three variants and test accessibility scenarios"). Do not estimate from severity — a critical bug might be 30 minutes (S) if it's a one-line fix.
 
 **Acceptance criteria:** 2–4 testable statements. Each should be verifiable by a reviewer without ambiguity.
 - Good: "No component token directly references a primitive token (checked via regex in token definitions)"
 - Bad: "Fix tier leakage" or "Make tokens work better"
+
+**Evidence:** the finding id and the audit's evidence for it (the file and line, token path or component it names), copied from the audit so the ticket stands without the report.
 
 **Rationale:** 1–2 sentences explaining why this work matters to the system and team, not just a technical description. Address: What breaks or becomes harder if this is deferred? Who does this unblock? Cite roadmap or business impact only when the audit or the user states it; otherwise describe the technical consequence. Example: "Prevents new components from accidentally breaking the token hierarchy, so every new component token has to be re-checked by hand until this lands."
 
@@ -118,8 +126,10 @@ One card per work item with all fields from step 3 (title, type, estimate with r
 **Dependency section:**
 Text or ASCII representation of the dependency DAG. Highlight any chain longer than 3 items (suggests the phase grouping may be too aggressive).
 
-**Tool mapping section (on request only):**
-Include only when the user asks how to import the backlog into a tracker. Guidance for translating this markdown output into Jira, Linear, GitHub Issues, or Asana without tool-specific API calls. Include field mapping (e.g., "Effort = Story Points or custom field; Priority = Jira priority label; Phase = Sprint or custom field"). Do not write scripts or API calls — keep this human-readable guidance.
+**Tracker export (on request only):**
+When the user wants the backlog in Jira, Linear, GitHub Issues or Asana, write a CSV next to the markdown with one row per item and the columns `title, type, effort, priority, phase, dependencies, acceptance_criteria, rationale, evidence, source_finding` (criteria and dependencies joined with `; `), which every tracker's importer accepts, and say which columns map to which fields in their tool (Effort → story points or a custom field; Priority → the tool's priority; Phase → sprint or a label). A JSON array of the same objects on request. No API calls.
+
+End with `Based on: [audit report, date]` and a Scope block: which findings were converted, which were left out and why (no remediation, duplicates of another item), and whether the phases were capacity-checked.
 
 ## Quality Checks
 
@@ -131,9 +141,11 @@ Include only when the user asks how to import the backlog into a tracker. Guidan
 
 4. **Rationale explains business impact, not just technical description.** Do not repeat the audit finding. Explain why engineers should care, what risk the team avoids, what capability it unblocks.
 
-5. **Dependencies form a valid DAG.** No circular references. If Item A depends on Item B, Item B cannot depend on Item A (directly or transitively). Run a topological sort to verify.
+5. **Dependencies form a valid order.** No circular references, directly or transitively; walk the chains before finalising.
 
-6. **Phase grouping respects dependency order.** No Sprint 1 item can depend on a Sprint 2 item. No Sprint 2 item can depend on a Backlog item (unless you're willing to schedule Backlog work early). Review the dependency map against phase assignments before finalising.
+6. **Every card carries the finding's evidence and the backlog ends with `Based on:` and a Scope block.**
+
+7. **Phase grouping respects dependency order.** No Sprint 1 item can depend on a Sprint 2 item. No Sprint 2 item can depend on a Backlog item (unless you're willing to schedule Backlog work early). Review the dependency map against phase assignments before finalising.
 
 ## Small-System Note
 

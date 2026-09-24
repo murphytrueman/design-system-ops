@@ -1,11 +1,11 @@
 ---
 name: system-pitch
 description: "Investment pitch for a new or continuing design system: cost of current state, ROI with visible assumptions, objections, the ask. Triggers: pitch the system, business case, justify the investment, sell this to leadership. For a routine status update use stakeholder-brief."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(ls:*)
 references:
   - ../../knowledge-notes/executive-communication.md
   - ../../knowledge-notes/output-discipline.md
 ---
-
 
 # System pitch
 
@@ -31,7 +31,7 @@ Audience calibration, framing patterns, metric translation, anti-patterns and th
 4. **Calculate ROI and payback** — one loaded rate, recomputed arithmetic, visible assumptions
 5. **Address the likely objections** — the four-step method
 6. **Calibrate to the audience** — from the executive-communication note
-7. **Choose the investment model** — dedicated, federated or community
+7. **Choose the team model** — solitary, centralised or federated (Nathan Curtis's models)
 8. **Frame the cost of inaction** — only from figures already sourced
 9. **Quality checks**
 
@@ -93,7 +93,7 @@ Before writing the pitch, estimate the cost of the current state. These numbers 
 
 **6. Competitive positioning:** Are competitors shipping faster or with more consistent experiences? Qualitative only, unless the user supplies a sourced comparison.
 
-Not all of these will have hard numbers. Use conservative estimates where data is not available, and state the reasoning. A pitch with honest estimates and visible reasoning is more credible than one with precise numbers and hidden assumptions.
+Not all of these will have hard numbers. A line with no figure the user can supply or derive from a source stays `[needs data: …]` and is left out of the total; the pitch says which lines are unquantified. An estimate the user gives is labelled as theirs, with their reasoning. Don't supply a conservative-sounding number yourself: it becomes the organisation's number the moment it's in the deck.
 
 **Total estimated annual cost of current state:** ___ [sum of the quantified lines above, recomputed]
 
@@ -209,11 +209,11 @@ Every input below is an illustrative assumption. Never carry these numbers into 
 - Inconsistency support tickets: 50 tickets × 4 hours = 200 hours × $75 = $15,000
 - **Total: 6,000 hours × $75 = $450,000/year**
 
-**Investment (annual, same in year 1 and year 2+):**
+**Investment:**
 - 1 FTE design systems engineer: 2,080 hours × $75 = $156,000
 - 0.5 FTE product designer: 1,040 hours × $75 = $78,000
 - Tooling and infrastructure (assumed): $20,000
-- **Total: $254,000/year**
+- **Run cost: $254,000/year.** In a real pitch, year 1 also carries the build: the initial component and token work, migration of existing products, and any external help. Separate "year-1 build" from "run cost" as two lines; a pitch that shows only the run cost understates year 1 and the payback slips when the build cost surfaces later. The example keeps them equal only to keep the arithmetic short.
 
 **Adoption assumption:** 50% of the benefit realised in year 1 (ramp-up), 90% from year 2.
 
@@ -232,6 +232,8 @@ Include a small table that shows:
 - Annual ROI once adoption reaches the target
 
 Make the assumptions visible: "These calculations assume [year 1]% of the benefit in year 1 and [target]% from year 2, at a loaded rate of [rate]. If adoption is slower, payback moves out; if faster, ROI improves." The adoption figures here are the same ones stated in the success metrics.
+
+Add one sensitivity line: name the single input that moves payback most (usually the year-1 adoption share or the duplicated-effort weeks), and show payback with that input halved. A reader who sees "payback month 15, or month 22 if year-1 adoption is 25% rather than 50%" trusts the 15 more than a reader who sees only the 15.
 
 ### Conservative case
 
@@ -275,73 +277,17 @@ Use the audience calibration table and framing patterns in the executive-communi
 
 ---
 
-## Step 7: Investment models — how to structure the ask
+## Step 7: Team model — how to structure the ask
 
-The pitch should specify not just how much investment, but what model of investment you are proposing.
+Say which team model the investment buys. The three models most teams use are Nathan Curtis's ("Team Models for Scaling a Design System", 2015, and his later writing at EightShapes); name them with credit:
 
-### Model 1: Dedicated team
+| Model | Structure | What the ask looks like | Watch for |
+|---|---|---|---|
+| **Solitary** | One team (usually the one that started it) owns the system and others consume it | Time carved from that team's roadmap | The owning team's priorities crowd out everyone else's needs |
+| **Centralised** | A dedicated team owns and maintains the system; product teams contribute | Headcount for the central team, plus a contribution route | The central team becomes a bottleneck if it's understaffed |
+| **Federated** | Contributors from several product teams share ownership, with a coordinating role | A coordinator role plus a stated time allocation from each contributing team | Consistency depends on governance discipline; the allocation has to be real time, not goodwill |
 
-**Structure:** Create a dedicated design systems team that owns the system. Product teams contribute, but the design systems team is responsible for maintenance and governance.
-
-**Pros:**
-- Clear ownership and accountability
-- Dedicated focus on system quality
-- Predictable evolution
-
-**Cons:**
-- Highest headcount cost
-- Design systems team can become a bottleneck
-- May not reflect product team needs closely
-
-**Investment:** 1–3 FTE depending on organisation size
-
-**Frame in pitch:** "Dedicated ownership ensures the system evolves intentionally and maintains quality standards. The design systems team works closely with product teams to ensure the system serves real needs."
-
-### Model 2: Federated model
-
-**Structure:** Design systems work is distributed across product teams, coordinated by a lightweight governance process. Each product team contributes components and maintains them.
-
-**Pros:**
-- Distributed ownership (no bottleneck)
-- Components stay close to the teams that use them
-- Lower headcount cost
-
-**Cons:**
-- Requires discipline to maintain consistency
-- Governance overhead to prevent divergence
-- Harder to enforce standards
-
-**Investment:** 0.5 FTE coordinator + time allocation from each product team
-
-**Frame in pitch:** "Distributed ownership keeps the system close to product needs and eliminates bottlenecks. Governance processes ensure consistency even though ownership is distributed."
-
-### Model 3: Community model
-
-**Structure:** The system exists as an open platform that any team can contribute to, but there is no dedicated team. Maintenance is volunteer or part of product work.
-
-**Pros:**
-- Lowest headcount cost
-- System evolves based on real team needs
-- High autonomy for teams
-
-**Cons:**
-- System may stagnate (no dedicated maintainer)
-- Quality is inconsistent
-- Contributions happen sporadically
-
-**Investment:** Minimal (just a lightweight coordinator role, maybe 0.2 FTE)
-
-**Frame in pitch:** "This is a community-driven system where teams contribute and share. Success depends on teams seeing clear value and choosing to contribute."
-
-### Model comparison table for pitch
-
-| Model | Headcount | Governance overhead | Quality consistency | Scalability | Risk |
-|---|---|---|---|---|---|
-| Dedicated | High | Low | High | High | Bottleneck if team is understaffed |
-| Federated | Medium | Medium | Medium | Medium | Requires strong governance |
-| Community | Low | High | Low | Low | May stagnate without contributions |
-
-**In the pitch, state which model you recommend and why:** "For an organisation of our size [n teams, n products], the [model] approach is appropriate because [reason]. As we grow to [n] teams, we will likely transition to [new model]."
+Headcount for any model comes from the organisation's numbers (Step 2 and the ask), never from a range in this skill. State the model, the reason it fits the organisation's size and structure, and what would prompt a change: "For [n] teams and [n] products, a centralised team of [the ask] with a contribution route; as more teams contribute, a federated model."
 
 ---
 
@@ -349,16 +295,7 @@ The pitch should specify not just how much investment, but what model of investm
 
 Not investing in a design system has costs. Make them explicit, using only figures already sourced in Step 2; anything not quantified there stays qualitative or `[needs data: …]`.
 
-**If we do nothing:**
-
-1. **Duplicated work compounds.** The engineering hours spent on duplicated components this year recur next year: over 18 months, that is 1.5 × the annual duplicated-effort figure from Step 2.
-2. **Inconsistency accumulates.** Every new product launches with its own interface patterns, and customer experience fragments further.
-3. **Technical debt grows.** As products diverge, the effort required to unify them later grows.
-4. **Onboarding friction persists.** New teams and team members keep learning conventions that could be documented once.
-5. **Accessibility risk compounds.** Without a system-level approach, fixes found in one team do not propagate to the others.
-6. **Competitive positioning weakens.** Qualitative unless the user supplies a sourced comparison.
-
-**Comparison:** "The investment costs [amount] over 18 months. Doing nothing costs [amount from Step 2 × 1.5] over the same period." Recompute both figures from the same inputs as Step 4.
+One short section: the quantified current-state cost recurs, so over the pitch's horizon it is that annual figure times the years (recompute it), set against the investment over the same period. The unquantified lines from Step 2 (inconsistency, debt, accessibility exposure, competitive position) stay qualitative, one sentence each, without numbers.
 
 ---
 
@@ -380,6 +317,7 @@ Before delivering the pitch, verify all of these:
 - No design system jargon that is unexplained
 - The pitch is honest about what the investment will not solve
 - The ask is three items or fewer and is stated in one sentence before the detail
-- Investment model (dedicated/federated/community) is named and justified
+- The team model (solitary, centralised or federated, credited to Curtis) is named and justified, with headcount from the organisation's figures
+- Year-1 build cost and run cost are shown separately, and one sensitivity line shows payback with the most influential input halved
 - Pitch is calibrated to the audience, and none of the anti-patterns in the executive-communication note are present
 - The pitch is honest about dependencies (e.g., team buy-in, governance processes) that are required for success

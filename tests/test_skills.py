@@ -212,9 +212,12 @@ class TestSkillSelfCheck(unittest.TestCase):
         self.assertEqual(original, sync_selfcheck.synced(edited, has_references=True))
 
     def test_resync_removes_the_block_where_there_are_no_references(self):
-        paths = [path for path, _ in self._skills(with_references=False)]
-        self.assertTrue(paths, "no reference-free skill left to probe with")
-        original = dsops.read_text(paths[0])
+        # Every shipped skill now lists references, so the probe is a
+        # synthetic reference-free skill rather than a real one.
+        original = (
+            "---\nname: probe\ndescription: \"A probe skill with no references.\"\n---\n\n"
+            "# Probe\n\nA body.\n\n## Step 1\n\nDo the thing.\n"
+        )
         planted = sync_selfcheck.synced(original, has_references=True)
         self.assertIn(self.HEADING, planted, "probe block was not planted")
         self.assertEqual(original, sync_selfcheck.synced(planted, has_references=False))
