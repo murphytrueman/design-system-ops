@@ -1,108 +1,136 @@
 # Sample output: token-compliance (fixture run)
 
 **Skill:** `skills/token-compliance`
-**Run against:** `tests/fixtures/sample-ds`, a small design system with known problems planted in it, as of commit `59a43fa`
+**Run against:** `tests/fixtures/sample-ds`, a small design system with known problems planted in it, as of commit `27c301d`
 **Eval case:** `hardcoded-hex` in `tests/evals/cases.json`
-**Date:** 2026-09-23
-**Edited:** no. Everything below the line is exactly what the skill produced in a headless run with read-only tools. Rerun it with `python3 tests/evals/run_evals.py --case hardcoded-hex`; runs vary, so expect the same findings in different words.
+**Date:** 2026-09-24
+**Edited:** no. The report below is verbatim from a headless run with read-only tools; `tests/evals/save_sample.py` removed only the chat lead-in before the report's title and any harness notes after the closing note. Rerun it with `python3 tests/evals/run_evals.py --case hardcoded-hex`; runs vary, so expect the same findings in different words.
 
 ---
 
-# Token compliance report
+## Token compliance report
 
-Two findings will break your dark theme, and only one of them is visible as a hardcoded value. The other — Card's border — looks fully tokenised in the component CSS but resolves to a frozen literal.
-
-**Date:** 2026-09-23
-**Scope:** `src/components/` (Button, Card, Tooltip)
-**Assessment method:** codebase — CSS Modules with CSS custom properties
-**Config:** no `.ds-ops-config.yml` found; default severities, no integrations auto-pulled
+**Date:** 2026-09-24
+**Scope:** `src/components/` (5 components — Button, Card, Dialog, Modal, Tooltip)
+**Assessment method:** Codebase — full read of every file in scope, plus pattern searches
+**Styling approach:** CSS Modules consuming CSS custom properties from `src/styles/tokens.css`
 
 ---
 
-## Summary
+### Summary
 
-Three components, seven violations, no volume problem — this is a small and mostly well-behaved surface. Spacing is fully tokenised everywhere; no component reaches past the semantic tier into primitives.
+Adoption is genuinely good — 8 violations across 10 files, and every spacing value in the library already routes through `--space-gap` / `--space-inset`. But **this system ships two themes**, and two findings break under the dark theme rather than merely looking untidy: a hardcoded blue in `Card` and a backdrop in `Modal` painted with the *text* colour, which inverts to near-white in dark mode. Those two are the report.
 
-The two that matter both concern theming. `Card.module.css:10` hardcodes `#1a73e8`, a colour that exists nowhere in your palette. And `card.border` is defined in `component.tokens.json` as a reference to the primitive `{color.gray.200}` rather than the semantic `{color.border.default}` — so `var(--card-border)` in `Card.module.css:3` stays `#e5e7eb` when every other border in the system flips to `#374151` under `[data-theme="dark"]`.
-
-The remaining five are a system gap rather than team behaviour: there is no border-radius token, so three components invented three radii.
+The rest is a tier-discipline story: `Button` and `Card` style themselves from component-tier tokens while `Dialog` and `Modal` reach past that tier to semantics for the identical roles. Nothing is broken today; it means a change to `--button-background` silently misses two of the three buttons in the library.
 
 ---
 
-## Violation counts
+### Violation counts
 
 | Check | Violations found | 🔴 Critical | 🟠 High | 🟡 Medium | ⚪ Low |
 |---|---|---|---|---|---|
 | Hardcoded colour values | 1 | 1 | 0 | 0 | 0 |
-| Hardcoded spacing/dimension values | 4 | 0 | 0 | 3 | 1 |
+| Hardcoded spacing/dimension values | 3 | 0 | 0 | 0 | 3 |
 | Hardcoded typography values | 0 | 0 | 0 | 0 | 0 |
-| Wrong-tier token references | 1 | 1 | 0 | 0 | 0 |
-| Inconsistent token application | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **7** | **2** | **0** | **4** | **1** |
+| Wrong-tier token references | 0 | 0 | 0 | 0 | 0 |
+| Inconsistent token application | 4 | 1 | 0 | 2 | 1 |
+| **Total** | **8** | **2** | **0** | **2** | **4** |
 
 ---
 
-## Violation log
+### Violation log
 
-| ID | Check | Severity | Location | Raw value / incorrect reference | Correct token | Notes |
+**Hardcoded colour**
+
+| ID | Check | Severity | Location | Raw value | Correct token | Notes |
 |---|---|---|---|---|---|---|
-| TC-01 | Colour | 🔴 Critical | `src/components/Card/Card.module.css:10` | `#1a73e8` | none — nearest: `var(--color-action-primary)` (`#2563eb`) | Off-system. Upgraded from High: the system ships a dark theme and this value doesn't participate, so the card title stays mid-blue on a `#1f2937` surface. Also worth asking whether an *action* colour belongs on a non-interactive `<h3>` — `var(--color-text-default)` may be the right answer. |
-| TC-02 | Wrong-tier | 🔴 Critical | `src/components/Card/Card.module.css:3` (root cause: `tokens/component.tokens.json:9`) | `card.border: {color.gray.200}` | `card.border: {color.border.default}` | The component reference is correct; the token definition skips the semantic tier. Emitted as the literal `--card-border: #e5e7eb` at `src/styles/tokens.css:17`, and `[data-theme="dark"]` never overrides it. Definition fix is `token-audit` territory — flagged here because it's reached through consuming code and is invisible in component review. |
-| TC-03 | Dimension | 🟡 Medium | `src/components/Button/Button.module.css:4` | `border-radius: 6px` | none — no radius token exists | Off-system |
-| TC-04 | Dimension | 🟡 Medium | `src/components/Card/Card.module.css:5` | `border-radius: 8px` | none — no radius token exists | Off-system |
-| TC-05 | Dimension | 🟡 Medium | `src/components/Tooltip/Tooltip.module.css:10` | `border-radius: 4px` | none — no radius token exists | Off-system |
-| TC-06 | Dimension | ⚪ Low | `src/components/Button/Button.module.css:9-10` | `outline: 2px`, `outline-offset: 2px` | none — no focus-ring token exists | Ambiguous: 2px is a reasonable accessibility floor and may be deliberate. Only becomes a problem when a second component defines a focus ring differently. |
-| TC-07 | Consistency | 🟡 Medium | `src/components/Button/Button.module.css:9,14,19,24` | mixes `--button-background` / `--button-text` (component tier) with `--color-action-primary` (semantic tier) for the same colour role | — | Not wrong-tier — semantic references from component code are valid. But the same role is expressed two ways in one file because the component tier only covers the primary variant; there's no `button.background.secondary`, `button.border`, or `button.focus-ring`. Either complete the tier or drop to semantics throughout. |
+| TC-01 | Colour | 🔴 Critical | `src/components/Card/Card.module.css:10` | `#1a73e8` | none — nearest: `var(--color-action-primary)` (`#2563eb`) | Off-system. Critical under the multi-theme rule: no dark-theme counterpart, so the card title stays Google-blue on a `#1f2937` surface in dark mode. The value is close to but *not* the brand blue — confirm with design whether it was meant to be `--color-action-primary` or is a genuine one-off |
 
-**Excluded as structural:** `border: 0` and `border: 1px solid currentColor` (Button), `border: 1px solid` (Card) — border widths, not design values. `transparent` and `currentColor` are exempt keywords.
+**Hardcoded spacing / dimension**
 
----
+| ID | Check | Severity | Location | Raw value | Correct token | Notes |
+|---|---|---|---|---|---|---|
+| TC-05 | Dimension | ⚪ Low | `Card.module.css:5`, `Dialog.module.css:5`, `Modal.module.css:12` (`8px`); `Button.module.css:4` (`6px`); `Tooltip.module.css:10` (`4px`) | `border-radius` | none — no radius tier exists | Off-system. Three distinct radii with no token to reference. This is a **token system gap**, not contributor error — the scale needs defining before this is fixable |
+| TC-06 | Dimension | ⚪ Low | `Button.module.css:9-10` | `2px` (outline), `2px` (offset) | none — no focus-ring token exists | Off-system. Intent ambiguous: plausibly a deliberate fixed a11y dimension. Flagged because focus rings are usually tokenised and this one can't follow a brand change |
+| TC-07 | Dimension | ⚪ Low | `Modal.module.css:5` | `opacity: 0.5` | none — no opacity/scrim token exists | Off-system. Paired with TC-02 below |
 
-## Pattern analysis
+**Hardcoded typography** — none found. See the note in Scope: this is a true zero, but a weak signal, because the components set no typography properties at all and the token system defines none either.
 
-Violations are **concentrated in Card** — it holds both critical findings and is the only component with an off-system colour. Button and Tooltip are otherwise clean.
+**Wrong-tier token references** — none found in consuming code. Every `var()` in `src/components` resolves to a semantic or component-tier token; no component reaches for a primitive such as `var(--color-blue-500)`. See Scope for a related *definition*-side issue handed to `token-audit`.
 
-Three patterns are worth separating:
+**Inconsistent token application**
 
-1. **Card is the outlier, not the trend.** `#1a73e8` is Google's blue, not a near-miss of your `#2563eb`. That reads as copy-paste from outside the system rather than drift within it.
-2. **Border-radius is a missing token tier, not a compliance failure.** Three components, three values, zero tokens to reference. Nobody could have complied. Same for the focus ring.
-3. **Spacing compliance is genuinely clean.** Every padding, margin and gap across all three components routes through `--space-inset` or `--space-gap`. Nothing to fix.
+| ID | Check | Severity | Location | Incorrect reference | Correct token | Notes |
+|---|---|---|---|---|---|---|
+| TC-02 | Consistency | 🔴 Critical | `src/components/Modal/Modal.module.css:4` | `var(--color-text-default)` used as the backdrop fill | none — no `color.surface.scrim` / `.inverse` token exists | Right tier, wrong semantic role. Severity assigned by the theming rule, not the hardcoded-colour rule: `--color-text-default` flips `#111827` → `#f9fafb` under `[data-theme="dark"]`, turning a dark scrim into a white wash at 50% opacity. Needs a new semantic token, not a swap |
+| TC-03 | Consistency | 🟡 Medium | `Dialog.module.css:18-19`; `Modal.module.css:26-27` | `var(--color-action-primary)` + `var(--color-text-on-action)` | `var(--button-background)` + `var(--button-text)` | Same role (primary action button) implemented at two different tiers. `Button.module.css:14-15` uses the component tier; these bypass it. Resolves identically today, so a component-tier change reaches one button of three |
+| TC-04 | Consistency | 🟡 Medium | `Dialog.module.css:2-4`; `Modal.module.css:9-11` | `var(--color-surface-raised)`, `var(--color-border-default)`, `var(--space-inset)` | `var(--card-background)`, `var(--card-border)`, `var(--card-padding)` — or a new `--surface-*` set | Same raised-surface role as `Card.module.css:2-4`, implemented at the semantic tier instead. Worth a decision rather than a blind swap: `--card-*` is named for Card, so the fix may be a shared surface token, not reuse of Card's |
+| TC-08 | Consistency | ⚪ Low | `Tooltip.module.css:8-9` | `var(--color-text-default)` as background, `var(--color-surface-base)` as text | none — no `color.surface.inverse` token exists | Off-system but **not a bug**: verified it inverts correctly in both themes. Logged only as evidence for the missing inverse role (same gap as TC-02) |
 
-Era analysis doesn't apply here: the repo has a single commit (`987d56d Initial commit`), so `git blame` can't distinguish pre-token from post-token values. The codebase also doesn't meet the messy-codebase indicators — one styling approach, one naming convention, no legacy palette — so the extended protocol was skipped.
-
-**On typography:** zero violations, but read that carefully. The search for `font-size`, `font-weight`, `line-height`, `font-family` and `letter-spacing` returned no hits *anywhere* in `src/`, including the token source — and `tokens/` defines no typography tokens at all. So this is "no typography is declared" rather than "all typography is tokenised." Components inherit type from somewhere outside this package. Worth confirming that's intentional.
-
----
-
-## Remediation priority
-
-**Immediate** — both break under theming:
-- **TC-02:** change `card.border` to `{color.border.default}` in `component.tokens.json` and regenerate. No component change needed; `Card.module.css` is already correct. This is a one-line fix with the highest payoff.
-- **TC-01:** decide the intended role of the card title, then use `var(--color-text-default)` or `var(--color-action-primary)`. Don't add `#1a73e8` as a token.
-
-**Planned:**
-- **TC-03/04/05:** add a radius scale (your three existing values suggest `radius.sm: 4px`, `radius.md: 6px`, `radius.lg: 8px`) — or decide two of the three were arbitrary and collapse them. The audit can't tell which; the design intent can.
-- **TC-07:** complete the button component tier or drop to semantics. Pick one and apply it consistently.
-
-**Review:**
-- **TC-06:** confirm whether the 2px focus ring is a deliberate accessibility floor. If so, promote it to a token so the next component inherits it rather than reinventing it.
+**Excluded as structural:** `border: 1px solid <token>` (Card:3, Dialog:3, Modal:10, Button:25) and `border: 0` (Button:3, Dialog:20, Modal:28) — divider/reset widths; `position: fixed; inset: 0` (Modal:1-2) and `position: relative/absolute` (Tooltip:2,6) — layout; `margin: 0` resets (Card:9, Dialog:10, Modal:16). `transparent` and `currentColor` (Button:23,25) are exempt keywords, not violations.
 
 ---
 
-## Remediation approach
+### Context-aware severity
 
-Seven violations across three files is too small for a codemod — the write-and-test cost exceeds fixing by hand. Do TC-01 and TC-02 now as a single small PR; they're two lines and they close both theming holes.
+**No adjustments were applied**, and the reason matters for reading the table above:
 
-The radius and focus-ring findings aren't really remediation work, they're **token architecture work**: five of seven violations point at gaps in the token set rather than at anyone bypassing it. Worth running `token-audit` before fixing them, because TC-02 suggests the primitive-vs-semantic discipline in `component.tokens.json` may not be isolated to `card.border`.
+- **Critical-path elevation:** not applied. No critical-path list was supplied for this run. There is an `apps/checkout/` directory in the repo, but the skill forbids inferring criticality from a directory name, and it is outside the requested scope regardless. If `Button` or `Modal` sits on checkout or auth, TC-03 and TC-07 rise a level — tell me and I'll re-rank.
+- **Fan-in elevation:** not applied. `.ai/index/` does not exist, so there is no fan-in data. Running `codebase-index` would enable it.
+- **Era-based adjustment:** not applied, and **not possible**. The repository has a single commit (`5ef6762 Initial commit`), so `git log -S` and `git blame` cannot distinguish pre-token, migration-era and post-token code. Every violation is therefore reported at its base severity, with none reduced as inherited debt and none elevated as an active post-token failure.
+- **Deprecation reduction:** not applied — no component was named as scheduled for deprecation.
 
-Going forward, a CI grep for hex literals in `src/components/**` would catch the TC-01 class cheaply. It would *not* have caught TC-02 — that needs a tier-reference check against the token tree.
+---
+
+### Pattern analysis
+
+**The violations are not a contributor-discipline problem; they are a token-coverage problem.** Six of the eight findings (TC-02, TC-05, TC-06, TC-07, TC-08, and TC-01's off-system status) exist because **no token covers the property**. The token system has exactly four colour roles, two spacing steps, and nothing else: no radius scale, no opacity or scrim role, no focus-ring dimension, no inverse surface. Contributors reaching for a raw value there had no compliant option. A lint rule alone would fail these files without offering a fix.
+
+**The distribution is flat, not concentrated.** Every component carries one to three findings; no hotspot file dominates. That rules out "one legacy area" and points at a system-wide gap. The single exception is `Card.module.css:10` (TC-01) — the only true raw hex in the library, isolated, and reading as a one-off paste rather than a pattern.
+
+**Two components diverge in tier discipline.** `Button` and `Card` consume component-tier tokens; `Dialog` and `Modal` consume semantics directly for the same roles (TC-03, TC-04). `Dialog` and `Modal` are also near-duplicates of each other — same structure, same tokens, different prop names (`isOpen`/`open`, `onDismiss`/`onClose`). The token divergence is a symptom; the duplication is the cause, and it belongs to `component-audit`, not here.
+
+**The theming failures cluster on "using a text colour as a background."** TC-02 and TC-08 are the same move; only one of them breaks. That is the signature of a missing `inverse`/`scrim` semantic role that people are approximating with whatever dark token exists.
+
+---
+
+### Remediation priority
+
+**Immediate — theme-breaking:**
+- **TC-02** (`Modal` backdrop) — a visible dark-mode regression today. Needs a new `color.surface.scrim` semantic token that does *not* invert, then a swap. Fixing this also resolves TC-07.
+- **TC-01** (`Card` title `#1a73e8`) — confirm intent with design, then either point it at `--color-action-primary` or add a token for it. Do not blind-swap: the value differs from the brand blue.
+
+**Planned — tier discipline:**
+- **TC-03**, **TC-04** — mechanical once a decision is made on whether `Dialog`/`Modal` adopt `--card-*`/`--button-*` or a new shared surface token is introduced. Resolve the `Dialog`/`Modal` duplication first, or you will fix the same thing twice.
+
+**Review — needs design input before any code changes:**
+- **TC-05** (radius), **TC-06** (focus ring), **TC-08** (inverse surface). These are scale-definition decisions. Three radii in five components suggests the real answer is a two- or three-step radius scale, not five individual fixes.
+
+---
+
+### Remediation approach
+
+At 8 violations, **a codemod is not worth writing** — this is an afternoon of manual work. The sequencing matters more than the tooling:
+
+1. **Extend the token system first.** Add `color.surface.scrim`, `color.surface.inverse`, a radius scale, and a focus-ring dimension. Six of eight findings are unfixable until these exist; attempting the cleanup first produces churn.
+2. **Then fix TC-02 and TC-01** — the only two findings with user-visible impact.
+3. **Then resolve `Dialog`/`Modal`**, and let TC-03/TC-04 fall out of that consolidation.
+4. **Add a lint rule last**, once compliant options exist. `stylelint-declaration-strict-value` on `color`, `background`, `background-color`, `border-radius` and `padding`, with `ignoreValues` set to `/^var\(--/` plus the exempt keywords, holds the line. `governance-encoder` writes that config.
+
+A **token architecture review is warranted before remediation** — the semantic tier is too thin to reference correctly, which is the root cause of most of this report. `token-audit` is the right next skill.
 
 ---
 
 **Scope**
-- **Inspected:** `src/components/**` — `Button.module.css`, `Button.tsx`, `Card.module.css`, `Card.tsx`, `Tooltip.module.css`, `Tooltip.tsx`. Cross-referenced against `tokens/primitives.tokens.json`, `tokens/semantic.tokens.json`, `tokens/component.tokens.json` and `src/styles/tokens.css`.
-- **Not inspected:** `*.stories.tsx` (excluded as fixtures), `src/index.ts`, `src/styles/tokens.css` as a violation target (generated token source — read as reference only). No Figma file, Storybook build or design spec was available, so design-side compliance is out of reach.
-- **How "none found" was checked:** the colour pattern (`#hex`, `rgb()`, `hsl()`, `oklch()`) returns 15 hits in `src/styles/tokens.css`, confirming it works on this codebase — so the single hit in `src/components/` is a real count, not a pattern failure. The typography pattern returns **zero hits in the token source too**, so that zero is reported above as "no typography declared" rather than as clean.
-- **Assumptions:** `src/styles/tokens.css` is current output of `tokens/*.tokens.json` (its header says generated, but no build script exists in `package.json` to verify). `[data-theme="dark"]` is an actively shipped theme — the two Critical severities rest on that; if dark mode is abandoned, both drop to Medium.
 
-If any of these are deliberate — the Google blue on the card title, the three distinct radii, the mixed tiers in Button — tell me and I'll exclude them in future runs.
+- **Inspected:** `src/components/**` — all 10 files (5 `.module.css`, 5 `.tsx`), read in full, plus pattern searches for hex/rgb/hsl/oklch, `px`/`rem`/`em`, and typography and CSS-in-JS/inline-style constructs.
+- **Not inspected:** `src/styles/tokens.css` and `tokens/*.tokens.json` (token source and generated output — excluded by the skill, used here as the reference for what tokens exist); `*.stories.tsx` are excluded as fixtures, though the colour search covered them and found nothing; `apps/checkout/**` is outside the requested scope and was not assessed — it contains its own `.module.css` files and would likely change the totals materially.
+- **How "none found" was checked:** The colour pattern was run as a positive control against `src/styles/tokens.css` and returned **15 hits**, confirming it matches this codebase — so the single colour hit in `src/components` is a real result, not a broken pattern. The spacing control likewise matched `16px`/`8px` in the token source. **The typography zero has no valid positive control**, because the token system defines no typography tokens for the pattern to find; that zero rests on the full read of all 10 files instead, which on a library this size is the stronger check.
+- **Handed to `token-audit`:** `tokens/component.tokens.json:9` defines `card.border` against the primitive `{color.gray.200}` instead of `{color.border.default}`, and the generated `tokens.css:17` emits `--card-border: #e5e7eb` as a raw hex with **no dark-theme override**. That is a token *definition* problem, not consuming-code compliance, so it carries no TC- id here — but note it has a real consequence: `Card`'s border stays light grey in dark mode while `Dialog` and `Modal` borders correctly darken to `#374151`.
+- **Assumptions:** `src/styles/tokens.css` is current and regenerated from `tokens/*.tokens.json`; light and dark are the only shipped themes.
+
+If any of these values are deliberate — the `#1a73e8` title, the fixed radii, the 2px focus ring — tell me and I'll exclude them in future runs.
+
+---
+
+Want me to publish this as a shareable page for the team, or run `token-audit` next to cover the definition-side gaps this report keeps pointing at?

@@ -149,14 +149,14 @@ You don't need to memorise skill names. Describe what you need and the right ski
 
 ## Sample outputs
 
-Sample outputs are in [`sample-outputs/`](sample-outputs/). `docs-coverage-carbon-react.md` is an unedited run against a real public codebase. The rest began as runs against real systems and have since been anonymised and edited to match the pack's current output rules, so treat them as a guide to depth and format rather than as records of a specific system.
+Sample outputs are in [`sample-outputs/`](sample-outputs/). All nine are unedited runs against the small test design system in `tests/fixtures/`, which has known problems planted in it, so you can see exactly what the skills produce and regenerate any of them yourself with the evals. Nothing is anonymised or hand-edited: a script copies each report verbatim, trimming only the chat lead-in and any harness notes after the closing note, and says so in the header.
 
-- **[example-token-audit.md](sample-outputs/example-token-audit.md)** — A complete audit of a ~480 token system: 11 findings across Critical/High/Medium/Low, specific code examples, DTCG alignment assessment, and a prioritised remediation roadmap.
-- **[example-component-description.md](sample-outputs/example-component-description.md)** — A six-section MCP description for a React Dialog component: ~690 words of structured plain text for Figma, within the skill's 400–700 word range.
-- **[example-health-dashboard.html](sample-outputs/example-health-dashboard.html)** — An interactive HTML dashboard generated from audit findings: health radar, severity distribution, priority matrix, metric cards. Open in any browser.
-- **[docs-coverage-carbon-react.md](sample-outputs/docs-coverage-carbon-react.md)** — A docs-coverage audit run against a real public Storybook (IBM Carbon's React build): coverage-by-rung, git-based staleness findings with both change dates, and the "37 undocumented → 5 real candidates" triage that keeps the skill from crying wolf. Every finding carries a join-confidence tier.
+- **[fixture-token-audit.md](sample-outputs/fixture-token-audit.md)** — Tier leakage in `card.border` traced to the dark-mode break it causes, every finding with a file and line, an orphan search with its positive control, and effort estimates with their assumptions.
+- **[fixture-drift-detection.md](sample-outputs/fixture-drift-detection.md)** — A consuming app's forked Button and token override. Four findings are kept Unclassified with the question that would classify each, because the fixture has no history to prove intent; the system's own defects are reported separately from the consumer's drift.
+- **[fixture-system-health.md](sample-outputs/fixture-system-health.md)** — Seven dimensions with evidence behind each status, and a maturity stage inferred from the repo rather than asked: "Managed, provisionally".
+- **[fixture-accessibility-per-component.md](sample-outputs/fixture-accessibility-per-component.md)** — Opens by saying no runtime evidence exists, so nothing is marked PASS on code inference; a tooltip with no `aria-describedby` link, computed contrast ratios, forced-colours and reflow checked.
 
-Five `fixture-*` samples are unedited runs against the small test design system in `tests/fixtures/`, so you can see exactly what the skills produce and regenerate them yourself with the evals. The folder also holds system-health, component-audit, drift-detection and stakeholder-brief samples — [2-WHATS-INCLUDED.md](2-WHATS-INCLUDED.md) lists all thirteen.
+[2-WHATS-INCLUDED.md](2-WHATS-INCLUDED.md) lists all nine with what each demonstrates.
 
 ---
 

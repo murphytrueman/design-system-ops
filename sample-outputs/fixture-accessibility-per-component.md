@@ -1,218 +1,224 @@
 # Sample output: accessibility-per-component (fixture run)
 
 **Skill:** `skills/accessibility-per-component`
-**Run against:** `tests/fixtures/sample-ds`, a small design system with known problems planted in it, as of commit `59a43fa`
+**Run against:** `tests/fixtures/sample-ds`, a small design system with known problems planted in it, as of commit `27c301d`
 **Eval case:** `tooltip-a11y` in `tests/evals/cases.json`
-**Date:** 2026-09-23
-**Edited:** no. Everything below the line is exactly what the skill produced in a headless run with read-only tools. Rerun it with `python3 tests/evals/run_evals.py --case tooltip-a11y`; runs vary, so expect the same findings in different words.
+**Date:** 2026-09-24
+**Edited:** no. The report below is verbatim from a headless run with read-only tools; `tests/evals/save_sample.py` removed only the chat lead-in before the report's title and any harness notes after the closing note. Rerun it with `python3 tests/evals/run_evals.py --case tooltip-a11y`; runs vary, so expect the same findings in different words.
 
 ---
 
-References verified, and both absence searches are proven to work on this codebase. Here's the audit.
+# Accessibility audit: Tooltip
 
----
+**This component has no runtime evidence available, so only contrast could be verified — and it's the one thing that's fine.** Everything else reads as broken in source: the tooltip is never associated with its trigger, has no show/hide behaviour at all, and can't be dismissed. Under this skill's evidence rule those stay ⚠️ WARN (unverified) rather than FAIL, but I'd expect all four 🔴 rows to confirm the moment you put a story in front of axe.
 
-## Accessibility audit: Tooltip
-
-**Your Tooltip isn't a tooltip yet — it renders its content permanently, never associates it with a trigger, and has no show, hide, or dismiss behaviour. Every dimension except colour contrast fails. Fix the trigger association and the show/hide lifecycle first; everything else follows from those.**
-
-**Audit date:** 2026-09-23
+**Audit date:** 2026-09-24
 **WCAG level:** 2.2 AA
-**Assessment method:** Source code only — `Tooltip.tsx`, `Tooltip.module.css`, and the token files. The package has no build, test, or Storybook tooling (`package.json` declares no scripts or devDependencies), so the component could not be rendered or tested with assistive technology.
-**Config:** No `.ds-ops-config.yml` found — defaults apply. `severity.missing_aria` = critical, and keyboard and contrast gates block release.
+**Assessment method:** source only — `Tooltip.tsx`, `Tooltip.module.css`, resolved token values from `src/styles/tokens.css`
+**Runtime evidence:** none found. `Tooltip` is the only component in `src/components/` without a `.stories.tsx` (Button, Card, Modal and Dialog each have one), and `package.json` declares no devDependencies, scripts, or test tooling — no Storybook config, no `jest-axe`/`vitest-axe`, no Playwright. Per the skill's evidence rule, every keyboard, screen-reader and focus criterion below is **WARN (unverified)**; only contrast, computed from resolved token values, can PASS or FAIL.
 
 ---
 
-### Overall status
+## Overall status
 
-❌ **FAIL** — four critical findings, each of which independently prevents a screen reader or keyboard user from receiving the tooltip's content as a tooltip.
-
----
-
-### Results by dimension
-
-| Dimension | Criterion | Result | Finding | Remediation |
-|---|---|---|---|---|
-| **Keyboard** 🔴 | Show on focus | ❌ FAIL | No `onFocus`/`onBlur` anywhere in `src`. Nothing shows or hides. (2.1.1) | F2 — add focus/blur handlers driving open state |
-| | Trigger contract | ❌ FAIL | `children: ReactNode` is rendered untouched. The component neither requires nor guarantees a focusable trigger, and can't attach anything to one. (2.1.1) | F1 — narrow to `ReactElement`, clone with props |
-| | Escape to dismiss | ❌ FAIL | No `onKeyDown` in `src`. No dismissal path. (1.4.13) | F3 — Escape handler on the trigger |
-| | Arrow keys, skip/bypass | — | N/A. A tooltip is not a composite widget and holds no focus stops. | — |
-| **Screen reader** 🔴 | Description association | ❌ FAIL | `Tooltip.tsx:13` has `role="tooltip"` but no `id`, and no `aria-describedby` exists anywhere in `src`. The role is inert. (1.3.1, 4.1.2) | F1 |
-| | Role announcement | ❌ FAIL | Because it's unreferenced and always rendered, the label is exposed as stray static text next to the trigger on every page load, not as a description. (4.1.2) | F1 + F2 |
-| | Name vs description | 🟡 Medium | For an icon-only trigger the tooltip is the trigger's *only* name and needs `aria-labelledby`, not `aria-describedby`. The API offers no way to express that. (2.5.3, 4.1.2) | F6 — add a `describes`/`labels` prop |
-| | State, groups, live regions | — | N/A. Tooltips carry no state, no grouping, and must not be live regions. | — |
-| **Contrast** 🟢 | Text, light theme | ✅ PASS | `#ffffff` on `#111827` = **17.74:1** (computed from `src/styles/tokens.css`). | — |
-| | Text, dark theme | ✅ PASS | `#111827` on `#f9fafb` = **16.97:1** (computed from the `[data-theme="dark"]` block). | — |
-| | Bubble boundary (1.4.11) | ✅ PASS | No border, but the fill contrasts against the page surface at the same ratios — well above 3:1 in both themes. | — |
-| | Contrast durability | 🟡 Medium | The bubble binds `--color-text-default` as a *background*. It passes today by coincidence; a change to the text token silently changes the tooltip surface. | F5 — component-tier tokens |
-| | Colour as sole indicator | — | N/A. No state is conveyed by colour. | — |
-| **Focus mgmt** 🔴 | Show/hide lifecycle | ❌ FAIL | There is no open/close behaviour to manage. Note the APG requires the tooltip *not* take focus — focus stays on the trigger — so "focus moves into the layer" doesn't apply here. | F2 |
-| | Focus not obscured (2.4.11) | ⚠️ WARN | `position: absolute` with no inset properties, no `z-index`, always rendered. The bubble will sit at its static position and overlay adjacent content — including, very likely, a focused control. Unverified: not rendered. | F4 |
-| | Focus trap, focus visibility | — | N/A. Tooltips must not trap focus and contain no focusable elements. | — |
-| **ARIA** 🔴 | Required attributes | ❌ FAIL | `role="tooltip"` requires an `id` referenced by the trigger. Neither exists. (4.1.2) | F1 |
-| | Wrapper semantics | 🟡 Medium | `<span>` wrapping arbitrary `ReactNode`. A consumer passing a `<div>` produces invalid nesting and unpredictable layout. | F1 (also fixes this) |
-| | Landmarks | — | N/A. | — |
-| **Other** | Content on hover/focus (1.4.13) | ❌ FAIL | None of the three requirements met: not dismissible (no Escape), not hoverable (no pointer handlers, so no way to move onto the bubble), persistence undefined. | F2, F3 |
-| | Text spacing (1.4.12) | ⚠️ WARN | No fixed heights found — good — but also no `max-width` or `width` constraint, so a long label is unbounded. Unverified: not rendered. | F4 |
-| | Target size (2.5.8) | — | N/A to the tooltip itself. The trigger is consumer-supplied; document the 24×24 expectation. | — |
-
-**Status key:** ✅ PASS / ⚠️ WARN / ❌ FAIL · 🔴 Critical / 🟠 High / 🟡 Medium
+⚠️ **WARN** — no criterion could be confirmed against a running component. Four rows carry 🔴 Critical severity.
 
 ---
 
-### Critical findings
+## Results by dimension
 
-**These four block release under the default keyboard gate.** All are the same root cause seen from different angles: the component renders tooltip *content* without implementing tooltip *behaviour*.
+| Dimension | Criterion | Result | Severity | Evidence | Finding | Remediation |
+|---|---|---|---|---|---|---|
+| Keyboard | Trigger / activation (2.1.1) | ⚠️ WARN | 🔴 | `Tooltip.tsx:9-15`; `Tooltip.module.css:5-11` | No state, no `onFocus`/`onMouseEnter`, and no `display`/`opacity`/`visibility` rule — the bubble renders unconditionally. There is nothing to activate, by keyboard or pointer | Add open state driven by focus and hover — see **Fix 1** |
+| Keyboard | Escape to dismiss (1.4.13) | ⚠️ WARN | 🟠 | `Tooltip.tsx:9-15` | No `onKeyDown`; Escape does nothing | **Fix 1** |
+| Keyboard | Tab order (2.1.1) | ⚠️ WARN | 🟡 | `Tooltip.tsx:11-14` | The wrapper `<span>` adds no `tabindex` and passes `children` through untouched, so it neither helps nor harms tab order. But nothing in the API requires the child to be focusable — a consumer wrapping an icon `<span>` gets a tooltip no keyboard user can reach | Type `children` as a single `ReactElement` and document that it must be focusable — **Fix 1** |
+| Screen reader | Description association (4.1.2, 1.3.1) | ⚠️ WARN | 🔴 | `Tooltip.tsx:13` | `role="tooltip"` is set, but the element has no `id` and nothing points at it with `aria-describedby`. A tooltip role is only surfaced to AT when referenced — as written, the label is never announced as the trigger's description | **Fix 1** |
+| Screen reader | Reading order (1.3.2) | ⚠️ WARN | 🟠 | `Tooltip.tsx:13` + no hide rule in CSS | Because the bubble is permanently in the DOM *and* visible, a screen reader browsing linearly reads the label as loose text after the trigger, unattached to it. A user navigating by Tab hears nothing | **Fix 1** (hiding it until open removes the stray text) |
+| Screen reader | State announcement (4.1.2) | ⚠️ WARN | 🟡 | `Tooltip.tsx:4-7` | No expanded/collapsed state exists to announce. Once **Fix 1** lands, `aria-describedby` carries the description and no extra state attribute is needed — don't add `aria-expanded`, it isn't part of the APG tooltip pattern | Covered by **Fix 1** |
+| Contrast | Text contrast, light theme (1.4.3) | ✅ **PASS** | — | `#ffffff` on `#111827` = **17.7:1** (`--color-surface-base` on `--color-text-default`, `tokens.css:5,8`) | Well clear of 4.5:1 | — |
+| Contrast | Text contrast, dark theme (1.4.3) | ✅ **PASS** | — | `#111827` on `#f9fafb` = **17.0:1** (`tokens.css:28-29`) | Token inversion holds up in both themes | — |
+| Contrast | Bubble boundary (1.4.11) | ✅ **PASS** | — | Same pairs as above against `--color-surface-base` and `--color-surface-raised` (`#f9fafb`, 17.0:1) | The background carries the boundary; no border needed at these ratios | — |
+| Contrast | Forced colours | ⚠️ WARN | 🟡 | `Tooltip.module.css:5-11` | No border and no `forced-color-adjust`. Under `@media (forced-colors: active)` both `background` and `color` are replaced by system colours, so the bubble flattens into whatever it overlaps | Add a transparent border that picks up `CanvasText` — **Fix 3** |
+| Contrast | Colour alone (1.4.1) | ✅ PASS | — | `Tooltip.tsx:13` — content is the `label` string | Meaning is carried by text | — |
+| Focus | Focus not obscured (2.4.11) | ⚠️ WARN | 🟠 | `Tooltip.module.css:6` | `position: absolute` with no `inset`/`top`/`left` and no `z-index`. The bubble sits at its static position but out of flow, overlapping whatever follows it — including, potentially, a focused control's focus ring | Position it explicitly above the trigger with a stacking context — **Fix 2** |
+| Focus | Focus on open / close | ⚠️ WARN | 🟠 | `Tooltip.tsx:9-15` | No open/close cycle exists, so there is no focus-triggered show path — the "on focus" half of 1.4.13 is simply absent. Note the APG tooltip pattern deliberately does *not* move focus into the bubble; **Fix 1** keeps focus on the trigger | **Fix 1** |
+| Focus | Focus visibility (2.4.7) | ⚠️ WARN | 🟡 | `Tooltip.module.css` (no `:focus`/`:focus-visible` rule) | Component defines no focus styling, inheriting whatever the consumer's trigger provides. Defensible for a wrapper, but it means the tooltip makes no guarantee | Leave to the trigger; state it in the component docs |
+| ARIA | Required attributes for role | ⚠️ WARN | 🔴 | `Tooltip.tsx:13` | `role="tooltip"` without the referencing `aria-describedby` is the incomplete half of a two-part contract. There's no `id` prop and no ref/prop plumbing to the child that would let a consumer complete it themselves | **Fix 1** |
+| ARIA | Prohibited patterns | ⚠️ WARN | 🟠 | `Tooltip.tsx:13` | ARIA is present but inert — the role is on a `<span>` nothing references. This is worse than no ARIA, because it reads as handled in review | **Fix 1** |
+| ARIA | Landmarks | ✅ N/A | — | — | Not a page region | — |
+| Other | Reflow / text spacing (1.4.10, 1.4.12) | ⚠️ WARN | 🟡 | `Tooltip.module.css:5-11` | No `max-width` and no `width` constraint on an absolutely positioned box. A long `label` can run past the viewport at 320 CSS px. No fixed height, so clipping is unlikely | Constrain width — **Fix 2** |
+| Other | Target size (2.5.8) | ✅ N/A | — | `Tooltip.tsx:12` | The trigger is consumer-supplied; the component adds no pointer target | — |
 
-1. **The tooltip is invisible to assistive technology as a tooltip.** `role="tooltip"` does essentially nothing on its own — screen readers surface it only when a trigger points at it via `aria-describedby`. As written, the label is permanently present as loose text.
-2. **There is no show/hide behaviour at all.** No state, no handlers. The bubble is always in the DOM and always painted.
-3. **There is no dismissal path**, so 1.4.13 cannot be satisfied.
-4. **The component cannot reach its own trigger.** With `children: ReactNode` it can't clone props onto the trigger, which is what makes fixes 1–3 possible. This is the one to fix first.
+**Status key:** ✅ PASS / ⚠️ WARN / ❌ FAIL. Severity: 🔴 Critical / 🟠 High / 🟡 Medium / ⚪ Low.
 
 ---
 
-### Remediation
+## Critical findings
 
-**F1–F3 — trigger association, show/hide lifecycle, Escape dismissal**
+Nothing can be recorded as FAIL without a running component, but these four 🔴 rows share a single root cause and would each block release under the default gates (`gates.accessibility.keyboard_blocks_release: true`, `severity.missing_aria: critical`):
 
-```
-Before (violation): Tooltip.tsx
-  export interface TooltipProps { label: string; children: ReactNode; }
+1. **The tooltip is never connected to its trigger.** `role="tooltip"` with no `id` and no `aria-describedby` on the child means the label is not exposed as a description to any assistive technology.
+2. **There is no show/hide behaviour whatsoever.** No state, no handlers, no CSS hiding rule — the bubble is always rendered and always visible. It isn't a tooltip yet; it's a permanently visible label positioned on top of adjacent content.
+3. **No Escape dismissal**, required by 1.4.13.
+4. **No keyboard path**, because there is nothing to trigger.
 
-  export function Tooltip({ label, children }: TooltipProps) {
-    return (
-      <span className={styles.wrapper}>
-        {children}
-        <span role="tooltip" className={styles.bubble}>{label}</span>
-      </span>
-    );
-  }
-```
+All four are fixed by Fix 1.
+
+---
+
+## Remediation
+
+### Fix 1 — associate, gate on focus/hover, dismiss on Escape
+
+Covers: trigger/activation, Escape, tab order, description association, reading order, state announcement, focus on open/close, required ARIA attributes, prohibited patterns.
+
+**Before (violation)** — `src/components/Tooltip/Tooltip.tsx`:
 
 ```tsx
-// After (fixed): Tooltip.tsx
-import { cloneElement, useId, useState } from 'react';
-import type { HTMLAttributes, KeyboardEvent, ReactElement } from 'react';
+import type { ReactNode } from 'react';
 import styles from './Tooltip.module.css';
 
 export interface TooltipProps {
-  /** Tooltip text. Becomes the trigger's accessible description. */
   label: string;
-  /** A single focusable element — receives aria-describedby and the handlers. */
-  children: ReactElement<HTMLAttributes<HTMLElement>>;
+  children: ReactNode;
+}
+
+export function Tooltip({ label, children }: TooltipProps) {
+  return (
+    <span className={styles.wrapper}>
+      {children}
+      <span role="tooltip" className={styles.bubble}>{label}</span>
+    </span>
+  );
+}
+```
+
+**After (fixed):**
+
+```tsx
+import { cloneElement, isValidElement, useId, useState } from 'react';
+import type { FocusEvent, KeyboardEvent, ReactElement } from 'react';
+import styles from './Tooltip.module.css';
+
+export interface TooltipProps {
+  label: string;
+  /** A single focusable element. The tooltip describes it via aria-describedby. */
+  children: ReactElement;
 }
 
 export function Tooltip({ label, children }: TooltipProps) {
   const id = useId();
   const [open, setOpen] = useState(false);
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key === 'Escape' && open) {
-      event.stopPropagation();   // don't also close a surrounding dialog
-      setOpen(false);
-    }
-    children.props.onKeyDown?.(event);
+  if (!isValidElement(children)) {
+    throw new Error('Tooltip expects a single focusable element as its child.');
+  }
+
+  // Merge with whatever the consumer already passed — never replace their handlers.
+  const childProps = children.props as Record<string, unknown>;
+  const describedBy = [childProps['aria-describedby'], id].filter(Boolean).join(' ');
+  const chain = <E,>(theirs: unknown, mine: (event: E) => void) => (event: E) => {
+    (theirs as ((event: E) => void) | undefined)?.(event);
+    mine(event);
   };
 
   const trigger = cloneElement(children, {
-    'aria-describedby': open ? id : undefined,
-    onMouseEnter: () => setOpen(true),
-    onFocus: () => setOpen(true),
-    onBlur: () => setOpen(false),
-    onKeyDown: handleKeyDown,
+    'aria-describedby': describedBy,
+    onFocus: chain<FocusEvent>(childProps.onFocus, () => setOpen(true)),
+    onBlur: chain<FocusEvent>(childProps.onBlur, () => setOpen(false)),
   });
 
-  // onMouseLeave sits on the wrapper, not the trigger, so the pointer can
-  // travel onto the bubble without dismissing it — 1.4.13 "hoverable".
   return (
-    <span className={styles.wrapper} onMouseLeave={() => setOpen(false)}>
+    <span
+      className={styles.wrapper}
+      // Hover lives on the wrapper so the bubble stays open while the pointer
+      // is over the bubble itself (1.4.13 Hoverable).
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onKeyDown={(event: KeyboardEvent) => {
+        if (event.key === 'Escape' && open) {
+          event.stopPropagation();
+          setOpen(false);
+        }
+      }}
+    >
       {trigger}
-      {open && <span id={id} role="tooltip" className={styles.bubble}>{label}</span>}
+      <span id={id} role="tooltip" hidden={!open} className={styles.bubble}>
+        {label}
+      </span>
     </span>
   );
 }
 ```
 
-```
-Why this fixes it:
-  aria-describedby connects the trigger to the tooltip so the role becomes
-  meaningful (4.1.2); focus/blur make it keyboard-operable (2.1.1); Escape
-  and wrapper-level mouseleave satisfy dismissible and hoverable (1.4.13);
-  ReactElement guarantees a single cloneable trigger rather than arbitrary
-  nodes in a <span>.
-```
+**Why this fixes it:** `aria-describedby` pointing at the tooltip's `id` is what makes `role="tooltip"` reachable by assistive technology, so the label is announced with the trigger (4.1.2, 1.3.1). Gating on `onFocus`/`onBlur` gives keyboard users the same access as pointer users (2.1.1). Escape handling plus wrapper-level hover satisfies 1.4.13's dismissible and hoverable requirements, and `hidden` removes the stray text from the reading order (1.3.2). Focus never leaves the trigger, per the APG tooltip pattern. `chain()` calls the consumer's handler before ours, so an existing `onFocus` on the child still runs.
 
-**F4 — positioning, stacking, and width**
+### Fix 2 — position explicitly and constrain width
+
+Covers: focus not obscured, reflow/text spacing.
 
 ```
-Before (violation): Tooltip.module.css
+Before:
   .wrapper { position: relative; }
-  .bubble  { position: absolute; padding: var(--space-gap); ... border-radius: 4px; }
+  .bubble  { position: absolute; padding: var(--space-gap); … }
+
+After:
+  .wrapper {
+    position: relative;
+    display: inline-block;   /* an inline box is an unreliable containing block */
+  }
+
+  .bubble {
+    position: absolute;
+    bottom: calc(100% + var(--space-gap));   /* above the trigger, out of the way */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    width: max-content;
+    max-width: 24ch;                          /* survives 320px and 200% text */
+    padding: var(--space-gap);
+    …
+  }
+
+  .bubble[hidden] { display: none; }
 ```
 
-```css
-/* After (fixed) */
-.wrapper {
-  position: relative;
-  display: inline-block;
-}
+**Why this fixes it:** an absolutely positioned box with no `inset` stays at its static position, overlapping following content and any focus ring under it. Anchoring it above the trigger with an explicit stacking context keeps focused controls visible (2.4.11); `max-width` stops a long label overflowing at 320 CSS px (1.4.10, 1.4.12).
 
-.bubble {
-  position: absolute;
-  bottom: calc(100% + var(--space-gap));   /* was: no offsets at all */
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-  width: max-content;
-  max-width: 20rem;                         /* bounds long labels */
-  padding: var(--space-gap);
-  background: var(--tooltip-background);
-  color: var(--tooltip-text);
-  border-radius: var(--tooltip-radius);
-}
-```
+### Fix 3 — survive forced colours
 
 ```
-Why this fixes it:
-  Explicit offsets and z-index lift the bubble clear of adjacent content
-  instead of overlaying it at its static position, which is what puts a
-  focused control at risk (2.4.11). max-width with width: max-content lets
-  long labels wrap rather than run unbounded (1.4.12).
+Before:
+  .bubble { background: var(--color-text-default); color: var(--color-surface-base); }
+
+After:
+  .bubble { …; border: 1px solid transparent; }
+
+  @media (forced-colors: active) {
+    .bubble { border-color: CanvasText; }
+  }
 ```
 
-**F5 — component tokens (Medium; contrast durability, not a WCAG failure)**
-
-`component.tokens.json` covers `button` and `card` only — there is no `tooltip` entry, which is why the CSS reaches for `--color-text-default` as a surface and hardcodes `border-radius: 4px`. Adding a tooltip block means the contrast pair is declared rather than incidental:
-
-```json
-"tooltip": {
-  "background": { "$value": "{color.surface.inverse}" },
-  "text":       { "$value": "{color.text.inverse}" },
-  "radius":     { "$value": "{radius.sm}" }
-}
-```
-
-`[needs data: color.surface.inverse, color.text.inverse and a radius scale don't exist in semantic.tokens.json or primitives.tokens.json — they need adding before this block resolves. The inverse pair should alias the same greys in use today (gray.900 / white) so the 17.74:1 and 16.97:1 ratios are preserved.]`
-
-**F6 — name vs description (Medium)** — add a prop so an icon-only trigger can take the tooltip as its *name*: when set to label, emit `aria-labelledby={id}` instead of `aria-describedby={id}`. Without it, wrapping an icon button leaves it announced as just "button" (4.1.2), and a visible-label trigger risks a 2.5.3 Label in Name mismatch.
+**Why this fixes it:** Windows High Contrast replaces `background` and `color` with system colours, flattening the bubble into the content beneath it. A border that resolves to `CanvasText` keeps the boundary visible without changing the default rendering.
 
 ---
 
-### Verifying the fix
+## Verifying the fixes with a screen reader
 
-Dimension 2 has FAILs, so confirm with a screen reader once the component can be rendered:
+Dimension 2 has no confirmed results, so check these by hand once Fix 1 lands:
 
-- **VoiceOver (macOS):** Cmd + F5 to toggle, then Tab to the trigger. You should hear the trigger's name and role, then the tooltip text as a description — not as separate text you have to arrow to.
-- **NVDA (Windows, free from nvaccess.org):** Tab to the trigger and listen for the same.
-- In both: press Escape and confirm the tooltip disappears and focus stays on the trigger.
+- **VoiceOver (macOS):** Cmd + F5 to toggle. Tab to the trigger — you should hear the trigger's own name and role, then the tooltip label as its description. Press Escape; Tab away and back to confirm it reappears.
+- **NVDA (Windows, free from nvaccess.org):** Tab to the trigger and listen for the same three parts. Then browse the page with arrow keys and confirm the label is *not* read as stray text when the tooltip is closed.
+
+The faster route: add `Tooltip.stories.tsx` alongside the four existing story files and run `npx test-storybook --url <storybook>`, which runs axe per story. That would turn most of the WARN rows above into confirmed results. I can write that story if useful.
 
 ---
 
 **Scope**
 
-- **Inspected:** `src/components/Tooltip/Tooltip.tsx`, `src/components/Tooltip/Tooltip.module.css`, `src/styles/tokens.css`, all three files in `tokens/`, `src/index.ts`, `package.json`. `Button.tsx` and `Card.tsx` were read only as comparison for the library's conventions.
-- **Not inspected:** No rendered output, no assistive technology testing, no consuming application. `Tooltip` has no Storybook story — `Button.stories.tsx` and `Card.stories.tsx` exist, so the glob does find stories in this repo — and no test file or build tooling exists, so there is no way to render it from this repo.
-- **How "none found" was checked:** The search for `onFocus|onBlur|onMouseEnter|onMouseLeave|onKeyDown|useState|useRef|aria-|tabIndex|cloneElement` returned zero matches across all of `src/`. A control search for `role=|onClick|onFocus|aria-describedby` over the same path does match `Tooltip.tsx:13`, so the attribute pattern works on this codebase — the absence is real, not a broken search. The CSS search for `:focus|:hover|display|visibility|z-index|max-width|inset|top:|left:|outline` matches `Button.module.css:8-18` but nothing in `Tooltip.module.css`, confirming the tooltip has no state styling or positioning.
-- **Assumptions:** Contrast ratios are computed from the hex values in `src/styles/tokens.css` under the WCAG relative-luminance formula, assuming that file is the stylesheet loaded at runtime and that no consumer overrides the custom properties. Both themes were computed; no other theme was found.
+- **Inspected:** `src/components/Tooltip/Tooltip.tsx`, `src/components/Tooltip/Tooltip.module.css`, `src/styles/tokens.css` (light and dark), `src/index.ts`, `package.json`, `tokens/component.tokens.json`.
+- **Not inspected:** no assistive technology was run; no browser rendering, no axe pass, no keyboard walk-through. Consuming usage in `apps/checkout/` — a grep for `Tooltip` across the repo returns only `src/index.ts` and the component's own files, so no in-repo consumer exercises it. Any Figma spec for this component.
+- **How "none found" was checked:** the runtime-evidence claim rests on a case-insensitive grep for `storybook|axe|jest|vitest|playwright|test` across the repo, which *does* match the four existing `.stories.tsx` files — so the search works here — and returns no config, dependency, or test file for Tooltip. The "no hide rule" claim comes from reading all 11 lines of `Tooltip.module.css`; there is no `display`, `opacity`, `visibility`, or `:hover` selector in it.
+- **Assumptions:** the two contrast ratios assume `src/styles/tokens.css` resolves to the rendered colours and that no consumer overrides `--color-text-default` or `--color-surface-base`. Tooltip has no component-tier tokens (`tokens/component.tokens.json` covers only `button` and `card`), so it consumes semantic tokens directly — worth a separate look under token-compliance, not an accessibility issue.
 
-If any of this is deliberate — for example if Tooltip is a known stub awaiting a positioning library like Floating UI, or if the trigger association is handled by consumers rather than the component — tell me and I'll treat it as accepted in future runs. The contrast result is genuinely good and needs no work; it's the behaviour layer that's missing.
+If any of this is deliberate — for instance, if the always-visible bubble is a placeholder mid-build rather than shipped behaviour — tell me and I'll treat it as accepted in future runs.

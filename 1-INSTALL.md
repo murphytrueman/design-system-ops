@@ -469,7 +469,7 @@ Your project-level config is not inside the skill pack, so it's never overwritte
 | `skills/` | 36 skills, each in its own folder with a `SKILL.md`, plus 4 agent definitions |
 | `commands/` | 4 command definitions, one per chained agent workflow |
 | `knowledge-notes/` | 13 canonical reference documents that power the skills |
-| `sample-outputs/` | Sample skill outputs showing expected depth and format (anonymised examples, plus unedited runs against a public codebase and the test fixture) |
+| `sample-outputs/` | Nine unedited skill runs against the test fixture, showing expected depth and format |
 | `ds-ops-config.example.yml` | Annotated configuration template (copy to your project root as `.ds-ops-config.yml`) |
 | `installable/` | Pre-packaged `.plugin` (Cowork) and `.zip` for quick installation |
 | `verify-install.sh` | Checks that every skill can find its knowledge notes — run it if skills behave oddly |

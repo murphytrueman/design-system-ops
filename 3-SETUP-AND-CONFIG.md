@@ -364,23 +364,19 @@ The knowledge notes are the canonical source in `knowledge-notes/`. Skills refer
 
 ## Step 7: Use the sample outputs as benchmarks
 
-The `sample-outputs/` directory contains 13 sample outputs. The five `fixture-*` files are unedited runs against the test design system in `tests/fixtures/`:
+The `sample-outputs/` directory contains 9 sample outputs, all unedited runs against the test design system in `tests/fixtures/` (see `2-WHATS-INCLUDED.md` for what each shows). Regenerate any of them with `python3 tests/evals/run_evals.py --case <case>` followed by `python3 tests/evals/save_sample.py <case>`:
 
-| File | What it demonstrates |
+| File | Eval case |
 |---|---|
-| `example-token-audit.md` | Full token audit against a ~480 token system with CSS custom properties and JSON source. Shows finding format, severity levels, DTCG compatibility assessment, and remediation priority. |
-| `example-component-description.md` | Complete six-section Figma MCP description for a React Dialog component. Shows the exact output format for AI component descriptions. |
-| `example-health-dashboard.html` | Interactive HTML dashboard generated from audit findings. Shows Chart.js visualisations, health radar, severity distribution, and responsive layout. Open in a browser to see it in action. |
-| `system-health-meridian.md` | Health assessment across seven dimensions with status labels, a maturity stage inferred from evidence, and a Scope block. |
-| `component-audit-react-library.md` | Component inventory with Challenge Ratings, duplication analysis, and "likely unused" findings backed by a positive control. |
-| `drift-detection-harbor-consumer-app.md` | Drift analysis of a consumer app: hardcoded values, local re-implementations, and suggested fixes, each classified by cause. |
-| `stakeholder-brief-meridian-q1.md` | One-page executive brief with every figure sourced and open placeholders listed at the top. |
-| `docs-coverage-carbon-react.md` | Docs coverage audit of a real public Storybook: coverage by rung, git-based staleness, and join-confidence tiers. |
-| `fixture-token-audit.md` | Unedited run against the test fixture: tier leakage in `card.border` found and traced to the dark-mode break it causes. |
-| `fixture-token-compliance.md` | Unedited run against the test fixture: an off-palette hex logged once with its nearest token, exempt keywords correctly left alone. |
-| `fixture-docs-coverage.md` | Unedited run against the test fixture: an exported component with no story, with path-resolved join confidence. |
-| `fixture-accessibility-per-component.md` | Unedited run against the test fixture: a tooltip with no `aria-describedby` link and no hover or focus behaviour, nothing marked PASS on code inference alone. |
-| `fixture-theme-audit.md` | Unedited run against the test fixture: a border with no dark value found, correct dark elevation and inherited spacing left alone. |
+| `fixture-token-audit.md` | `tier-leakage` |
+| `fixture-token-compliance.md` | `hardcoded-hex` |
+| `fixture-theme-audit.md` | `dark-theme-controls` |
+| `fixture-docs-coverage.md` | `undocumented-component` |
+| `fixture-accessibility-per-component.md` | `tooltip-a11y` |
+| `fixture-component-audit.md` | `duplicate-components` |
+| `fixture-drift-detection.md` | `consumer-drift` |
+| `fixture-system-health.md` | `health-baseline` |
+| `fixture-ai-component-description.md` | `describe-button` |
 
 **How to use them:** Compare your first skill run against the sample. The sample demonstrates the expected depth, specificity, and structure. If your output is significantly less detailed, check that the knowledge notes loaded correctly (the skill should mention reading them in its process).
 

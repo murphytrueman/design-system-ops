@@ -50,7 +50,7 @@ DOC_CLAIMS = [
     ("3-SETUP-AND-CONFIG.md", r"── skills/ +(\d+) skills", "skills"),
     ("3-SETUP-AND-CONFIG.md", r"── commands/ +(\d+) command definitions", "commands"),
     ("3-SETUP-AND-CONFIG.md", r"── knowledge-notes/ +(\d+) ", "knowledge notes"),
-    ("2-WHATS-INCLUDED.md", r"(\d+) sample outputs \(anonymised", "sample outputs"),
+    ("2-WHATS-INCLUDED.md", r"(\d+) sample outputs \(unedited", "sample outputs"),
     ("2-WHATS-INCLUDED.md", r"directory contains (\d+) sample outputs", "sample outputs"),
     ("3-SETUP-AND-CONFIG.md", r"directory contains (\d+) sample outputs", "sample outputs"),
 ]

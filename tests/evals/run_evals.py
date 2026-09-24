@@ -197,10 +197,16 @@ MARKER = re.compile("\U0001F534|\U0001F7E0|\U0001F7E1|\u26AA|\u274C|\u26A0")
 
 
 def findings(report):
-    """Return (header line, full text) for each finding in the report."""
+    """Return (header line, full text) for each finding in the report.
+
+    The Scope block and everything after it (assumptions, the closing note)
+    describe the run, not the system: a severity marker there isn't a
+    finding, so grading stops at the Scope block."""
     found, current = [], None
     for line in report.splitlines():
         stripped = line.strip()
+        if SCOPE_BLOCK.match(line):
+            break
         if MARKER.search(line):
             current = [line]
             found.append(current)

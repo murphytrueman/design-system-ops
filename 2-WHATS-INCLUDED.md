@@ -8,11 +8,11 @@ Murphy Trueman · 2026 · [designsystemops.com](https://designsystemops.com)
 
 ## What is this?
 
-Design System Ops is a toolkit that gives Claude (the AI) deep expertise in design systems work. It turns Claude into a design systems specialist that can audit your tokens, write component documentation, assess system health, plan deprecations, produce stakeholder briefs, encode governance rules, build context engines for AI agents, and much more — all grounded in 14 years of production design systems experience.
+Design System Ops is a toolkit that gives Claude (the AI) deep expertise in design systems work. It turns Claude into a design systems specialist that can audit your tokens, write component documentation, assess system health, plan deprecations, produce stakeholder briefs, turn governance rules into lint config, write the instructions coding agents read, and much more — all grounded in 14 years of production design systems experience.
 
 Instead of starting from scratch every time you ask Claude for help with your design system, these skills give it the frameworks, mental models, and structured processes that a staff-level design systems practitioner would use.
 
-**What is in the pack:** 36 skills (individual tools that each do one thing well), 4 agents (chained workflows that run multiple skills in sequence), 13 knowledge notes (expert frameworks that power the skills), 13 sample outputs (anonymised examples and unedited fixture runs, so you know what to expect), and an optional configuration file.
+**What is in the pack:** 36 skills (individual tools that each do one thing well), 4 agents (chained workflows that run multiple skills in sequence), 13 knowledge notes (expert frameworks that power the skills), 9 sample outputs (unedited runs against the test fixture, so you know what to expect), and an optional configuration file.
 
 ---
 
@@ -926,23 +926,19 @@ You do not need to ask for staff-level output — the skills assess your system'
 
 ## Sample outputs
 
-The `sample-outputs/` directory contains 13 sample outputs. The five `fixture-*` files are unedited runs against the small test design system in `tests/fixtures/`; anyone can regenerate them with the evals. Use these to understand the depth and format of what the skills produce.
+The `sample-outputs/` directory contains 9 sample outputs. Every one is an unedited run against the small test design system in `tests/fixtures/`, which has known problems planted in it (a component token that skips the semantic tier, an off-palette hex, an undocumented and unlinked tooltip, a border with no dark value, two overlay components that do the same job with different APIs, and a consuming app that forked Button). `tests/evals/save_sample.py` copies each report verbatim, trimming only the chat lead-in and any harness notes after the closing note; anyone can regenerate them with the evals. Use them to see the depth, format and honesty the skills produce: every finding carries a file and line, every "none found" shows its positive control, and every report ends with a Scope block.
 
 | Sample | Skill used | What it shows |
 |---|---|---|
-| `example-component-description.md` | ai-component-description | Complete six-section description for a React Dialog component |
-| `example-token-audit.md` | token-audit | Full audit of a ~480 token system with CSS custom properties and JSON source |
-| `system-health-meridian.md` | system-health | Complete health assessment for a mid-sized design system with seven dimension ratings |
-| `component-audit-react-library.md` | component-audit | Full component inventory with Challenge Ratings, duplication analysis, and recommendations |
-| `drift-detection-harbor-consumer-app.md` | drift-detection | Drift analysis showing hardcoded values, local reimplementations, and suggested fixes |
-| `stakeholder-brief-meridian-q1.md` | stakeholder-brief | One-page executive brief: situation, recommendation, a sourced capacity ask, and open placeholders listed at the top |
-| `docs-coverage-carbon-react.md` | docs-coverage | Docs coverage audit of a real public Storybook (IBM Carbon React): coverage by rung, git-based staleness, and join-confidence tiers |
-| `example-health-dashboard.html` | visual-report | Interactive HTML dashboard built from audit findings: health radar, severity distribution, priority matrix. Open in a browser |
-| `fixture-token-audit.md` | token-audit | Unedited run against the test fixture: tier leakage in `card.border` found and traced to the dark-mode break it causes |
-| `fixture-token-compliance.md` | token-compliance | Unedited run against the test fixture: an off-palette hex logged once with its nearest token, exempt keywords correctly left alone |
-| `fixture-docs-coverage.md` | docs-coverage | Unedited run against the test fixture: an exported component with no story, with path-resolved join confidence |
-| `fixture-accessibility-per-component.md` | accessibility-per-component | Unedited run against the test fixture: a tooltip with no `aria-describedby` link and no hover or focus behaviour, nothing marked PASS on code inference alone |
-| `fixture-theme-audit.md` | theme-audit | Unedited run against the test fixture: a border with no dark value found, correct dark elevation and inherited spacing left alone |
+| `fixture-token-audit.md` | token-audit | Tier leakage in `card.border` traced to the dark-mode break it causes, and a CSS file that claims to be generated by a build the repo doesn't have |
+| `fixture-token-compliance.md` | token-compliance | An off-palette hex logged once with its nearest token; exempt keywords and the token source left alone |
+| `fixture-theme-audit.md` | theme-audit | A border with no dark value found; the dark raised surface (correctly lighter) and inherited spacing left alone |
+| `fixture-docs-coverage.md` | docs-coverage | An exported component with no story, with path-resolved join confidence and a positive control on the join |
+| `fixture-accessibility-per-component.md` | accessibility-per-component | Opens by saying no runtime evidence exists, so nothing is PASS on code inference; a tooltip with no `aria-describedby` link, evidence on every row, computed contrast |
+| `fixture-component-audit.md` | component-audit | Modal and Dialog reported as duplication with a decision per pair; a consumer's local Button as usage evidence; no "confirmed unused" without a positive control |
+| `fixture-drift-detection.md` | drift-detection | A checkout app's forked Button and token override, four findings kept Unclassified with the question that would classify each, and the system's own defects reported separately |
+| `fixture-system-health.md` | system-health | Seven dimensions with evidence per finding, and a maturity stage inferred from the repo ("Managed, provisionally") rather than asked |
+| `fixture-ai-component-description.md` | ai-component-description | A six-section Button description built from source: one real prop, native behaviour stated from the element, an observed anti-pattern from the consumer, expected DOM per example |
 
 ---
 
@@ -1103,20 +1099,16 @@ design-system-ops/
 │   ├── public-systems-reference.md
 │   └── token-architecture.md
 │
-├── sample-outputs/           ← 13 sample outputs
-│   ├── component-audit-react-library.md
-│   ├── docs-coverage-carbon-react.md
-│   ├── drift-detection-harbor-consumer-app.md
-│   ├── example-component-description.md
-│   ├── example-health-dashboard.html
-│   ├── example-token-audit.md
+├── sample-outputs/           ← 9 sample outputs, all unedited fixture runs
 │   ├── fixture-accessibility-per-component.md
+│   ├── fixture-ai-component-description.md
+│   ├── fixture-component-audit.md
 │   ├── fixture-docs-coverage.md
+│   ├── fixture-drift-detection.md
+│   ├── fixture-system-health.md
 │   ├── fixture-theme-audit.md
 │   ├── fixture-token-audit.md
-│   ├── fixture-token-compliance.md
-│   ├── stakeholder-brief-meridian-q1.md
-│   └── system-health-meridian.md
+│   └── fixture-token-compliance.md
 │
 └── installable/              ← Pre-built .plugin (Cowork) and .zip bundles
 ```
