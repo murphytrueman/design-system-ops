@@ -1,6 +1,7 @@
 ---
 name: figma-variable-audit
 description: "Audit Figma variable collections: tier mapping, naming, alias chains, modes, orphans; can fix in place with Figma Console MCP. Triggers: audit my Figma variables, review variable collections, Figma variable health. For token files in code use token-audit."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*)
 references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/output-discipline.md
@@ -61,12 +62,13 @@ Ask the user for a Figma file URL, file key, or node ID. Acceptable inputs:
 
 If `.ds-ops-config.yml` specifies `integrations.figma.file_key`, use it automatically without asking.
 
-**Pull Figma data:**
-1. Use `figma_get_variables` with `resolveAliases: true` to extract all variable collections, modes, names, and resolved values
-2. Use `figma_get_styles` to extract all color, text, effect, and grid styles for cross-reference (styles are sometimes used instead of or alongside variables)
-3. Use `figma_get_component` for component metadata to identify component-tier variables
+**Pull Figma data.** `figma_get_variables` returns a ~2K-token summary by default and auto-summarises any full response over about 25K tokens, so a one-call read of a real library audits a truncated view. Read it in pieces:
+1. `figma_get_variables` with `format: "summary"` to get the collections, their modes and variable counts. This is the audit's inventory.
+2. For each collection, `figma_get_variables` with `format: "filtered"`, `collection: "<name>"`, `resolveAliases: true`, `verbosity: "standard"`, `pageSize: 100`, and `page` from 1 upwards until a page comes back with fewer than 100 variables. Keep the variable ids: findings and Step 10 fixes need them. If a response says it was summarised, halve `pageSize` and re-read that page.
+3. For Step 7 (orphans), re-read each collection with `enrich: true`, `include_usage: true` and `include_dependencies: true`; without those flags the data has no consumer information and orphan claims are guesses.
+4. `figma_get_styles` for colour, text, effect and grid styles, which are sometimes used instead of or alongside variables.
 
-Request confirmation before reading. Once confirmed, connect and pull the data.
+Component-tier collections are identified by name and alias direction in Step 2, not by reading components. Request confirmation before reading. Once confirmed, connect and pull the data, and record under Scope how many pages each collection took and whether any response was summarised.
 
 ---
 
@@ -205,9 +207,9 @@ If no code tokens are found, document that and skip this step. Note in the outpu
 
 ## Step 7: Audit for orphans and duplicates
 
-**Orphaned variables** — variables with no consumers in this file
-- Variables not referenced by any other variable (in any collection)
-- Variables not bound to any component, frame, or style in this file
+**Orphaned variables** — variables with no consumers in this file, from the Step 1 enriched read
+- No alias consumers in the dependency graph (no other variable references it)
+- No usage in styles or components in this file (`include_usage`)
 - Positive control: confirm the same check finds bindings for a variable you know is used (e.g. the primary action colour on Button). If it doesn't, the check isn't reading bindings and the orphan list is unconfirmed
 - A published library is consumed by other files that this audit can't see. Report orphans as "no consumers in this file", not unused, unless library analytics or the consuming files were checked
 - Count and list the top 10 orphans
@@ -269,7 +271,7 @@ One paragraph. What is the overall state of the Figma variable architecture? Wha
 
 List each finding with:
 - Finding ID (e.g. FVA-01)
-- Severity: 🔴 Critical / 🟠 High / 🟡 Medium / ⚪ Low
+- Severity: 🔴 Critical (a broken alias, or a primitive or semantic variable aliasing a component variable); 🟠 High (tier leakage with no per-mode override; a semantic colour identical to the default in a shipped theme mode; a mixed-tier collection); 🟡 Medium (naming inconsistency, platform modes on a colour collection, orphans between 5 and 20); ⚪ Low (ambiguity flags, style overlap, fewer than 5 orphans)
 - Category: Naming / Structure / Coverage / DTCG
 - Description: One sentence
 - Evidence: the variable names and collection, with each variable's id (from `figma_get_variables`) so a Step 10 fix or a later run can find it after a rename

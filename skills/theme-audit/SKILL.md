@@ -1,6 +1,7 @@
 ---
 name: theme-audit
 description: "Audit theme parity: tokens missing or unchanged per theme, component tokens bypassing semantics, contrast within each theme, resolver contexts, theme-switch regressions. Triggers: dark mode audit, theme coverage, brand variant parity. For general token structure use token-audit."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(grep:*), Bash(rg:*)
 references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/output-discipline.md
@@ -171,6 +172,8 @@ For each theme, validate internal logical consistency:
 
 For every theme, compute contrast from resolved values (follow aliases to the final colour in that theme) rather than judging by name. The baseline is WCAG 2.2 AA: 4.5:1 for body text, 3:1 for large text and for non-text elements such as borders, focus indicators and icons. (Some legal baselines, e.g. EN 301 549, still reference WCAG 2.1 AA; use that if it's the team's obligation.)
 
+Compute ratios in sRGB. Convert OKLCH, Lab, LCH and Display P3 values to sRGB first, and say when a value was out of gamut and clipped. A colour with alpha has no contrast ratio on its own: composite it over the background it sits on before computing, and if that background isn't known from the tokens, report the ratio as not computed rather than guess. Every consistency finding names the tokens, their resolved values in that theme, and the file and line (or Figma collection and mode) they came from.
+
 For **light theme:**
 - Raised surfaces are usually lighter than or equal to the page background, separated by border or shadow
 - Text colours meet the contrast baseline against the backgrounds they're used on
@@ -182,10 +185,7 @@ For **dark theme:**
 - Text colours meet the contrast baseline against dark backgrounds
 - Action colours may need adjustment to maintain contrast in dark mode
 
-For **brand variants:**
-- Primary action colour should be consistent with brand guidelines
-- Secondary actions should be visually subordinate to primary actions
-- Error/warning/success states should be visually distinct from brand primary
+For **brand variants:** run the same checks per brand. The one brand-specific check is that feedback colours (error, success, warning) stay distinguishable from that brand's primary action colour: compute the contrast between each pair, and flag below 3:1, because a brand whose primary is red makes error states invisible.
 
 **Consistency violations to flag:**
 
@@ -398,14 +398,6 @@ Each category should include:
 
 ---
 
-#### Small-system note
-
-If `system.component_count` in config is < 5, or if component count is inferred to be small from theme coverage:
-
-"This is a small system. Component-tier propagation problems (tier leakage) have outsize impact because each component token affects user-facing surfaces directly. Prioritise tier leakage findings even if absolute violation count is low."
-
----
-
 ## Recurring workflow
 
 Follows the recurring-run procedure in the configuration-and-recurring note. Specific to this skill:
@@ -432,7 +424,6 @@ Follows the recurring-run procedure in the configuration-and-recurring note. Spe
 - DTCG resolver findings (if applicable) report what each context does with theme-dependent tokens, and treat inheritance of a non-theme-dependent token as normal
 - Tier leakage and hardcoded values are cited from token-audit and token-compliance where those reports exist, not re-derived; each appears once
 - Every finding carries evidence: a file and line, resolver context, or Figma collection and mode
-- Small-system note is present and contextualised if applicable
 - Contrast findings are computed from resolved values against the stated WCAG baseline
 - If values were not available for visual consistency check, the report notes which checks were skipped
 - The Scope block and the closing note about intentional deviations are present

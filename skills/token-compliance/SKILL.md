@@ -47,7 +47,7 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 - Search for `px` values in styling files as a spacing compliance signal
 - Use the results to quantify scope before the detailed audit — "approximately 340 hardcoded hex values across 47 files" (illustrative figures) is a useful framing for the report summary
 
-**Style Dictionary v4** (`integrations.style_dictionary.enabled: true`):
+**Style Dictionary (4 or 5)** (`integrations.style_dictionary.enabled: true`):
 - Parse the token tree to build a complete map of available tokens per tier
 - Use this as the authoritative "what token should this reference?" lookup when flagging violations
 - If a hardcoded value exactly matches a known token's resolved value, include the token name in the remediation guidance automatically
@@ -55,7 +55,7 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 **Figma MCP** (`integrations.figma.enabled: true`):
 - Pull Figma variable definitions as a cross-reference — if a colour is defined as a Figma variable but hardcoded in code, that is a compliance violation with a known correct token
 
-## Step 0b: Messy codebase protocol
+## Step 0: Messy codebase protocol
 
 Token compliance has the most value on messy codebases — the ones with years of accumulated hardcoded values, inconsistent styling approaches, and multiple token migration attempts. For these codebases, apply the extended detection protocol:
 
@@ -99,6 +99,9 @@ Ask for or confirm (skip questions already answered by auto-pull):
 - Any known compliance hotspots the check should prioritise
 - Whether this is a baseline audit or a follow-up to a previous check
 - **Codebase age and migration history:** When were tokens introduced? Has there been a previous migration? Are there known legacy areas? (This determines whether the messy codebase protocol applies.)
+- **Context the code can't show** (used only by the severity adjustments below): which components sit on critical user paths, and which are scheduled for deprecation. Ask once; if there's no answer, apply no adjustment and say so under Scope. Never infer a critical path from a directory name.
+
+**If no code is in reach** (no path, no local checkout, no pasted files), stop and ask for one; a compliance check on described code produces guesses. The design system's own component code counts as consuming code: when the target is the system repo, say so under Scope, because the token source files are excluded and the components are what's being checked.
 
 **Styling approach matters for how violations are detected:**
 
@@ -111,11 +114,20 @@ Ask for or confirm (skip questions already answered by auto-pull):
 
 - **If using Vue SFC:** Token violations appear inside `<style lang="scss" scoped>` blocks. Look for raw `px` values where `$token` variables or `var(--token)` should be used. Vue's scoped styles may also contain token references via `v-bind()` for dynamic CSS — these are valid token usage if bound to a token-backed prop.
 - **If using Twig/Fractal:** Token violations appear as inline `style=""` attributes in templates (e.g. `style="background-color: {{ item.color }}"`), hardcoded hex values in SVG `fill`/`stroke` attributes, and raw pixel values in HTML dimension attributes. Twig components typically reference tokens via BEM utility classes — audit the SCSS that backs those classes, not just the template.
-- **If using Emotion/styled-components with TypeScript tokens:** Token references look like `theme.colors.primary`, `theme.spacing(4)`, or `theme.typography.body`. Hardcoded violations are string literals in style objects: `color: '#FF0000'`, `padding: '16px'`. Tokens accessed via the codebase's own helper functions (e.g. `theme.spacing(4)`) are valid token usage — find those helpers first so they aren't flagged.
+- **If using Emotion/styled-components:** helper calls such as `theme.spacing(4)` are valid token usage — find the codebase's helpers first so they aren't flagged. Template-literal CSS (`css\`padding: 16px\``) is where raw values hide from object-syntax searches; search inside the backticks too.
+- **If using React Native:** styles are unitless numbers (`padding: 16`, `fontSize: 14`) in `StyleSheet.create` or inline `style`. A numeric literal there is the hardcoded form; token references look like `tokens.spacing.md` or a theme hook.
 
 ## Step 2: Run the compliance checks
 
 **Excluded from all checks:** token source files, generated CSS (build output), SVG assets, and stories/test fixtures. Say in the Scope block which paths were excluded.
+
+**Base severity** (before the context adjustments in Step 3; `severity.*` config keys override):
+- 🔴 **Critical** — a hardcoded colour, or a wrong-tier colour reference, in a system that ships more than one theme: it won't switch
+- 🟠 **High** — a hardcoded colour or wrong-tier reference in a single-theme system; hardcoded typography on a text role that has a token
+- 🟡 **Medium** — hardcoded spacing where a scale token matches the value; the same role implemented with different tokens across sibling components
+- ⚪ **Low** — fixed dimensions where intent is ambiguous (border widths, touch targets); off-system values awaiting a design decision
+
+Every violation's Location is a file and line. A finding without one is not logged.
 
 **Exempt values, everywhere:** `transparent`, `currentColor`, `inherit`, `none`, and CSS-wide keywords (`initial`, `unset`, `revert`). These are never violations.
 
@@ -136,7 +148,6 @@ If the assessment is conducted against a design file rather than code: look for 
 Find and flag spacing values that are not token references:
 - Raw pixel values in padding, margin, gap, width, or height properties (e.g. `padding: 16px`, `gap: 8px`)
 - Rem values that correspond to spacing scale values (e.g. `1rem` when there is a spacing token for `16px/1rem`)
-- Percentage values where a spacing token would be more appropriate
 
 Note: not all pixel values are compliance violations. Border widths, minimum touch targets, and other fixed dimensions may be intentionally hardcoded. Where intent is ambiguous, log it as ⚪ Low and say why.
 
@@ -159,6 +170,8 @@ Should be: `background-color: var(--color-action-primary)` → `var(--color-blue
 This is the subtlest compliance violation and the most architecturally damaging. It appears correct on the surface — the right colour is being used — but it breaks the semantic contract and means a semantic change (e.g. changing what "action primary" means) does not propagate to the component.
 
 For each finding: the token being referenced, the semantic token that should be used instead, and the context.
+
+A component *token* that is defined against a primitive in the token files (`card.border: {color.gray.200}`) is a definition problem, and `token-audit`'s tier-leakage check owns it. Log a wrong-tier reference here only where it appears in consuming code (`var(--color-gray-200)` in a component stylesheet). If you notice the definition problem on the way, name it once under Scope as handed to token-audit; don't give it a TC- id.
 
 ### Check 5: Inconsistent token application
 
@@ -222,7 +235,7 @@ Not all violations carry equal weight. Adjust severity based on component import
 
 **Elevated severity (upgrade one level):**
 - Violations in components on critical user paths (checkout, authentication, primary navigation)
-- Violations in components with high fan-in (used by 5+ other components — from the component-audit dependency graph)
+- Violations in components with high fan-in (from `.ai/index/` if `codebase-index` has run; otherwise skip this adjustment and say so)
 - Violations in components that are theming-sensitive (brand-facing surfaces, dark mode targets)
 - Violations in post-token-era code (introduced after the token system was established — these are active compliance failures, not inherited debt)
 
@@ -268,6 +281,7 @@ Recommend the most efficient approach for the volume and pattern of violations f
 - If violations are concentrated in a specific area: a focused refactoring sprint on that area
 - If violations are sparse and distributed: add to the team's ongoing code review criteria and address as work touches each area
 - If wrong-tier references are significant: a token architecture review may be warranted before remediation to ensure the semantic tier is complete enough to reference correctly
+- Whenever violations are post-token era, the standing fix is a lint rule so the count stops growing while the cleanup happens: for CSS, SCSS and CSS-in-JS strings, Stylelint's `stylelint-declaration-strict-value` on the token-backed properties with the token pattern as `ignoreValues`; for Tailwind, `eslint-plugin-tailwindcss` `no-arbitrary-value`; for React Native, a custom ESLint rule on numeric style literals. `governance-encoder` writes the config
 
 ---
 
@@ -291,5 +305,6 @@ Token definitions are out of scope for this skill: for DTCG format and alias int
 - Remediation priority distinguishes between architectural violations and surface-level ones
 - The report is specific enough to act on: file references or context for each violation, not just "hardcoded values found"
 - Any zero count is backed by a positive control against the token source
+- Severity adjustments cite the fact they rest on (a stated critical path, an index fan-in count, a git era); none is inferred from a name
 - Exempt keywords and excluded paths are never logged as violations
 - The report ends with the Scope block and the invitation to flag deliberate values

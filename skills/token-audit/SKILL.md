@@ -1,7 +1,7 @@
 ---
 name: token-audit
 description: "Audit how design tokens are defined: tiers, naming, alias chains, raw values, orphans, DTCG readiness. Triggers: audit my tokens, token architecture review, token health check. Not for code consuming tokens (token-compliance), theme parity (theme-audit) or Figma variables (figma-variable-audit)."
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx style-dictionary:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx style-dictionary:*), Bash(npx terrazzo:*)
 references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/output-discipline.md
@@ -29,17 +29,17 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 - `severity.*` — overrides for finding severity ratings (e.g. `hardcoded_color: critical` instead of the default `high`)
 - `system.theming` — if true, elevate hardcoded colour findings to the severity specified in config
 - `system.styling` — pre-selects the format-specific guidance to apply
-- `integrations.style_dictionary` — parse tokens via Style Dictionary v4 (see below)
+- `integrations.style_dictionary` — parse tokens via Style Dictionary 4 or 5 (see below)
 - `integrations.figma` — Figma variables as an additional token source
 - `recurring.*` — the previous report, for trend comparison (see recurring workflow below)
 
 ## Auto-pull integrations
 
-**Style Dictionary v4** (`integrations.style_dictionary.enabled: true`):
+**Style Dictionary 4 or 5, or Terrazzo** (`integrations.style_dictionary.enabled: true`, or a config in the repo):
 - Parse the config at `integrations.style_dictionary.config_path`
 - Extract the full token tree with resolved references and tier structure
 - Use this as the primary token source — skip the manual "provide your token files" question
-- If Style Dictionary v4 is installed, run `npx style-dictionary build --config [path] --dry-run` to validate references without writing output
+- Run `npx style-dictionary build --config [path]` into a scratch output directory (or `npx terrazzo build`) to let the tool resolve every alias before you reason about the tree; its errors are findings with the tool named as the source
 
 **Figma variables** (`integrations.figma.enabled: true`):
 - Use the Figma MCP server to read variables from the file at `integrations.figma.file_key`
@@ -155,7 +155,13 @@ Flag a missing primitive or semantic tier. A system with only primitives has no 
 
 ## Step 3: Run the audit checks
 
-For each check, produce a PASS, WARN, or FAIL rating with specific examples.
+For each check, produce a PASS, WARN, or FAIL rating with specific examples. Every finding carries evidence: the token path and the file and line where it is defined (`tokens/component.tokens.json:9`, `src/styles/tokens.css:17`).
+
+**Severity rubric** (the `severity.*` config keys override these defaults):
+- 🔴 **Critical** — a token file that isn't the source of truth it claims to be (generated output has drifted from it); tier leakage or a raw value at the semantic or component tier in a system that ships more than one theme, because the theme switch silently misses it
+- 🟠 **High** — tier leakage or a raw value at the semantic or component tier in a single-theme system; an upward reference (semantic → component); a semantic token that names an appearance (`color.semantic.blue`)
+- 🟡 **Medium** — convention inconsistency within a tier; a missing interaction state for a role the components already use; duplicate raw values with no documented distinction; orphan candidates above the 20% threshold
+- ⚪ **Low** — ambiguity flags, platform suffixes, orphan candidates below the threshold, DTCG migration signals
 
 ### Naming checks
 
@@ -253,8 +259,8 @@ List each finding with:
 - Severity: 🔴 Critical / 🟠 High / 🟡 Medium / ⚪ Low
 - Check category: Naming / Value / Coverage
 - Description: One sentence
-- Example: Specific token or tokens affected
-- Recommended action: Specific and actionable
+- Evidence: the token path(s) and the file and line where each is defined
+- Recommended action: Specific and actionable, naming the replacement
 
 **Remediation priority**
 Group findings into three tiers:
@@ -303,7 +309,7 @@ End the report with:
 
 ## Quality checks
 
-- Every finding has a specific example, not a generic description
+- Every finding has a specific example with a file and line, not a generic description, and a severity from the rubric
 - The summary paragraph is honest about severity rather than diplomatic
 - Remediations are specific: "rename `color.semantic.blue` to `color.action.primary`" not "improve naming"
 - The tier structure assessment covers primitive and semantic tiers, and the component tier where the system uses one

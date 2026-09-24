@@ -1,6 +1,6 @@
 ---
 description: Full health sweep chaining token, naming, component, drift, docs-coverage and system-health audits into one report with cross-skill patterns
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(git log:*), Bash(git ls-files:*), Bash(npx style-dictionary:*), Bash(npm view:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(git log:*), Bash(git ls-files:*), Bash(npx style-dictionary:*), Bash(npx terrazzo:*), Bash(npm view:*)
 ---
 
 Run the full system diagnostic — a comprehensive health sweep that chains six audit skills (plus conditional theme and Figma audits) into a unified diagnostic report.

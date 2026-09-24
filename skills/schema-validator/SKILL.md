@@ -1,7 +1,7 @@
 ---
 name: schema-validator
-description: "Validate token files structurally against DTCG 2025.10, Style Dictionary v3/v4 or Tokens Studio: parse errors, $type/$value, broken or circular aliases. Trigger: validate token JSON, DTCG compliance, are my token files valid. Do NOT use for naming or architecture — token-audit."
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx style-dictionary:*)
+description: "Validate token files structurally against DTCG 2025.10 (including resolvers), Style Dictionary 3 to 5 or Tokens Studio: parse errors, $type/$value, name rules, broken or circular aliases. Trigger: validate token JSON, DTCG compliance, are my token files valid. Naming or architecture: token-audit."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx style-dictionary:*), Bash(npx terrazzo:*)
 references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/output-discipline.md
@@ -9,7 +9,7 @@ references:
 
 # Schema validator
 
-A skill for validating that design token files conform to their expected format — DTCG 2025.10, Style Dictionary v3/v4, Tokens Studio, or a custom schema. Catches structural issues before they break build pipelines, cause silent failures, or produce incorrect output.
+A skill for validating that design token files conform to their expected format — DTCG 2025.10 (token files and resolver documents), Style Dictionary 3, 4 or 5, Tokens Studio, or a custom schema. Catches structural issues before they break build pipelines, cause silent failures, or produce incorrect output.
 
 ## Before you begin: verify references
 
@@ -38,9 +38,10 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 
 ## Auto-pull integrations
 
-**Style Dictionary v4** (`integrations.style_dictionary.enabled: true`):
-- Run `npx style-dictionary build --config [path]` into a scratch output directory (or with a dry-run option, if your Style Dictionary version supports one) to get Style Dictionary's own validation errors
-- Cross-reference Style Dictionary errors with this skill's findings for completeness
+**Run the tool the repo already has, first.** Hand-validation is the fallback, not the method.
+- **Style Dictionary 4 or 5** (`integrations.style_dictionary.enabled: true`, or a config file in the repo): run `npx style-dictionary build --config [path]` into a scratch output directory to get its own reference and parse errors. Version 5 reads DTCG natively; version 4 needs `usesDtcg: true`; version 3 uses `value`/`type` and doesn't read DTCG at all.
+- **Terrazzo** (a `terrazzo.config.*` file, or `@terrazzo/cli` in `package.json`): run `npx terrazzo lint` for DTCG validation and `npx terrazzo build` for alias resolution.
+- Reconcile: every error the tool reports appears in this report with the tool named as its source; anything this skill finds that the tool didn't is reported as this skill's own check.
 
 ---
 
@@ -52,7 +53,7 @@ Ask for or confirm:
 2. **Target format** — which specification to validate against:
    - **DTCG 2025.10** (W3C Design Token Community Group specification)
    - **Style Dictionary v3** (legacy JSON with `value` property)
-   - **Style Dictionary v4** (JSON with DTCG alignment, `$value` property)
+   - **Style Dictionary v4 or v5** (JSON with DTCG alignment, `$value` property; v5 reads DTCG natively)
    - **Tokens Studio** (Figma Tokens plugin export format)
    - **Custom** — if custom, ask for the schema or describe the expected structure
 3. **Strictness level** — strict (every violation is an error) or lenient (warnings for non-critical issues)
@@ -91,11 +92,23 @@ For each successfully parsed file, run format-specific validation:
 5. **Alias syntax correct** — aliases must use `{group.token}` syntax with curly braces
 6. **Alias targets exist** — every alias must resolve to a real token (no broken references)
 7. **No circular aliases** — alias chain must terminate at a concrete value
-8. **Composite token structure** — composite types (border, shadow, typography, transition, gradient) must have correct sub-properties
+8. **Composite token structure** — the six composite types (strokeStyle, border, shadow, typography, transition, gradient) must have correct sub-properties; `strokeStyle` also accepts a plain keyword such as `"dashed"`
 9. **Value shapes** — in 2025.10, `color` is an object (`colorSpace`, `components`, optional `alpha` and `hex`), `dimension` is `{ value, unit }` with `px` or `rem` only, and `duration` is `{ value, unit }` with `ms` or `s` (see the token-architecture note). String values such as `"#ff0000"` or `"16px"` are the older draft format: report them as a migration item, not a broken file.
 10. **Units valid** — `em`, `%` and other units in a `dimension` are outside the spec; flag them
 11. **No `$` prefix on non-spec properties** — custom properties should not start with `$` to avoid confusion with spec properties
-12. **Extensions namespace** — custom metadata should live under `$extensions` if present
+12. **Extensions namespace** — custom metadata should live under `$extensions` if present, keyed by reverse-domain name
+13. **Name rules** — token and group names must not begin with `$` and must not contain `{`, `}` or `.`; a dotted name breaks alias syntax and is an error, not a style point
+14. **`$deprecated`** — if present, must be `true`, `false` or a string; a group's value applies to its children unless a token overrides it
+
+### DTCG 2025.10 resolver checks
+
+For every `*.resolver.json`:
+1. **`version`** must be the string `"2025.10"`
+2. **`sets`** is a map of named sets, each with an array of token sources (inline objects or file paths); every file path resolves
+3. **`modifiers`** is a map; each modifier has a required `contexts` map of name → array of token sources, and an optional `default` that names one of its contexts
+4. **`resolutionOrder`** is present and every entry names an existing set or modifier, each at most once
+5. **Alias targets** in any source resolve somewhere earlier in the resolution order
+6. A context that doesn't redefine a token is inheritance, not an error; don't report it here (`theme-audit` decides whether an inherited theme-dependent token is a gap)
 
 ### Style Dictionary v3 checks
 
@@ -103,11 +116,11 @@ For each successfully parsed file, run format-specific validation:
 2. **Reference syntax** — aliases use `{group.token}`; the older `{group.token.value}` form is also accepted
 3. **Reference resolution** — all references resolve to existing tokens
 4. **Category-Type-Item (CTI)** — if using CTI convention, validate hierarchy consistency
-5. **No reserved property collisions** — `value`, `original`, `name`, `comment`, `themeable`, `attributes` are reserved
+5. **No reserved property collisions** — `value`, `original`, `name`, `comment`, `themeable`, `attributes`, `path`, `filePath` and `isSource` are reserved
 
-### Style Dictionary v4 checks
+### Style Dictionary v4 and v5 checks
 
-v4 still accepts the legacy `value`/`type` format. Apply the DTCG checks above only when the project opts into DTCG format (e.g. `usesDtcg`, or its files use `$value`); otherwise apply the v3 checks. Plus:
+v4 still accepts the legacy `value`/`type` format; v5 reads DTCG natively and treats `usesDtcg` as on. Apply the DTCG checks above only when the project opts into DTCG format (e.g. `usesDtcg`, or its files use `$value`); otherwise apply the v3 checks. Plus:
 1. **Format consistency** — a file doesn't mix `$value` and `value` tokens
 2. **Preprocessor compatibility** — if preprocessors are configured, validate custom property shapes
 3. **Platform-specific overrides** — if present, validate they follow the platform config schema
@@ -156,10 +169,12 @@ Structure the report as:
 ### ❌ Files with Errors
 
 #### [filename.json]
-| # | Check | Status | Detail | Fix |
-|---|-------|--------|--------|-----|
-| SV-01 | $type resolvable | ❌ FAIL | 3 tokens have no own, alias-derived, or group `$type`: `color.brand.accent`, `spacing.page.gutter`, `font.body.family` | Add `$type: "color"`, `$type: "dimension"`, `$type: "fontFamily"` respectively, or set `$type` on the parent group |
-| SV-02 | Alias resolution | ❌ FAIL | `{color.legacy.blue}` referenced by `color.semantic.info` does not exist | Either create `color.legacy.blue` or update the reference to `{color.primitive.blue.500}` |
+| # | Check | Severity | Evidence | Detail | Fix |
+|---|-------|----------|----------|--------|-----|
+| SV-01 | $type resolvable | 🟠 High | `colors.json:14,31,58` | 3 tokens have no own, alias-derived, or group `$type`: `color.brand.accent`, `spacing.page.gutter`, `font.body.family` | Add `$type: "color"`, `$type: "dimension"`, `$type: "fontFamily"` respectively, or set `$type` on the parent group |
+| SV-02 | Alias resolution | 🔴 Critical | `semantic.json:22` | `{color.legacy.blue}` referenced by `color.semantic.info` does not exist | Either create `color.legacy.blue` or update the reference to `{color.primitive.blue.500}` |
+
+Severity: 🔴 Critical for a parse error or a broken alias (the build fails, or a value silently resolves to nothing); 🟠 High for an unresolvable `$type`, an invalid unit, a circular alias, or a name that breaks alias syntax; 🟡 Medium for pre-2025.10 string values and mixed formats in one file (migration items); ⚪ Low for a missing `$description` or a non-`$` custom property. Evidence is the file and line where the parser or the check found the problem.
 
 ### ⚠️ Warnings
 [Non-critical issues: missing $description, custom $ properties, etc.]
@@ -215,7 +230,8 @@ Before delivering the report, verify:
 4. **Counts are facts, not ratings** — report "10 of 12 files valid", never a compliance percentage or score; checks that don't apply (e.g. no composite tokens) are left out
 5. **Alias chains are fully traced** — broken reference errors identify the full chain, not just the immediate reference
 6. **Cross-format issues are flagged** — if the same token exists in two files with different formats, this is noted
-7. **Findings reference specific token names and file paths** — never "some tokens are missing types"
+7. **Findings reference specific token names and file paths with line numbers** — never "some tokens are missing types"
+8. **The repo's own tool ran first** where one exists, and its errors are in the report with the tool named
 
 ## Small-system note
 

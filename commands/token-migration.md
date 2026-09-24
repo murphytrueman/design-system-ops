@@ -1,6 +1,6 @@
 ---
 description: Plan a token migration (format, tool, naming or tier) with codemods, deprecation and a comms plan
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(diff:*), Bash(grep:*), Bash(rg:*), Bash(npx style-dictionary:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx tsc:*), Bash(node:*), Bash(npx jscodeshift:*), Bash(npx jest:*), Bash(npx vitest:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(diff:*), Bash(grep:*), Bash(rg:*), Bash(npx style-dictionary:*), Bash(npx terrazzo:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx tsc:*), Bash(node:*), Bash(npx jscodeshift:*), Bash(npx jest:*), Bash(npx vitest:*)
 ---
 
 Run the token-migration agent to plan a token migration. It produces a plan, codemods and a deprecation schedule; it doesn't apply them.

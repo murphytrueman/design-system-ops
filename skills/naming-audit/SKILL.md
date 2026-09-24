@@ -1,6 +1,7 @@
 ---
 name: naming-audit
 description: "Audit component and pattern naming for consistency and clarity, with rename suggestions. Triggers: naming review, are our component names consistent, fix our naming. Token names: token-audit. Prop names: component-api-validator. Figma variable names: figma-variable-audit."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*)
 references:
   - ../../knowledge-notes/output-discipline.md
 ---
@@ -48,7 +49,7 @@ Only ask the user for a list if you can't reach the source, and say which names 
 
 If naming convention documentation exists, assess against it. If it does not, derive the implicit conventions from the existing names and note where they are inconsistent with each other.
 
-**Small-system note (fewer than 5 components):** A naming audit on a system this size is more of a naming workshop than a compliance audit. The consistency check (Step 2) becomes trivial — with 1–4 components, either every name follows the same convention or the inconsistencies are immediately visible. Focus the audit on purpose clarity and ambiguity flags rather than pattern detection. The primary output should be a naming decision record (use the `decision-record` skill) establishing the convention now, while the system is small enough to rename without migration cost.
+**Small-system note (fewer than 5 components):** A naming audit on a system this size is more of a naming workshop than a compliance audit. The consistency check (Step 2) becomes trivial — with 1–4 components, either every name follows the same convention or the inconsistencies are immediately visible. Focus the audit on purpose clarity and ambiguity flags rather than pattern detection. Offer to capture the convention as a decision record (`decision-record`) now, while the system is small enough to rename without migration cost.
 
 ## Step 1b: Derive the dominant convention
 

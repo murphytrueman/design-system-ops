@@ -1,6 +1,7 @@
 ---
 name: token-documentation
 description: "Write reference docs for existing design tokens: semantic intent, use/do-not-use, references, used-by, theming contract, misuse list. Triggers: document our tokens, token reference, what is this token for. Token structure/architecture audit: use token-audit; file validation: schema-validator."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(grep:*), Bash(rg:*)
 references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/output-discipline.md
@@ -35,7 +36,7 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 
 ## Auto-pull integrations
 
-**Style Dictionary v4** (`integrations.style_dictionary.enabled: true`):
+**Style Dictionary (4 or 5) or Terrazzo** (`integrations.style_dictionary.enabled: true`, or a config in the repo):
 - Parse the config to extract the complete token tree with resolved references
 - Auto-detect tier structure, token names, values, and reference chains
 - This replaces the manual "provide your token files" step
@@ -173,69 +174,34 @@ Ask the user for each field; leave `[TBC]` for anything they don't know rather t
 
 This note prevents the common failure mode where token documentation is accurate at publication but becomes stale because no one owns the update process.
 
-## Step 5: DTCG 2025.10 alignment documentation (staff-level)
+## Step 5: Write intent back into the source
 
-If the system uses or is migrating to DTCG 2025.10 format, include a specification alignment section:
+The token file is where intent survives. Docs pages drift; a `$description` travels with the token into Style Dictionary, Terrazzo, Tokens Studio, Figma variable sync and any docs generator. So the machine-readable output of this skill is the source itself, not a parallel file:
 
-**Token type documentation.** For each DTCG token type used in the system, document:
-- The type name (e.g., `color`, `dimension`, `typography`, `shadow`)
-- How the system uses it (which tokens carry this type)
-- For composite types: the sub-value structure and which sub-values are required vs optional
+- **DTCG files:** put the one-sentence intent in each semantic (and component) token's `$description`. Put the use/do-not-use guidance under `$extensions` with a reverse-domain key the team chooses, for example `"com.<org>.usage": { "useOn": [...], "doNotUseOn": [...] }`, so tools that don't know it preserve it. Group-level `$description` covers a scale.
+- **Style Dictionary 3 files:** the `comment` property.
+- **CSS, Sass, TypeScript token sources:** a comment above the declaration in the file's own comment syntax.
+- **Figma variables** (Console MCP connected): write the same sentence to the variable description with `figma_update_variable`, so designers read what engineers read.
 
-**Resolver and set documentation.** If the system uses DTCG resolvers:
-- Document each token set: its purpose, which tokens it contains, and which files it references
-- Document each mode: its name, purpose, and which sets it activates
-- Document the composition order: when multiple sets are active, which takes precedence?
-- Include a visual map of sets, modifiers and their contexts if the resolver is complex (3+ sets or contexts)
+Show the diff and write only after the user confirms. Intent marked "proposed" is written as `[proposed] …` so nobody mistakes a guess for a decision. A separate JSON reference is a copy that drifts: produce `.ai/tokens/token-reference.json` only if the user asks for it, and then generate it from the source after the write-back, never by hand.
 
-**Migration status.** For systems partially migrated to DTCG:
-- Which token categories are DTCG-compliant and which are not?
-- What are the known gaps (missing `$type` annotations, non-standard composite structures)?
-- What is the migration path for each gap?
+**DTCG alignment (only if the system uses or is migrating to DTCG).** One short section: the token types in use and any composite sub-value conventions; for resolvers, each set's purpose and files, each modifier and its contexts, and the resolution order (a diagram if there are more than three sets or contexts); and, if partly migrated, which categories are done and what remains.
 
-## Step 5b: Machine-readable token reference (staff-level)
+## Step 6: Write the documentation files
 
-Produce a supplementary JSON reference at `.ai/tokens/token-reference.json` that AI tools and build pipelines can consume directly. Illustrative shape:
+Unless `integrations.documentation` names a platform, write markdown the docs site can ingest:
 
-```json
-{
-  "tokenArchitecture": {
-    "tiers": ["primitive", "semantic", "component"],
-    "format": "dtcg-2025.10",
-    "totalTokenCount": 0,
-    "themeSupport": true,
-    "themes": ["light", "dark"]
-  },
-  "semanticTokens": [
-    {
-      "name": "color.action.primary",
-      "type": "color",
-      "intent": "Primary interactive action colour",
-      "references": "color.blue.500",
-      "themes": {
-        "light": "#0066CC",
-        "dark": "#66AAFF"
-      },
-      "usedBy": ["Button", "Link"],
-      "useOn": ["primary actions", "interactive elements"],
-      "doNotUseOn": ["decorative surfaces", "text body"]
-    }
-  ]
-}
+```
+docs/tokens/
+  README.md            index: tiers explained, governance note (Step 4b), theming contract (Step 3), links
+  primitives.md        per group: scale, source, "reference via semantic tokens only"
+  semantic.md          grouped by function (actions, feedback, text roles, surfaces, spacing roles), the Step 2 format per token
+  components.md        only if the system uses component tokens; grouped by component
+  quick-reference.md   Step 6b
+  misuse.md            Step 4
 ```
 
-`format` is one of `dtcg-2025.10`, `style-dictionary` or `custom`. `usedBy` lists component names, matching the "Used by" line in the prose docs. This reference complements the human-readable documentation. Keep both in sync — changes to the documentation should be reflected in the JSON, and vice versa.
-
-## Step 6: Format for the documentation platform
-
-Token documentation needs to be findable, not just accurate. Recommend the following structure for the documentation platform:
-
-- Index page: overview of the token architecture with tier explanations and links to each tier's reference
-- Primitive reference: grouped by category (colour, spacing, typography, etc.)
-- Semantic reference: grouped by function (actions, feedback states, text roles, surfaces, etc.)
-- Component token reference: grouped by component, linked from each component's documentation page
-
-The semantic reference is the most-used section. Make sure it is the easiest to find and navigate.
+If token docs already exist, update them in place and say what changed; don't leave two sets. The semantic reference is the most-used page: it comes first in the index and its groups are the jobs consumers do, not the token categories.
 
 ## Step 6b: Quick reference by semantic function
 
@@ -252,7 +218,7 @@ Use the system's real token names, grouped by the jobs consumers actually do (co
 
 End with a short chat summary:
 - **Headline:** how many tokens were documented, by tier
-- **Files written:** doc paths, plus `.ai/tokens/token-reference.json` if produced
+- **Files written:** doc paths, the token source files whose `$description` (or comments) were updated, and `.ai/tokens/token-reference.json` only if the user asked for it
 - **Marked:** intents marked "proposed", misuse entries marked "anticipated", "Used by" entries left "not determined", and `[TBC]` governance fields
 - **Scope:** the block from the output-discipline knowledge note, including how the "Used by" search was shown to work
 
@@ -265,3 +231,4 @@ End with a short chat summary:
 - The misuse reference exists and is specific, with each entry sourced or labelled "anticipated"
 - "Used by" comes from a source search with a positive control, not from token names
 - Format is appropriate for the documentation platform — navigable, not just comprehensive
+- Intent was written back into the token source (with confirmation), so the docs and the files can't disagree; no parallel JSON was produced unasked
