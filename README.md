@@ -117,11 +117,31 @@ The skills encode specific practitioner frameworks, not generic advice:
 **"I need to deprecate a component"**
 → Say: "Help me deprecate DatePicker in favour of DatePickerNext"
 
-**"I need to convince leadership"**
-→ Say: "Write a stakeholder brief for leadership about our design system"
+**"I need to convince leadership to fund this"**
+→ Say: "Help me build the business case for a dedicated design system team"
+
+**"My VP wants an update"**
+→ Say: "Write a short update for our VP on where the design system stands this quarter"
 
 **"Run the full pre-release pipeline"**
 → Run: `/design-system-ops:release-check Dialog`
+
+### Which skill do I need?
+
+| If you're asking… | Start with |
+|---|---|
+| Where do we stand overall? | `system-health` |
+| Are the tokens defined well? / Is the code using them? / Do the themes match? | `token-audit` / `token-compliance` / `theme-audit` |
+| Are the token files valid? | `schema-validator` |
+| What components do we have, and what's duplicated or missing? | `component-audit` |
+| Does this component match its design? / Is it accessible? | `design-to-code-check` / `accessibility-per-component` |
+| Where are teams drifting off the system? | `drift-detection` (needs a consuming codebase) |
+| Which components are undocumented or stale? | `docs-coverage` |
+| How do I remove or replace something? | `deprecation-process`, then `change-communication` |
+| Is this release a major? | `version-bump-advisor` |
+| How do I make coding agents use the system properly? | `agent-instructions`, then `codebase-index` and `metadata-schema-generator` |
+| Someone new starts next week | `onboarding` |
+| Leadership wants an update / wants a business case | `stakeholder-brief` / `system-pitch` |
 
 You don't need to memorise skill names. Describe what you need and the right skill activates. You can also run any skill directly, with a path if you like: `/design-system-ops:token-audit src/tokens`. The four chained workflows are the exception to asking in plain language: run them by their command, so a long multi-skill run only starts when you ask for it.
 

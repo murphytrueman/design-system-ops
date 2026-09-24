@@ -161,22 +161,30 @@ With the Figma Console MCP connected, the description gets written directly into
 
 **Say:** "Help me deprecate DatePicker in favour of DatePickerNext"
 
-This triggers `deprecation-process`. The skill searches your codebase for every usage of the component being deprecated, counts consuming teams, produces a blast radius analysis, drafts a migration timeline, and generates the communication package.
+This triggers `deprecation-process`. The skill counts every usage of the component with a search it first checks against a known usage, produces a per-consumer table, names the deprecation mechanics in code and Figma, and drafts a timeline whose removal step waits for a major release.
 
-**Example output:**
+**Example output (shape only; the numbers come from your repo):**
 
 ```
-Blast radius:
-  4 consuming teams, 23 files, 47 import statements
+Usage audit: DatePicker
+  23 files import it, 47 instances, 4 consuming apps
+  Searched: apps/, packages/ (pattern confirmed against a known usage)
 
-Migration timeline:
-  Week 1-2: Publish deprecation notice, add console warning
-  Week 3-6: Teams migrate (estimated 2-4 hours per team)
-  Week 7-8: Remove from library, verify zero remaining imports
+Per consumer:
+  Checkout   12 instances   critical path (per the team)   contact: [needs data]
+  Dashboard  18             no                             contact: [needs data]
 
-Communication draft:
-  [Full announcement with migration guide, before/after
-   code examples, and FAQ]
+Mechanics:
+  @deprecated JSDoc on the export, once-only dev warning,
+  no-deprecated lint rule; Figma component renamed [Deprecated] DatePicker
+
+Timeline:
+  Notice and warnings ship in a minor on [date]
+  Migration support window [start – end]
+  Removal in the next major on [date]
+
+Migration inputs for change-communication:
+  prop mapping table, behavioural differences to test, local overrides to remove
 ```
 
 **Good for:** Managing breaking changes without breaking trust, giving teams a predictable migration path.
@@ -185,33 +193,37 @@ Communication draft:
 
 ### "I need to convince leadership to invest in the system"
 
-**Say:** "Write a stakeholder brief for leadership about our design system"
+**Say:** "Help me build the business case to fund a dedicated design system team"
 
-This triggers `stakeholder-brief`. The skill produces a one-page brief in business language — no design system jargon — with a clear situation, consequences of inaction, specific recommendation, and a concrete ask.
+This triggers `system-pitch`. The skill leads with the cost of the current state from figures you supply or a prior audit produced, builds the ROI at one loaded rate with the arithmetic visible, separates the year-1 build from the run cost, addresses the likely objection, and names the ask. Anything nobody can supply stays as `[needs data: …]` at the top rather than being filled with a plausible number.
 
-**Example output:**
+For a routine update rather than an investment case, say "Write a short update for our VP on where the design system stands this quarter", which triggers `stakeholder-brief`: one page, business language, every figure traced to its source.
+
+**Example output (shape only):**
 
 ```
-SITUATION
-Our design system serves 6 teams and 40+ components. Two of
-seven health dimensions are weak — governance and documentation.
-This means changes ship without migration paths, and new team
-members take 3x longer to onboard.
+Open placeholders: [needs data: hires per year], [needs data: loaded hourly rate]
 
-WHY THIS MATTERS
-Every uncoordinated component change costs 3-4x more to fix
-after shipping than it would cost to prevent.
+THE COST OF THE CURRENT STATE
+Three product teams each maintain their own Button, Input and
+Card (component-audit, 12 Sep). Two teams shipped different
+error styling in the same quarter (drift-detection, 12 Sep).
 
-WHAT WE RECOMMEND
-One dedicated engineer + one designer for two quarters.
+THE INVESTMENT
+1 FTE engineer and 0.5 FTE designer: [computed from the loaded rate]
+Year-1 build: [needs data]. Run cost: [computed].
 
-WHAT WE NEED
-1. Headcount approval for Q3-Q4
-2. Executive sponsor for quarterly reviews
-3. Agreement to treat the system as shared infrastructure
+WHAT SUCCESS LOOKS LIKE
+[adoption target]% of new feature work on system components
+by [date], measured from imports per repo, baseline taken first.
+
+THE ASK
+Headcount approval for Q3–Q4; an executive sponsor for the quarterly review.
+
+Based on: component-audit and drift-detection reports, 12 Sep 2026
 ```
 
-**Good for:** Budget requests, quarterly exec updates, making the case for dedicated DS headcount.
+**Good for:** Budget requests and the case for dedicated headcount. Quarterly exec updates are `stakeholder-brief`.
 
 ---
 
@@ -346,7 +358,7 @@ This triggers the `full-system-diagnostic` agent, which chains: token-audit → 
 |-------|-------------|-------------|
 | `adoption-report` | "How widely is our system adopted?" | Coverage vs actual adoption, team-by-team breakdown, trend direction, risk flags |
 | `stakeholder-brief` | "Write a brief for leadership" | One-page executive brief in business language with a clear ask |
-| `system-pitch` | "Pitch the design system to leadership" | Investment case with cost quantification, ROI framing, competitive context |
+| `system-pitch` | "Pitch the design system to leadership" | Investment case: cost of the current state, ROI with visible assumptions, objections answered, the ask |
 | `onboarding` | "Onboard a new engineer" or "Onboard a new designer" | Getting-started guide grounded in the repo and Figma library, with a shared core and a section for the role |
 | `visual-report` | "Create a dashboard of our system health" | Interactive HTML dashboard with charts, trend visualisations, and drill-down sections |
 

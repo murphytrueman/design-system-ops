@@ -189,9 +189,9 @@ recurring:
 1. The skill checks `.ds-ops-reports/` for a previous report
 2. It compares what it finds now against what it found last time
 3. It adds a "What changed" section to the output showing new, resolved, and persistent findings
-4. It saves the new report and deletes any beyond the last 8
+4. It saves the new report and, if there are more than `retain_count`, proposes deleting the oldest; nothing is deleted without your confirmation
 
-**Skills that support recurring:** `token-audit`, `drift-detection`, `system-health`, `adoption-report`, and all four agents.
+**Skills that support recurring:** `adoption-report`, `codebase-index`, `docs-coverage`, `drift-detection`, `system-health`, `theme-audit`, `token-audit`, and all four agents.
 
 ### Release gates
 
@@ -234,14 +234,14 @@ Integrations save you time by letting skills pull data automatically. Instead of
    **How to find your file key:** Open your Figma file. Look at the URL — it looks like `figma.com/design/abc123def456/My-File`. The `abc123def456` part is your file key.
 5. Test it: Ask Claude "List the variable collections in my Figma file." If it returns real data from your file, the connection is working.
 
-**Skills that use this:** `ai-component-description`, `component-audit`, `design-to-code-check`, `drift-detection`, `token-audit`, `token-documentation`, `system-health`, `adoption-report`
+**Skills that use this:** `ai-component-description`, `component-audit`, `design-to-code-check`, `drift-detection`, `figma-variable-audit`, `token-documentation`, `system-health`, `adoption-report`
 
-### Style Dictionary v4 (HIGH value)
+### Style Dictionary or Terrazzo (HIGH value)
 
-**What it enables:** Automatic token parsing, DTCG compliance checking, and multi-platform token transformation. When configured, token skills parse your tokens automatically instead of requiring manual file input.
+**What it enables:** the token skills run your build tool first (Style Dictionary 4 or 5, or Terrazzo) to resolve every alias and surface its own errors, then reason over the result instead of hand-parsing. Version 5 reads DTCG natively; version 4 needs `usesDtcg: true`; Terrazzo is DTCG-native and also lints.
 
 **Setup:**
-1. Install Style Dictionary: `npm install -g style-dictionary@4`
+1. Install Style Dictionary: `npm install -g style-dictionary@5   # or @terrazzo/cli`
 2. Add to `.ds-ops-config.yml`:
    ```yaml
    integrations:
@@ -430,9 +430,9 @@ If your design system is a monorepo:
 
 ### Quarterly review
 
-1. Run `full-system-diagnostic` agent (or individual skills if < 15 components)
-2. Run `stakeholder-brief` using the diagnostic as input
-3. Run `adoption-report` if usage data is available
+1. Run the `full-diagnostic` command (it stops itself and recommends individual skills below 5 components)
+2. Run `adoption-report` if measured usage data exists; without any it produces a data-collection plan, which is still useful input
+3. Run `stakeholder-brief` using the diagnostic and adoption report as its sources
 4. Share the stakeholder brief with leadership
 
 ### Pre-release validation (per component)

@@ -80,7 +80,7 @@ integrations:
   style_dictionary:
     enabled: false
     config_path: ""               # Path to your Style Dictionary config, e.g. "style-dictionary/config.json"
-    version: "4"                  # "3" or "4" — affects DTCG compatibility checks
+    version: "5"                  # "3", "4" or "5" — 5 reads DTCG natively, 4 needs usesDtcg, 3 doesn't read DTCG
 
   chromatic:
     enabled: false

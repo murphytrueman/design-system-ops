@@ -176,10 +176,10 @@ These skills work from your description of the situation. You do not need to pro
 
 | Skill | What you provide in the prompt |
 |-------|-------------------------------|
-| `system-health` | Describe your system size, maturity, and concerns |
+| `system-health` | Describe your system and concerns; it infers the maturity stage from evidence rather than asking, and labels a conversation-only run as reported |
 | `stakeholder-brief` | Share health findings or describe the situation |
 | `system-pitch` | Describe the current state and what you need |
-| `adoption-report` | Share usage data or describe adoption patterns |
+| `adoption-report` | Share measured usage data (imports per repo, library analytics, survey results); without any measured signal it returns a data-collection plan, not a report |
 | `onboarding` | Describe the role, the team and the contacts; the rest comes from the repo and Figma |
 | `decision-record` | Describe the decision that was made and why |
 | `change-communication` | Describe the change being released |
@@ -253,7 +253,7 @@ When a tool is connected, skills pull data automatically. Without connections, y
 | **Figma MCP** | Reads your Figma components, variables, and styles directly | Skills auto-pull design specs, component data, and variables without screenshots or manual export | Medium |
 | **GitHub API** | Searches your code for violations, reads component source, tracks PRs | Token compliance scans your whole repo automatically instead of file-by-file | Low |
 | **npm registry** | Pulls download statistics for your packages | Adoption reports get real usage data instead of estimates | None (public) |
-| **Style Dictionary v4** | Parses token files and checks DTCG compliance | Token audits understand your full token tree automatically | Low |
+| **Style Dictionary or Terrazzo** | Builds and validates the token files with the tool you already use | Token skills run it first and reason over resolved aliases and its own errors | Low |
 | **Storybook** | Reads component prop metadata and story inventory | Component audits get accurate documentation coverage data | Low |
 | **Chromatic** | Pulls visual regression data | Drift detection sees visual diffs, not just code diffs | Low |
 | **Documentation platforms** | Cross-references docs coverage (Zeroheight, Supernova, Storybook docs) | System health reports include documentation completeness | Low |
