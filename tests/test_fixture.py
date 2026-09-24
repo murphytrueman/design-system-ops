@@ -50,7 +50,7 @@ class TestPlantedProblems(unittest.TestCase):
         self.assertIn("Tooltip", fixture("src", "index.ts"))
         tooltip_dir = os.path.join(FIXTURE, "src", "components", "Tooltip")
         self.assertFalse([n for n in os.listdir(tooltip_dir) if ".stories." in n])
-        for documented in ("Button", "Card"):
+        for documented in ("Button", "Card", "Modal", "Dialog"):
             with self.subTest(component=documented):
                 self.assertTrue(
                     os.path.isfile(os.path.join(FIXTURE, "src", "components", documented, documented + ".stories.tsx"))
@@ -61,6 +61,32 @@ class TestPlantedProblems(unittest.TestCase):
         self.assertIn('role="tooltip"', source)
         self.assertNotIn("aria-describedby", source)
         self.assertNotIn("hidden", fixture("src", "components", "Tooltip", "Tooltip.module.css"))
+
+    def test_modal_and_dialog_overlap_with_different_apis(self):
+        # Both exported, both documented, same job, different prop names.
+        index = fixture("src", "index.ts")
+        for name in ("Modal", "Dialog"):
+            self.assertIn(name, index)
+            self.assertTrue(os.path.isfile(os.path.join(FIXTURE, "src", "components", name, name + ".stories.tsx")))
+        modal = fixture("src", "components", "Modal", "Modal.tsx")
+        dialog = fixture("src", "components", "Dialog", "Dialog.tsx")
+        for prop in ("open: boolean", "onClose", "title: string"):
+            self.assertIn(prop, modal)
+        for prop in ("isOpen: boolean", "onDismiss", "heading: string"):
+            self.assertIn(prop, dialog)
+        for prop in ("isOpen", "onDismiss", "heading"):
+            self.assertNotIn(prop, modal)
+
+    def test_checkout_app_reimplements_button_and_overrides_a_token(self):
+        # The consumer: a local Button with raw values, and a token override.
+        local = fixture("apps", "checkout", "src", "CheckoutButton.module.css")
+        self.assertRegex(local, r"#[0-9a-fA-F]{6}")
+        self.assertIn("padding: 12px 20px", local)
+        self.assertNotIn("@fixture/ui", fixture("apps", "checkout", "src", "CheckoutButton.tsx"))
+        summary = fixture("apps", "checkout", "src", "Summary.tsx")
+        self.assertIn("from '@fixture/ui'", summary)
+        self.assertIn("--card-padding: 24px", fixture("apps", "checkout", "src", "Summary.module.css"))
+        self.assertIn('"@fixture/ui": "^2.2.0"', fixture("apps", "checkout", "package.json"))
 
     def test_card_border_has_no_dark_override(self):
         css = fixture("src", "styles", "tokens.css")

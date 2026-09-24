@@ -1,0 +1,30 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-text-default);
+  opacity: 0.5;
+}
+
+.modal {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-default);
+  padding: var(--space-inset);
+  border-radius: 8px;
+}
+
+.title {
+  margin: 0 0 var(--space-gap);
+  color: var(--color-text-default);
+}
+
+.body {
+  color: var(--color-text-default);
+}
+
+.close {
+  margin-top: var(--space-gap);
+  background: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  border: 0;
+  padding: var(--space-gap) var(--space-inset);
+}

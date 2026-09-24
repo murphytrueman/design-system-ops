@@ -280,6 +280,14 @@ def check(case, output, calls):
     if not skill_was_loaded(case["skill"], calls):
         used = sorted({name for name, _ in calls}) or ["none"]
         problems.append("the %s skill was never loaded (tools used: %s)" % (case["skill"], ", ".join(used)))
+    if case.get("expect") == "produces":
+        # A generator (a description, a health report): the skill must load
+        # and the output must carry each term anywhere, since there are no
+        # finding blocks to grade inside.
+        for term in case.get("finds", []):
+            if term.lower() not in lowered:
+                problems.append("missed: %r" % term)
+        return problems
     if case.get("expect") == "stop":
         # The broken-install case: the skill must refuse to run without its
         # references and say why, not answer anyway.

@@ -4,3 +4,7 @@ export { Card } from './components/Card/Card';
 export type { CardProps } from './components/Card/Card';
 export { Tooltip } from './components/Tooltip/Tooltip';
 export type { TooltipProps } from './components/Tooltip/Tooltip';
+export { Modal } from './components/Modal/Modal';
+export type { ModalProps } from './components/Modal/Modal';
+export { Dialog } from './components/Dialog/Dialog';
+export type { DialogProps } from './components/Dialog/Dialog';

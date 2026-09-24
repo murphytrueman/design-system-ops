@@ -233,6 +233,57 @@
       "prompt": "Can you run a pre-release visual QA of our three components against the design specs? Button: 8px by 16px padding, 6px radius. Card: 16px padding, 8px radius, 1px default border. Tooltip: 8px padding, 4px radius, dark background. Flag anything that doesn't match and say whether it's a build bug or a gap in the spec.",
       "finds": [],
       "why": "A realistic, substantive design QA request (several components or a handover, with a release or sign-off at stake) should reach design-to-code-check. If these route and the quick one-component asks don't, the gap only affects quick questions."
+    },
+    {
+      "id": "duplicate-components",
+      "skill": "component-audit",
+      "prompt": "Use the design-system-ops component-audit skill to audit the component library in this repository.",
+      "finds": [
+        "Modal",
+        "Dialog"
+      ],
+      "why": "Modal and Dialog are both exported and solve the same problem (an interrupting overlay with a heading, body and close action) with different prop names (open/onClose/title vs isOpen/onDismiss/heading); the audit must report the pair as duplication."
+    },
+    {
+      "id": "consumer-drift",
+      "skill": "drift-detection",
+      "prompt": "Use the design-system-ops drift-detection skill to find where the checkout app in apps/checkout has drifted from the design system in this repository.",
+      "finds": [
+        "CheckoutButton",
+        "--card-padding"
+      ],
+      "why": "apps/checkout re-implements Button locally with raw values (CheckoutButton) instead of importing it, and overrides the card-padding token in Summary.module.css. Both are drift; with no git history in the fixture copy, the classification should be honest (Unclassified or evidence-based), not invented."
+    },
+    {
+      "id": "health-baseline",
+      "skill": "system-health",
+      "expect": "produces",
+      "prompt": "Use the design-system-ops system-health skill to assess the health of this design system.",
+      "finds": [
+        "Tooltip",
+        "Managed"
+      ],
+      "why": "A health report on the fixture names the undocumented Tooltip under Documentation and infers the maturity stage from evidence: a versioned package with tiered tokens and uneven docs, no contribution process, is Managed."
+    },
+    {
+      "id": "describe-button",
+      "skill": "ai-component-description",
+      "expect": "produces",
+      "prompt": "Use the design-system-ops ai-component-description skill to write the six-section description for the Button component in src/components/Button.",
+      "finds": [
+        "PROPS",
+        "variant",
+        "secondary"
+      ],
+      "why": "The description must be built from the source: Button's one documented prop is variant with values primary and secondary, and the output uses the uppercase section headers."
+    },
+    {
+      "id": "route-agent-instructions",
+      "skill": "agent-instructions",
+      "expect": "route",
+      "prompt": "Claude keeps picking the wrong components and typing raw hex values when it works in this repo. Can you write the instructions file that tells coding agents how to use our design system?",
+      "finds": [],
+      "why": "A plain request for an agent instructions file must route to agent-instructions, not to codebase-index or usage-guidelines."
     }
   ]
 }

@@ -1,0 +1,9 @@
+.summary {
+  --card-padding: 24px;
+  max-width: 480px;
+}
+
+.total {
+  font-weight: 600;
+  color: var(--color-text-default);
+}
