@@ -1,6 +1,6 @@
 ---
 name: design-to-code-check
-description: "Compares a component or screen's design spec with its code and logs each gap as a build error or spec gap. Use it whenever someone asks if something matches its design or spec, even one component with the spec pasted in. System-wide drift: drift-detection."
+description: "Compares a component or screen's design spec with its code and logs each gap as a build error or spec gap. Use it for design QA, handover review or sign-off: whenever someone asks if a build matches its design or spec, even one component with the spec pasted in. System-wide drift: drift-detection."
 allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(grep:*), Bash(rg:*)
 references:
   - ../../knowledge-notes/design-to-code-contract.md
