@@ -1,7 +1,7 @@
 ---
 name: component-api-validator
 description: "Audit prop APIs across a component library: naming consistency, boolean/default patterns, type coverage, exported types, breaking changes between versions. Trigger: component API audit, are our props consistent, prop naming review. For semver calls use version-bump-advisor."
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npm pack:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npm pack:*), Bash(npx react-docgen-typescript:*), Bash(npx custom-elements-manifest:*), Bash(npx vue-component-meta:*)
 references:
   - ../../knowledge-notes/design-to-code-contract.md
   - ../../knowledge-notes/component-governance.md
@@ -40,8 +40,7 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 ## Auto-pull integrations
 
 **GitHub** (`integrations.github.enabled: true`):
-- Pull component source files from the configured repository
-- Identify the last change date and recent PRs for each component to assess API stability
+- Pull component source files from the configured repository if there's no local checkout
 
 **Storybook** (`integrations.storybook.enabled: true`):
 - Extract argTypes metadata for structured prop information
@@ -55,24 +54,24 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 
 ## Step 1: Gather component sources
 
-Ask for or confirm:
+Read before asking. `package.json` gives the package name, `version`, `exports`, `main` and `types`; the entry point gives the public component list; `tsconfig.json` or the presence of `.d.ts`, PropTypes or JSDoc gives the typing approach; the framework shows in the dependencies. Confirm what you found in one line and ask only for:
 
-1. **Component source path** — directory containing component files (e.g., `src/components/`)
-2. **Framework** — React (TSX/JSX), Vue (SFC), Web Components, Svelte, Angular, or other
-3. **TypeScript usage** — full TypeScript, JSDoc types, PropTypes, or untyped
-4. **Current version** — the published version of the library (for breaking change context)
-5. **Previous version source** (optional) — for breaking change comparison. Prefer the published type declarations of the previous release (`npm pack <pkg>@<prev>` and read its `.d.ts` files, or an api-extractor report); a git tag or release branch works if nothing was published
+1. **Previous version source** (optional) — for breaking change comparison. Prefer the published type declarations of the previous release (`npm pack <pkg>@<prev>` and read its `.d.ts` files, or an api-extractor report); a git tag or release branch works if nothing was published
+2. **Deliberate exceptions** — legacy names kept for compatibility, so they're reported as accepted rather than as deviations
+
+If no component source is in reach (no path, no checkout, no package to unpack), stop and ask for one; an API audit of described components produces guesses.
 
 ## Step 2: Extract API surface
 
 For each component in the source path:
 
 1. **Identify exported components** — components that are part of the public API (exported from index files or package entry points)
-2. **Extract props/attributes**:
-   - **React:** TypeScript interfaces, PropTypes, or JSDoc annotations
-   - **Vue:** defineProps, props option, or TypeScript interfaces
-   - **Web Components:** observed attributes, properties, events, slots, CSS custom properties
-   - **Svelte:** exported let declarations, events, slots
+2. **Extract props/attributes with the tool that fits, and hand-parse only when none does.** Tool output is complete and consistent; a hand read of forty interfaces is neither.
+   - **React with TypeScript:** `react-docgen-typescript` (`npx react-docgen-typescript` or its API) gives name, type, required, default and description per prop from the interfaces. Storybook `argTypes` (from `integrations.storybook`) are the same data if the docs addon is set up.
+   - **Vue:** `vue-component-meta` for `<script setup>` and `defineProps`; fall back to reading `defineProps` by hand.
+   - **Web Components:** the Custom Elements Manifest (`npx custom-elements-manifest analyze`, or an existing `custom-elements.json`) lists attributes, properties, events, slots and CSS custom properties; it is the standard, so read it rather than re-deriving it.
+   - **Svelte:** exported `let` declarations, events, slots (read by hand; note that in the Scope block).
+   - **Untyped or PropTypes-only React:** read PropTypes and JSDoc; record every prop with no type as untyped.
 3. **For each prop, capture:**
    - Name
    - Type (specific type or `any`/`unknown`/untyped)
@@ -113,7 +112,7 @@ For each inconsistency, report:
 Boolean props are a common source of API inconsistency:
 
 1. **Prefix convention** — does the library use `isDisabled` or `disabled`? Pick one, flag deviations.
-2. **Negative booleans** — props like `noWrap`, `hideLabel`, `disableAnimation` are harder to reason about than their positive equivalents (`wrap`, `showLabel`, `animate`). Flag negative booleans and suggest positive alternatives where the inversion doesn't lose clarity.
+2. **Negative booleans** — the working convention is that a boolean prop defaults to `false`, so the common case needs no prop. `hideLabel` is the right shape when labels usually show; `showLabel` defaulting to `true` forces `showLabel={false}` at every call site that hides one. Flag a boolean whose default is `true`, and flag a library that uses both forms for the same concept (`hideLabel` on one component, `showLabel` on another). Don't flag a negative name on its own.
 3. **Boolean vs. enum** — a prop that started as boolean (`compact`) but should be an enum (`density: 'compact' | 'default' | 'comfortable'`). Flag booleans that limit future extensibility.
 
 ### 3c. Default value patterns
@@ -158,9 +157,9 @@ Classify each:
 - **Potentially breaking** — may break depending on usage pattern (flag for review)
 - **Non-breaking** — addition only, existing code unaffected
 
-## Step 5: Design-to-code contract alignment
+## Step 5: Design-to-code contract alignment (only with a design source)
 
-Cross-reference the API surface against the design-to-code contract:
+Only when a Figma library or exported spec is in reach. Otherwise write "skipped: no design source" under Scope and move on; don't infer design variants from prop names. With a source, cross-reference the API surface against the design-to-code contract:
 
 1. **Prop coverage vs. design spec** — does every design variant have a corresponding prop? Are there props with no design equivalent (engineering-added functionality)?
 2. **State coverage** — does the API support every prop-driven state in the spec (disabled, loading, error, selected)? Hover, focus, and active are CSS/interaction states, not props — don't flag them as missing props
@@ -214,7 +213,11 @@ Cross-reference the API surface against the design-to-code contract:
 [Findings: design variants without props, props without design equivalents, missing state coverage]
 
 ## Findings Summary
-[All findings with IDs (AV-01, AV-02, etc.), severity, and remediation]
+| ID | Severity | Component | Prop | Evidence | Finding | Remediation |
+|---|---|---|---|---|---|---|
+| AV-01 | 🟠 High | Badge | `type` | `src/components/Badge/Badge.tsx:12` | 14 of 19 components use `variant`; Badge uses `type` for the same concept | Rename to `variant`, keep `type` as a deprecated alias for one minor |
+
+Severity: 🔴 Critical for a breaking change that shipped without a major, or `any`/untyped on a public prop of an interactive component; 🟠 High for one concept named two ways across the library, a missing exported prop type, or a required prop with no description; 🟡 Medium for inconsistent defaults, missing descriptions, or a boolean that should be an enum; ⚪ Low for style (prefix conventions, slot naming). Evidence is the file and line of the prop's declaration, or the `.d.ts` line when comparing versions.
 
 ## Prioritised Recommendations
 [Grouped: 🔴 Critical (breaking/type safety) → 🟠 High (consistency) → 🟡 Medium (documentation) → ⚪ Low (style)]
@@ -240,7 +243,8 @@ Before delivering the report, verify:
 4. **Breaking changes are correctly classified** — removals are breaking, additions are non-breaking, type changes depend on direction
 5. **Fix suggestions include the specific rename or type change** — not "make this consistent" but "rename `type` to `variant` in AlertDialog, Badge, Toast"
 6. **TypeScript type coverage is measured per-component** — not just a library-wide average
-7. **Findings reference specific component and prop names** — never "some components have inconsistent naming"
+7. **Findings reference specific component and prop names with a file and line** — never "some components have inconsistent naming"
+8. **Props came from tooling where a tool exists** (docgen, component-meta, a Custom Elements Manifest), and the Scope block names which
 
 ## Small-system note
 

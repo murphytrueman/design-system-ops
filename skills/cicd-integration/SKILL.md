@@ -1,11 +1,12 @@
 ---
 name: cicd-integration
 description: "Generate CI pipeline files and check scripts (GitHub Actions, GitLab, CircleCI, Bitbucket) that automate design system checks: token validation, hardcoded values, a11y scans, visual regression, bundle size. Trigger: set up CI, quality gates, automate these checks. Not for running an audit."
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(git diff:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(git diff:*), Bash(npx terrazzo:*), Bash(npx stylelint:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/design-to-code-contract.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # CI/CD Integration
@@ -30,7 +31,7 @@ CI/CD Integration converts audit findings into automated pipeline checks. The go
 
 ## Configuration
 
-Check for `.ds-ops-config.yml` in the project root:
+If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge note (`../../knowledge-notes/configuration-and-recurring.md`). This skill reads:
 
 ```yaml
 cicd:
@@ -94,7 +95,8 @@ For each audit finding category, determine the automated check:
 | Circular references | Build-time alias resolution check | Style Dictionary build (fails on circular refs) |
 | Orphaned tokens | Cross-reference token definitions with usage in component files | Custom script: grep token names across component source. Warn only — it can't see tokens consumed outside the repo (product apps, native platforms, Figma), so an "orphan" may be in use |
 | Missing semantic tier | Check that every component token reference resolves through a semantic alias | Custom script or Style Dictionary referencing |
-| DTCG format compliance | Validate token files against DTCG schema | JSON Schema validation |
+| DTCG format compliance | Validate token files against the 2025.10 format | `npx terrazzo lint` (DTCG-native), or a Style Dictionary 4 or 5 build with `usesDtcg`, which fails on broken references and bad shapes. There is no official DTCG JSON Schema to validate against |
+| Hardcoded values in styles | Stylelint on colour, spacing and type properties; ESLint for Tailwind arbitrary values | `stylelint-declaration-strict-value` with the token pattern as `ignoreValues`; `eslint-plugin-tailwindcss` `no-arbitrary-value`. If `governance-encoder` has written this config, the step is `npm run lint` |
 
 ### Component checks
 
@@ -176,12 +178,10 @@ jobs:
       - run: npm ci
       - name: Validate token naming
         run: node scripts/ds-checks/validate-token-names.js
-      - name: Check for circular references
-        run: npx style-dictionary build --config tokens.config.js
+      - name: Validate DTCG format and references
+        run: npx terrazzo lint            # or: npx style-dictionary build --config tokens.config.js
       - name: Detect orphaned tokens (warn only)
         run: node scripts/ds-checks/find-orphaned-tokens.js
-      - name: Validate DTCG format
-        run: node scripts/ds-checks/validate-dtcg-schema.js
 
   component-validation:
     name: Component Validation
@@ -197,6 +197,8 @@ jobs:
       - run: npm ci
       - name: TypeScript compilation
         run: npx tsc --noEmit
+      - name: Hardcoded values in styles
+        run: npx stylelint "**/*.{css,scss}" --ignore-path .gitignore   # declaration-strict-value config from governance-encoder
       - name: Check export completeness
         run: node scripts/ds-checks/verify-exports.js
       - name: Accessibility scan
@@ -246,151 +248,13 @@ Pin each action to its current major when you generate the file; the majors abov
 
 **Blocking merges needs branch protection.** A failing job only blocks a merge if the repository requires it. Tell the user to add the job names as required status checks under branch protection or a ruleset on `main`; the pipeline can't enforce this itself.
 
-### GitLab CI
+### GitLab CI, CircleCI, Bitbucket Pipelines
 
-Produce `.gitlab-ci.yml`. Minimal skeleton — mirror the full check list from the GitHub workflow:
+Generate the same job list as the GitHub workflow (token validation, component validation with the Stylelint step, documentation validation, visual regression on pull requests) in the platform's syntax; don't reduce the check list to fit a shorter template. Platform notes:
 
-```yaml
-default:
-  image: node:22
-  cache:
-    key:
-      files: [package-lock.json]
-    paths: [.npm/]
-  before_script:
-    - npm ci --cache .npm --prefer-offline
-
-stages: [validate, visual]
-
-token-validation:
-  stage: validate
-  script:
-    - node scripts/ds-checks/validate-token-names.js
-    - npx style-dictionary build --config tokens.config.js
-    - node scripts/ds-checks/validate-dtcg-schema.js
-    - node scripts/ds-checks/find-orphaned-tokens.js
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: [packages/tokens/**/*]
-
-component-validation:
-  stage: validate
-  script:
-    - npx tsc --noEmit
-    - node scripts/ds-checks/verify-exports.js
-    - npm run test:a11y
-    - npx size-limit
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes: [packages/components/**/*, packages/tokens/**/*]
-
-visual-regression:
-  stage: visual
-  script:
-    - npx storybook build --output-dir storybook-static
-    - npx chromatic --project-token="$CHROMATIC_PROJECT_TOKEN" --storybook-build-dir=storybook-static
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-```
-
-Set `CHROMATIC_PROJECT_TOKEN` as a masked CI/CD variable. To block merges, enable "Pipelines must succeed" in the project's merge request settings.
-
-### CircleCI
-
-Produce `.circleci/config.yml`:
-
-```yaml
-version: 2.1
-
-executors:
-  node:
-    docker:
-      - image: cimg/node:22.23   # any current 22.x or 24.x tag
-
-commands:
-  install:
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - npm-{{ checksum "package-lock.json" }}
-      - run: npm ci
-      - save_cache:
-          key: npm-{{ checksum "package-lock.json" }}
-          paths: [~/.npm]
-
-jobs:
-  token-validation:
-    executor: node
-    steps:
-      - install
-      - run: node scripts/ds-checks/validate-token-names.js
-      - run: npx style-dictionary build --config tokens.config.js
-      - run: node scripts/ds-checks/validate-dtcg-schema.js
-      - run: node scripts/ds-checks/find-orphaned-tokens.js
-  component-validation:
-    executor: node
-    steps:
-      - install
-      - run: npx tsc --noEmit
-      - run: node scripts/ds-checks/verify-exports.js
-      - run: npm run test:a11y
-      - run: npx size-limit
-
-workflows:
-  design-system-checks:
-    jobs:
-      - token-validation
-      - component-validation:
-          requires: [token-validation]
-```
-
-CircleCI has no built-in path filtering; add it with the path-filtering orb and dynamic config only if the run time matters. To block merges, mark the jobs as required status checks in GitHub or Bitbucket.
-
-### Bitbucket Pipelines
-
-Produce `bitbucket-pipelines.yml`:
-
-```yaml
-image: node:22
-
-definitions:
-  steps:
-    - step: &tokens
-        name: Token validation
-        caches: [node]
-        script:
-          - npm ci
-          - node scripts/ds-checks/validate-token-names.js
-          - npx style-dictionary build --config tokens.config.js
-          - node scripts/ds-checks/validate-dtcg-schema.js
-          - node scripts/ds-checks/find-orphaned-tokens.js
-    - step: &components
-        name: Component validation
-        caches: [node]
-        script:
-          - npm ci
-          - npx tsc --noEmit
-          - node scripts/ds-checks/verify-exports.js
-          - npm run test:a11y
-          - npx size-limit
-
-pipelines:
-  pull-requests:
-    '**':
-      - parallel:
-          - step: *tokens
-          - step: *components
-  branches:
-    main:
-      - parallel:
-          - step: *tokens
-          - step: *components
-```
-
-Add a `condition: changesets: includePaths:` block to a step to scope it by path. To block merges, add a merge check requiring passing builds (a Premium feature on Bitbucket Cloud).
+- **GitLab CI** (`.gitlab-ci.yml`): `default.image: node:22`, an npm cache keyed on `package-lock.json`, `stages: [validate, visual]`, and `rules` with `changes:` on the token and component paths for merge-request pipelines. Set `CHROMATIC_PROJECT_TOKEN` as a masked variable. To block merges, enable "Pipelines must succeed" in the merge request settings.
+- **CircleCI** (`.circleci/config.yml`): a `node` executor on `cimg/node:22.x`, an `install` command with `restore_cache`/`save_cache` on `package-lock.json`, `component-validation` requiring `token-validation`. CircleCI has no built-in path filtering; add the path-filtering orb only if run time matters. Block merges with required status checks in the git host.
+- **Bitbucket Pipelines** (`bitbucket-pipelines.yml`): `image: node:22`, step definitions reused under `pipelines.pull-requests` and `pipelines.branches.main`, `condition: changesets: includePaths:` to scope by path. Blocking merges needs a merge check requiring passing builds (a Premium feature on Bitbucket Cloud).
 
 ---
 
@@ -437,7 +301,7 @@ const TOKEN_DIR = process.env.TOKEN_DIR || 'packages/tokens/src';
 //  exit 1 only if the count exceeds the threshold and block_merge is true]
 ```
 
-Provide complete, working implementations for each script. Include:
+The block above is the header and configuration only; the generated file contains the implementation its comment describes. Provide complete, working implementations for each script. Include:
 - Clear comments explaining what the script checks
 - Configurable paths and patterns at the top of each file
 - Thresholds read from `.ds-ops/quality-gates.yml` (Step 4) via a shared helper, not hardcoded
@@ -447,18 +311,20 @@ Provide complete, working implementations for each script. Include:
 
 ### Scripts to generate
 
-1. `validate-token-names.js` — Regex-based token name validation
+1. `validate-token-names.js` — Regex-based token name validation (Style Dictionary doesn't validate names; Terrazzo's lint rules can, if the team is on Terrazzo, in which case skip this script)
 2. `find-orphaned-tokens.js` — Cross-reference token definitions with component usage
-3. `validate-dtcg-schema.js` — JSON Schema validation for DTCG format
-4. `verify-exports.js` — Compare directory listing with barrel file exports
-5. `check-docs-exist.js` — Verify documentation files exist for each component
-6. `check-stories-exist.js` — Verify Storybook story files exist for each component
-7. `read-gates.js` — Shared helper that loads `.ds-ops/quality-gates.yml` and returns the threshold and `block_merge` flag for a gate
+3. `verify-exports.js` — Compare directory listing with barrel file exports
+4. `check-docs-exist.js` — Verify documentation files exist for each component
+5. `check-stories-exist.js` — Verify Storybook story files exist for each component
+6. `read-gates.js` — Shared helper that loads `.ds-ops/quality-gates.yml` and returns the threshold and `block_merge` flag for a gate
+
+DTCG validation and the hardcoded-value check are not scripts: they run Terrazzo or Style Dictionary, and Stylelint or ESLint, with the config the team has (or `governance-encoder` writes). Don't reimplement a linter in `scripts/ds-checks/`.
 
 ### Prerequisites the pipeline assumes
 
 Two steps call tools the scripts above don't create. Generate them, or list them as prerequisites the team must add before the pipeline goes green:
 
+- **Stylelint config** with `stylelint-declaration-strict-value` on the token-backed properties (and `eslint-plugin-tailwindcss` for Tailwind). Run `governance-encoder` to write it from the team's rules, or generate a minimal one here and say it's a starting point.
 - **`test:a11y` script** in `package.json` — for example `"test:a11y": "vitest run --project a11y"` with `jest-axe`/`vitest-axe` tests, or `"test:a11y": "test-storybook"` with the Storybook test-runner and axe. Generate one example test per component type found.
 - **`size-limit` config** — a `.size-limit.json` listing each entry point with a `limit`, plus `size-limit` and its preset (e.g. `@size-limit/preset-small-lib`) as dev dependencies.
 
@@ -516,8 +382,8 @@ Produce a `PIPELINE.md` file that explains:
 ### For teams using Figma MCP
 Add a step that auto-pulls Figma variable values and compares them against token file definitions. This catches design-code drift at the CI level.
 
-### For teams using Style Dictionary
-The token validation steps should use Style Dictionary's built-in validation rather than custom scripts. Generate a Style Dictionary config that enforces naming conventions and reference integrity.
+### For teams using Style Dictionary or Terrazzo
+Style Dictionary's build catches broken and circular references and, with `usesDtcg`, bad value shapes; it does not validate names, so `validate-token-names.js` stays. Terrazzo's `lint` covers DTCG validation and has configurable lint rules that can replace the naming script. Use the tool the repo has; don't add a second token toolchain for CI.
 
 ### For teams using Storybook
 Integrate the visual regression step with Storybook's built-in visual testing or Chromatic. Generate test-runner configuration for accessibility checks within stories.

@@ -1,6 +1,6 @@
 ---
 description: Pre-release gates (design-to-code, accessibility, token compliance) and docs for one component, producing a release package for sign-off
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(git log:*), Bash(git blame:*), Bash(rg:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(git log:*), Bash(git blame:*), Bash(rg:*), Bash(npx test-storybook:*), Bash(npx axe:*), Bash(npx playwright:*)
 ---
 
 Run the component-to-release pipeline to validate a component is ready to ship.

@@ -38,7 +38,7 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 **Figma MCP** (`integrations.figma.enabled: true`):
 - Read the published library from `integrations.figma.file_key` via Figma MCP
 - Extract the component inventory: names, variant counts, description status
-- Use Figma library analytics (if available via REST API) to pull detach rates per component — high detach rates are a direct usage signal
+- Figma library analytics (detach and insertion counts per component) are available only through the REST Library Analytics API on an Enterprise plan. If the team has it, pull detach rates; if not, say so and don't list detach rates as a signal
 - Cross-reference the Figma inventory against the code inventory to detect components that exist in design but not in code (or vice versa)
 
 **npm registry** (`integrations.npm.enabled: true`):
@@ -90,20 +90,16 @@ If usage data is not available, the audit focuses on structural assessment rathe
 
 **Small-system note (fewer than 5 components):** With 1–4 components, the audit shifts from pattern detection to per-component deep dive. Skip complexity distribution analysis (Step 3, Dimension 2) — it is not meaningful at this scale. Instead, focus on: completeness of each component's API and state coverage, documentation status per component, and whether the system covers the team's highest-frequency needs. The coverage gaps dimension (Step 3, Dimension 4) becomes the most valuable — what common patterns are teams building locally because the system does not yet provide them? The answer to that question is the system's roadmap.
 
-## Step 1b: Define usage signals
+## Step 1b: Record which usage signals exist
 
-Before proceeding to inventory and audit, establish which usage signals will ground the assessment in Dimension 1. Ask the user:
+Don't ask the user to choose signals; record which ones are actually in reach, then say what the usage assessment can and can't claim:
 
-"Which usage signals will you track to assess component usage? Select all that apply:"
+- **Code imports** — the one signal that is almost always available: count imports of each component across the repos in reach (with a positive control on a component you know is used). In a design system repo with no consumers checked out, this counts nothing useful; say so
+- **Figma instantiations and detach rates** — Enterprise Library Analytics only
+- **npm downloads** — direction only, and unreliable for monorepos (below)
+- **Support tickets, surveys, production analytics** — only if the user hands them over; never say a team was surveyed unless the user did the survey
 
-- **Figma instantiations** — Detach rates on design library components (high detach rates indicate a component that does not serve its consumers well)
-- **Code imports** — References to component imports across the codebase, counted by frequency
-- **Production shipping** — Components present in actively deployed products vs. unused/experimental
-- **Support tickets** — Questions, bug reports, or support volume per component
-- **Download stats** — npm downloads (if applicable) or analytics from a component documentation platform
-- **User surveys** — Direct feedback from consuming teams about component utility
-
-Document which signals are available for this audit. Usage assessment in Dimension 1 is only as strong as the signals used — if only one signal is available, note that the usage assessment is based on limited data and may be incomplete.
+If none is in reach, the audit is structural: every component's usage status is "Unknown", the report says so once at the top, and Dimension 1 is skipped rather than filled with inference. If no component source, Figma library or Storybook index is in reach either, stop and ask where the components live; an inventory can't be built from a description.
 
 **Monorepo handling:**
 
@@ -139,10 +135,10 @@ If the inventory does not yet exist, building it is Step 1 of the audit and may 
 Assess what usage data is available and what it suggests.
 
 Direct signals (if available):
-- npm download stats or package consumption data
-- Figma library detach rates (high detach rates indicate a component that does not serve its consumers well)
-- Storybook visit data
-- Support channel questions and frequency
+- Import counts across consuming repos (the Step 1b positive control applies)
+- npm download stats or package consumption data (direction only)
+- Figma library detach rates, if the team has Enterprise Library Analytics
+- Support channel questions and frequency, if the user supplies them
 
 Indirect signals (structural inference):
 - Components with no documentation are less likely to be found and used
@@ -164,10 +160,10 @@ Assess the distribution of component complexity across the library.
 
 **Feature components** — components with significant built-in logic or high specificity to a particular product context. These are the category most likely to proliferate and least likely to be reusable.
 
-Flag any library where:
-- The ratio of feature components to foundational components is high — this suggests the system has accumulated product-specific work that belongs locally
-- Compound components outnumber foundational components — this often indicates missing foundational pieces that teams have compensated for by building up rather than down
-- Components at the same level of the complexity hierarchy have highly inconsistent prop counts — outlier complexity often indicates a component trying to do too many jobs
+Report the count at each level. Then flag, with the numbers:
+- Feature components outnumber foundational ones — the system has accumulated product-specific work that belongs locally
+- Compound components outnumber foundational ones — missing foundational pieces that teams have compensated for by building up rather than down
+- A component whose prop count is more than twice the median for its level — outlier complexity usually means a component doing several jobs
 
 ### Dimension 3: Duplication
 
@@ -194,8 +190,8 @@ For each potential duplication finding, use this worksheet to make the decision 
 2. **If the problems are the same:**
    - Which component has the better API? (More intuitive prop names, fewer required props, easier to configure the common case)
    - Which has better accessibility? (Keyboard navigation, ARIA attributes, focus management, semantic HTML)
-   - Which has wider adoption across consuming teams?
-   - **Decision:** Keep the component that is strongest across these three dimensions. Deprecate the other with a migration path.
+   - Which has wider adoption across consuming teams? (Only if Step 1b found a usage signal; otherwise decide on the first two and say adoption wasn't checked)
+   - **Decision:** Keep the component that is strongest across these dimensions. Deprecate the other with a migration path.
 
 3. **If the problems are different:**
    - Document the distinction explicitly in both components' descriptions. The distinction needs to be clear enough that a new team member chooses correctly without asking for help.
@@ -298,9 +294,15 @@ One paragraph. What is the library's overall condition? What is the most signifi
 
 #### Findings by dimension
 
-Findings formatted as: ID, component or category, finding description, recommended action, priority. For duplication, give the decision per pair (Step 3, Dimension 3).
+Findings formatted as: ID, severity, component or category, evidence (the export's file and line, or the component directory, plus the import count or signal the finding rests on), finding description, recommended action. For duplication, give the decision per pair (Step 3, Dimension 3).
 
-**Severity key:** 🔴 Critical / 🟠 High / 🟡 Medium / ⚪ Low
+**Severity rubric:**
+- 🔴 **Critical** — two exported components solve the same problem with different APIs and nothing documents which to use; or a component marked for removal is composed by other system components
+- 🟠 **High** — a duplicate pair with no documented distinction; a coverage gap with drift evidence (local implementations in consuming repos); a feature component carrying product logic in the shared library
+- 🟡 **Medium** — a complexity outlier (prop count over twice its level's median); names that suggest overlap between components that are distinct; a public component with no documentation
+- ⚪ **Low** — internal utilities miscategorised as public; a standalone component with no usage signal either way
+
+A finding with no evidence column isn't a finding; it goes under "Not inspected" with what would be needed.
 
 ---
 
@@ -310,9 +312,9 @@ Top 10 by fan-in, hub components, standalone components, and shared token hotspo
 
 ---
 
-#### AI readiness (skip if not relevant to the library type)
+#### AI readiness and maturity stage
 
-Summary table from Step 3c, with components missing three or more items listed as priorities.
+One line: cited from a system-health report if one exists, otherwise "not inspected here; run system-health".
 
 ---
 
@@ -355,7 +357,8 @@ End the report with:
 ## Quality checks
 
 - Inventory is complete — no components are described generically ("there are many button variants") without being enumerated
-- Usage status is based on available signals, not assumed; no "Confirmed unused" without a positive control and coverage of consuming repos
+- Usage status is based on available signals, not assumed; no "Confirmed unused" without a positive control and coverage of consuming repos; no survey, ticket or analytics figure appears unless the user supplied it
+- Every finding has evidence (file and line, or directory, plus the signal it rests on) and a severity from the rubric
 - Duplication findings distinguish between genuinely overlapping components and components that are distinct but similarly named
 - Coverage gaps are assessed for whether they belong in the system, not just listed
 - Action list prioritises by impact, not by ease

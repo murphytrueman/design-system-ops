@@ -1,10 +1,11 @@
 ---
 name: codemod-generator
 description: "Generate tested jscodeshift/postcss codemods for design system migrations: token renames, prop renames or removals, import paths, component swaps. Triggers: codemod, migration script, rename this prop everywhere. Deprecation planning: deprecation-process. Release notes: change-communication."
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(node:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx tsc:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(node:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npx tsc:*), Bash(npx jscodeshift:*), Bash(npx jest:*), Bash(npx vitest:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/design-to-code-contract.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Codemod Generator
@@ -21,19 +22,13 @@ Confirm that every path in this skill's frontmatter `references:` exists relativ
 
 ## Why this exists
 
-A design system change without a migration path is a breaking promise. When you rename `color.brand.primary` to `color.action.primary`, every consumer who uses that token has to find and replace it — manually, across every file, hoping they do not miss one. When you change a `Button` prop from `type` to `variant`, every consuming team has to grep their codebase, update every instance, and test every page.
-
-This manual work is where migration debt accumulates. Teams delay adopting the new version because the upgrade cost is too high. The system fragments — some teams on v3, some on v4, some on a custom fork they stopped updating two versions ago.
-
-Codemods fix this by automating the mechanical part of migration. A codemod is a script that reads source code, applies a specific transformation, and writes the result — safely, deterministically, and across thousands of files in seconds.
-
-This skill generates those scripts. It does not replace the deprecation plan or the migration guide — those are context-heavy, human-judgment outputs. It replaces the mechanical labour of applying the changes.
+A design system change without a migration path is a breaking promise, and the manual find-and-replace is where upgrade debt accumulates until teams stop upgrading. A codemod does the mechanical part deterministically across every file. This skill generates the script and its tests; the deprecation plan and the migration guide stay with `deprecation-process` and `change-communication`.
 
 ---
 
 ## Configuration
 
-Check for `.ds-ops-config.yml` in the project root:
+If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge note (`../../knowledge-notes/configuration-and-recurring.md`). This skill reads:
 
 ```yaml
 codemods:
@@ -60,7 +55,7 @@ This skill generates five types of codemods:
 ### Type 1: Token rename
 Renames a design token across all consuming files.
 
-**Scope:** CSS custom properties, JavaScript/TypeScript token imports, Sass variables, style objects, className references.
+**Scope:** CSS custom properties, JavaScript/TypeScript token imports, Sass variables, style objects, className references, and template-literal CSS in styled-components and Emotion (`css\`...\``, `styled.div\`...\``), which is where most CSS-in-JS token references live.
 
 **Example input:**
 ```
@@ -135,6 +130,8 @@ If the request is unclear on any of these, ask before generating. A codemod that
 
 ## Step 1: Generate the transform script
 
+**Pick the engine for the change.** jscodeshift for syntactic changes (renames, attribute edits, import paths), which is most of them. ts-morph when the transform needs type information, for example renaming a prop only on components whose props extend a given interface, or telling two same-named components from different packages apart. ast-grep is a fast alternative for simple pattern rewrites when the team already uses it. Say which was chosen and why in the file header.
+
 ### For jscodeshift transforms (JavaScript/TypeScript)
 
 Each codemod is a single file following the jscodeshift API:
@@ -176,6 +173,8 @@ module.exports = function transformer(file, api) {
 
 module.exports.parser = 'tsx'; // or 'babel' for JS-only codebases
 ```
+
+**Template literals.** A transform that visits only `StringLiteral` and `JSXAttribute` nodes misses token references inside `css\`...\`` and `styled.x\`...\``. Token-rename codemods also visit `TemplateLiteral` nodes and apply the anchored regex to each quasi's `value.raw` (and `value.cooked`), setting `hasChanges` when anything matched. Add a test whose input is a styled-component.
 
 ### For CSS/Sass transforms
 
@@ -263,6 +262,8 @@ describe('[codemod name]', () => {
 ```
 
 ### Test coverage requirements
+
+Scale the tests to the change. A prop rename, prop removal or component replacement needs all eight cases below. A straight token rename or import-path update needs cases 1, 2, 3, 7 and 8 (dynamic values, spread props and conditional rendering don't arise), plus the template-literal case for token renames. Don't pad a simple codemod with tests for situations it can't meet.
 
 Each codemod must have tests for:
 1. **Basic case** — The simple, expected transformation
@@ -411,16 +412,9 @@ If you can execute commands in the target repository, run the codemod's test fil
 
 ---
 
-## Integration with other skills
+## With other skills
 
-### From deprecation-process
-When deprecation-process plans a component replacement, codemod-generator can produce the migration script. The deprecation plan's prop mapping table becomes the codemod's transformation rules.
-
-### From change-communication
-When change-communication writes release notes, include the codemod usage instructions in the "How to upgrade" section.
-
-### From cicd-integration
-Add a CI step that verifies codemods pass their tests before release. Include codemod tests in the design system's test suite.
+`deprecation-process` supplies the mapping table these codemods implement; `change-communication` puts the run commands in the migration guide; `cicd-integration` runs the codemod tests in the system's CI.
 
 ---
 
@@ -446,7 +440,7 @@ If the Figma Console MCP from Southleft is connected (check for `figma_rename_va
 
 ## Quality checks
 
-- Every codemod has a corresponding test file with ≥8 test cases
+- Every codemod has a test file with the cases that apply to its type (all eight for prop and component codemods; the reduced set for renames), and token renames test a template-literal input
 - Every codemod includes a dry-run command with the same `--extensions` and `--parser` flags as the apply command
 - Tests and a dry run were executed and their results reported, or the output says "untested"
 - MIGRATION.md includes a Rollback section, naming any steps `git revert` won't undo

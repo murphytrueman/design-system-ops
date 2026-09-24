@@ -1,6 +1,7 @@
 ---
 name: design-to-code-check
 description: "Compares a component or screen's design spec with its code and logs each gap as a build error or spec gap. Use it whenever someone asks if something matches its design or spec, even one component with the spec pasted in. System-wide drift: drift-detection."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(grep:*), Bash(rg:*)
 references:
   - ../../knowledge-notes/design-to-code-contract.md
   - ../../knowledge-notes/output-discipline.md
@@ -36,10 +37,10 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 
 ## Auto-pull integrations
 
-**Figma MCP** (`integrations.figma.enabled: true`):
-- Pull the component specification directly from `integrations.figma.file_key` via Figma MCP
-- Read component properties, variant definitions, and layer structure as the design reference
-- This replaces the need for the user to provide a Figma file link — the skill can say "I pulled the Button specification from your Figma library" and proceed immediately
+**Figma MCP** (`integrations.figma.enabled: true`, or a Figma link in the request):
+- Official Figma MCP: `get_design_context` on the component's node for its properties, variants, layout and styles, and `get_variable_defs` for the variables that node binds, which is how the spec names its tokens. Both are selection- or node-scoped, so ask for the node link if the file key alone is given.
+- Figma Console MCP: `figma_get_component_for_development` for the dev-ready spec, `figma_capture_screenshot` for the rendered reference.
+- Record the node id with every value taken from Figma; it goes in the log as evidence.
 
 **Chromatic** (`integrations.chromatic.enabled: true`):
 - Pull the latest visual snapshots for the component being checked
@@ -75,8 +76,6 @@ Before running the check, verify the design specification is complete enough to 
 - [ ] Touch target sizes are specified for mobile breakpoints
 
 **If the specification fails this checklist:** Note the missing items and proceed with the check. Missing specification items will appear as Type II findings in the report — but flagging them upfront sets the right expectation: these are design gaps, not implementation errors.
-
-Share this checklist with designers as a pre-handoff tool. A specification that passes this checklist before handoff will produce a cleaner design-to-code check.
 
 ## Step 2: Run the check across all dimensions
 
@@ -129,6 +128,8 @@ Check:
 
 Interactive states are the most commonly under-implemented dimension. Flag any state that was designed but is not present in the implementation.
 
+**How states are checked from source.** A state exists in the implementation when the source has a rule for it: `:hover`, `:focus-visible` (or `:focus`), `:active`, `:disabled` or `[disabled]`/`[aria-disabled="true"]`, `[aria-busy="true"]` or a loading prop branch, `[aria-invalid="true"]` or an error prop branch, an empty-state branch in the template. Read those selectors and branches and compare their values with the spec. A designed state with no rule or branch is "not implemented". What those rules render (the actual hover colour on screen, the focus ring's visibility over a background) can only be confirmed in a running build or Storybook; if none was used, report the values as compared from source and the rendering as "not checked", not ✅.
+
 ### Dimension 5: Responsive and adaptive behaviour
 
 Check:
@@ -136,6 +137,8 @@ Check:
 - Component behaviour at narrow viewports: does anything break, overflow, or truncate unexpectedly?
 - Touch target sizing: are interactive elements at least 24×24 CSS px (WCAG 2.5.8, AA)? 44×44 CSS px is the AAA bar (2.5.5). Platform guidance is 44pt on iOS and 48dp on Android — use whichever the spec or team adopts, and say which.
 - Content reflow: does text reflow correctly at all breakpoints?
+
+From source: read the media and container queries and the responsive prop branches. Rendering at each breakpoint needs a running build; without one, mark the rendering "not checked".
 
 ## Step 3: Classify each discrepancy
 
@@ -182,9 +185,11 @@ One paragraph. What is the overall alignment? Are discrepancies concentrated in 
 
 #### Discrepancy log
 
-| ID | Dimension | Type | Severity | Element | Design spec | Implementation | Action |
+| ID | Dimension | Type | Severity | Element | Design spec (evidence) | Implementation (evidence) | Action |
 |---|---|---|---|---|---|---|---|
-| DC-01 | [dimension] | [I–IV] | 🔴 Critical / 🟠 High / 🟡 Medium / ⚪ Low | [specific element] | [what the design says] | [what was implemented] | [who does what] |
+| DC-01 | [dimension] | [I–IV] | 🔴 Critical / 🟠 High / 🟡 Medium / ⚪ Low | [specific element] | [what the design says, with the Figma node id or the spec line] | [what was implemented, with file:line] | [who does what] |
+
+Every row carries both pieces of evidence. A discrepancy with no file and line on the implementation side, or no node id or spec line on the design side, isn't logged; it goes under "Not inspected" with what would be needed to check it.
 
 Severity guidance:
 - 🔴 Critical: accessibility regression — focus that isn't visible (outline removed with nothing replacing it), insufficient colour contrast, or a component that can't be reached or operated by keyboard
@@ -225,3 +230,5 @@ If any of these discrepancies are deliberate (a known constraint or an agreed di
 - Token compliance is checked as part of the colour and spacing dimensions — not just visual correctness
 - Accessibility regressions (invisible focus, insufficient contrast, no keyboard access) are always Critical; an undesigned focus style with the browser default still visible is High
 - The report is specific enough to act on without a follow-up conversation
+- Every logged discrepancy has a file and line on the implementation side and a node id or spec line on the design side
+- States and breakpoints are compared from their selectors and branches in source; rendering is marked "not checked" unless a build or Storybook was used

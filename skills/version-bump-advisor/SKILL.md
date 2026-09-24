@@ -1,9 +1,11 @@
 ---
 name: version-bump-advisor
 description: "Decide the semver bump (major, minor or patch) for a design system release from a diff or change list, with reasoning and a CHANGELOG entry. Triggers: what version bump, is this breaking, major or minor. Release notes and announcements: change-communication. Migration scripts: codemod-generator."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(ls:*), Bash(git diff:*), Bash(git tag:*), Bash(git log:*), Bash(npm pack:*), Bash(npm view:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/design-to-code-contract.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Version Bump Advisor
@@ -24,7 +26,9 @@ This is the pack's single source for semver calls. Other skills (`change-communi
 
 ### 0. Establish the baseline
 
-If you have repository access, read the current `version` from the package's `package.json` (each published package, in a monorepo) so the recommendation names the actual next version. Then diff the exported surface between the last release tag and the change: exported component names, prop types and defaults from the published type definitions (`.d.ts` or the `types` entry), token names, and CSS custom properties. A change list from the user is a starting point; the diff is what catches the removal nobody mentioned. If you can't read either, say so and classify from the change list alone.
+If you have repository access, read the current `version` from the package's `package.json` (each published package, in a monorepo) so the recommendation names the actual next version. Then diff the exported surface between the last release tag and the change: exported component names, prop types and defaults from the published type definitions (`.d.ts` or the `types` entry), token names, CSS custom properties, and the `exports` map in `package.json`. A change list from the user is a starting point; the diff is what catches the removal nobody mentioned. If you can't read either, say so and classify from the change list alone.
+
+**Use the team's release tooling, not a parallel format.** If `.changeset/` exists, the recommendation is a changeset file (`.changeset/<short-name>.md` with the package name, the bump and a one-line summary) and the changelog entry is what Changesets will generate from it. If `commitlint` or conventional commits are in use, phrase each entry as the commit type it maps to (`feat`, `fix`, `feat!`). If `release-please` or `semantic-release` is configured, say so: they decide the version from the commits, and this skill's job becomes checking that the commits are classified honestly.
 
 ### 1. Accept and Classify Input
 
@@ -32,8 +36,8 @@ Accept input in any form: git diff output, PR description, a list of changes in 
 
 For each change, classify it into exactly one category:
 
-- **Breaking (→ major):** removed prop/component/token, renamed API surface, changed default behaviour, changed type signature, removed CSS custom property, removed variant or variant option, removed CSS class or changed its selector specificity
-- **Minor (→ minor):** new prop, new component, new token, new variant, added optional parameter, new CSS custom property, expanded type union, new variant option, added optional CSS class without removing existing classes
+- **Breaking (→ major):** removed prop, component, token, CSS custom property, variant, variant option or `exports` subpath; renamed API surface; a new *required* prop; a narrowed set of accepted values or types; a changed callback signature (different arguments, or a widened argument type consumers narrow on); changed default behaviour; a removed CSS class or a changed selector specificity; a DOM or ARIA change consumers' tests or styles query (a changed role, a removed `data-testid`, a changed element type); dropped browser or peer-dependency support
+- **Minor (→ minor):** new optional prop, new component, new token, new variant, new optional parameter, new CSS custom property, a widened set of accepted input values, added optional CSS class without removing existing classes
 - **Patch (→ patch):** bug fix (fix for unintended behaviour), documentation update, internal refactor with no API change, dependency update, performance improvement with no API change
 
 Be strict about classifications. Misclassifying a breaking change as a patch or minor is worse than over-bumping. If you are unsure, err toward breaking, and say which item is uncertain and what would settle it.
@@ -50,7 +54,7 @@ Design systems have scenarios that don't fit standard semver cleanly. Identify a
 
 - **Breaking changes disguised as fixes:** A change labeled "bug fix" but that actually changes component behaviour (e.g., "fixed Button to now require an onClick handler"). This is breaking, not a patch. Reclassify.
 
-- **Pre-1.0 rules:** If the version is 0.x.x, semver says breaking changes increment minor (0.4.0 → 0.5.0), not major. Do not jump to 1.0 unless explicitly planned. Apply this rule.
+- **Pre-1.0 versions:** The semver spec says a 0.y.z version may change at any time and promises nothing. The convention most teams and npm's caret ranges follow is that a breaking change bumps the minor (0.4.0 → 0.5.0) and a feature or fix bumps the patch. Apply that convention, say it's a convention, and don't jump to 1.0 unless the team has planned it.
 
 - **Deprecation-only releases:** A release that deprecates a prop but does not remove it is minor (deprecation is additive). The removal is breaking and happens in a later major bump. Example: "@deprecated Use newProp instead" on oldProp in v2.4.0 is minor; removing oldProp in v3.0.0 is major.
 
@@ -69,27 +73,25 @@ Produce a changelog entry in markdown format, organised by category, ready for C
 ```
 ## [X.Y.Z] - YYYY-MM-DD
 
-### Breaking Changes
-- **ComponentName:** Removed prop `oldProp`. Use `newProp` instead. [migration: change `oldProp={value}` to `newProp={value}`]
-- **ComponentName:** Default `size` changed from `md` to `sm`. [migration: pass `size="md"` to keep the old look]
+### Removed
+- **ComponentName:** prop `oldProp`. Use `newProp` instead. [migration: change `oldProp={value}` to `newProp={value}`]
 
-### Features
-- **ComponentName:** Added new variant `outline`. Use `variant="outline"` on Button.
-- **TokenName:** New token `color-secondary-light` for lighter secondary backgrounds.
+### Changed
+- **ComponentName:** default `size` is now `sm` (was `md`). [migration: pass `size="md"` to keep the old look]
 
-### Fixes
-- **ComponentName:** Fixed Button to correctly apply icon spacing in all variants.
-- **TokenName:** Fixed opacity value for `color-disabled` to meet WCAG contrast ratio.
+### Added
+- **ComponentName:** variant `outline` (`variant="outline"`).
+- **Tokens:** `color-secondary-light` for lighter secondary backgrounds.
 
-### Internal
-- Refactored token build pipeline.
-- Updated development dependencies.
+### Deprecated
+- **ComponentName:** prop `oldSize`. Use `size` instead. Removal planned for the next major.
 
-### Deprecations
-- **ComponentName:** Prop `oldSize` is deprecated. Use `size` instead. Deprecation removal planned for v4.0.0.
+### Fixed
+- **ComponentName:** icon spacing now applies in all variants.
+- **Tokens:** `color-disabled` opacity corrected to meet the contrast baseline.
 ```
 
-Keep descriptions to one line per item. Use [migration: ...] notation for breaking changes to highlight what consumers must change.
+The headings are Keep a Changelog's (Added, Changed, Deprecated, Removed, Fixed, Security), which is what CHANGELOG readers and tooling expect; anything under Removed or Changed that breaks consumers gets a `[migration: ...]` note. Internal refactors and dev-dependency updates don't go in a consumer changelog. Keep descriptions to one line per item.
 
 ### 5. List the Migration Inputs for Breaking Changes
 
@@ -122,13 +124,15 @@ Do not write the full decision record — that is the decision-record skill's jo
 
 1. **Breaking changes correctly identified even when described as "fixes" or "improvements."** Read the change carefully. If behaviour changes, default changes, type signature changes, or something is removed, it is breaking. Do not trust the PR author's classification.
 
-2. **Pre-1.0 semver rules applied if version is 0.x.x.** If bumping from 0.4.0 and there is a breaking change, the new version is 0.5.0, not 1.0.0 (unless the team explicitly plans the v1 release).
+2. **Pre-1.0 convention applied if the version is 0.x.x**, and named as a convention. If bumping from 0.4.0 with a breaking change, the new version is 0.5.0, not 1.0.0, unless the team has planned the v1 release.
 
 3. **Changelog entry is properly formatted and honest about gaps.** Fill what's known; list open placeholders at the top of the output; never invent dates, links, owners, rationale or percentages. Every breaking change has a migration note.
 
 4. **Migration notes included for every breaking change.** Before/after code examples, one per breaking change. Rationale comes from a source, or is flagged `[ask author]`.
 
-5. **Edge cases section addressed, even if none apply.** At the end of the recommendation, include a section: "Edge cases: [none identified]" or "Edge cases: breaking change disguised as fix (reclassified), deprecation-only release (minor bump applied)." Show your work.
+5. **The team's release tooling was used** where it exists: a changeset file, conventional-commit phrasing, or a note that release-please decides.
+
+6. **Edge cases section addressed, even if none apply.** At the end of the recommendation, include a section: "Edge cases: [none identified]" or "Edge cases: breaking change disguised as fix (reclassified), deprecation-only release (minor bump applied)." Show your work.
 
 ## Small-System Note
 

@@ -1,6 +1,7 @@
 ---
 name: accessibility-per-component
 description: "Audit one design system component's accessibility against WCAG 2.2 AA: keyboard, screen reader, contrast, focus, ARIA, target size. Trigger: a11y audit, is this accessible, WCAG check, screen reader support, keyboard navigation check. Not for page- or product-wide audits."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(npx axe:*), Bash(npx test-storybook:*), Bash(npx playwright:*)
 references:
   - ../../knowledge-notes/output-discipline.md
 ---
@@ -42,6 +43,8 @@ Ask for or confirm:
 - Any existing accessibility documentation for the component
 - Whether the component is used in any assistive technology-sensitive contexts (financial, medical, government — these warrant extra rigour)
 
+**Find the runtime evidence before auditing.** PASS needs the running component, so look for what can run it: a Storybook with the test-runner or the a11y addon (`npx test-storybook --url <storybook>` runs axe per story), `jest-axe` or `vitest-axe` tests in the repo, a Playwright setup with `@axe-core/playwright`, or a dev server. If any exists, run it for this component and use its output as evidence. If none exists, ask the user for one of: a Storybook URL, a screen-reader transcript of the primary task, or screenshots of each state. Without any of these, every keyboard, screen-reader and focus criterion is ⚠️ WARN (unverified), the report says so in its first line, and only contrast (computed from the resolved token values) can be PASS or FAIL. Don't run the whole audit from source and present it as verified.
+
 If the component can only be assessed from a design file rather than a live implementation, note that the keyboard and screen reader dimensions are being assessed against the specification rather than the built behaviour. These findings should be verified against the implementation before being marked as passing.
 
 ## Step 2: Run the five-dimension audit
@@ -65,8 +68,8 @@ Every interactive component must be fully operable by keyboard alone. Assess:
 **Escape key**
 - For components that open a layer (modal, popover, tooltip, dropdown), does Escape close it and return focus correctly?
 
-**Skip/bypass mechanisms**
-- If the component contains a large block of content (e.g. a data table), is there a mechanism to skip past it?
+**Reaching past large content**
+- If the component contains a large block of focusable content (a data table, a long list), can a keyboard user reach the controls after it without tabbing through every cell? (This is a 2.1.1 usability check at component level; 2.4.1 Bypass Blocks is page-level and isn't cited here.)
 
 Result per criterion: PASS / FAIL / WARN (warn = partially implemented, needs verification in a specific context, or inferred from code without running the component)
 
@@ -176,6 +179,11 @@ Check these where the component type makes them relevant, and report them under 
 - **1.4.13 Content on Hover or Focus:** tooltips and popovers can be dismissed without moving pointer or focus (usually Escape), stay open while hovered, and don't vanish until dismissed.
 - **1.4.12 Text Spacing:** content doesn't clip or overlap when line, paragraph, letter, and word spacing are increased. Fixed-height containers are the usual cause.
 - **3.3.7 Redundant Entry:** for multi-step form components, information already entered is auto-filled or selectable rather than re-typed.
+- **4.1.3 Status Messages:** dynamic results (error text appearing, "3 results", "saved") are announced without moving focus, via `aria-live` or `role="status"`/`role="alert"`. This is the criterion behind the live-region check in Dimension 2; cite it.
+- **3.3.1 Error Identification and 3.3.2 Labels or Instructions:** for inputs, an error is described in text (not colour alone) and associated with the field; required fields and formats are stated before the user submits.
+- **1.4.10 Reflow and 1.4.4 Resize Text:** the component still works at 320 CSS px wide (or 400% zoom) without two-dimensional scrolling, and at 200% text size. Fixed widths and heights are the usual failures.
+- **Forced colours (Windows High Contrast):** under `@media (forced-colors: active)` the component's boundaries, focus indicator and state indicators survive, because backgrounds and box-shadows are removed. Check for `forced-color-adjust` and system-colour keywords where a border or outline carries meaning.
+- **Motion:** animations respect `prefers-reduced-motion` (2.3.3 is AAA; note it as a recommendation, and flag any flashing over three times a second as 2.3.1, which is A).
 
 ## Step 2b: Screen reader testing guide
 
@@ -207,12 +215,18 @@ Open with a headline sentence that tells the reader the overall state and where 
 
 #### Results by dimension
 
-| Dimension | Criterion | Result | Finding | Remediation |
-|---|---|---|---|---|
-| Keyboard | Tab order | ✅ PASS / ⚠️ WARN / ❌ FAIL | [specific finding] | [specific fix] |
-| ... | | | | |
+| Dimension | Criterion | Result | Severity | Evidence | Finding | Remediation |
+|---|---|---|---|---|---|---|
+| Keyboard | Tab order | ✅ PASS / ⚠️ WARN / ❌ FAIL | 🔴/🟠/🟡/⚪ or — | [file:line, story id, axe rule id, computed ratio, or transcript line] | [specific finding] | [specific fix] |
+| ... | | | | | | |
 
-**Status key:** ✅ PASS / ⚠️ WARN / ❌ FAIL
+**Status key:** ✅ PASS / ⚠️ WARN / ❌ FAIL. Severity applies to FAIL and WARN rows:
+- 🔴 **Critical** — the component can't be operated by keyboard; a control has no accessible name; a modal doesn't trap or return focus; body text below 4.5:1. These block release under the default gates
+- 🟠 **High** — a state isn't announced; the focus indicator is below 3:1 or hidden; a target is under 24 CSS px; a tooltip fails 1.4.13; a role is missing a required attribute
+- 🟡 **Medium** — disabled-state contrast; redundant or conflicting ARIA; clipping under text spacing or reflow
+- ⚪ **Low** — AAA recommendations (focus appearance, reduced motion)
+
+Evidence is where the result came from: the source line, the Storybook story or axe rule, the computed ratio with both colours, or the transcript line. A row with no evidence is WARN, never PASS.
 
 ---
 
@@ -240,7 +254,7 @@ If any of these findings are deliberate decisions (for example, a pattern that d
 
 ## Step 3b: Remediation code examples
 
-For every FAIL or WARN finding, include a concrete code example showing the fix. Remediation guidance without code is advice; remediation guidance with code is a pull request waiting to happen.
+For every FAIL or WARN finding, include a concrete code example showing the fix, placed directly under the finding it fixes, before the Scope block. Remediation guidance without code is advice; remediation guidance with code is a pull request waiting to happen. Write the example against the component's own source and stack, not a generic one, and don't replace the consumer's existing handlers: a fix that clones a child element must merge `onFocus`, `onBlur`, `onMouseEnter` and the rest with any the child already had.
 
 **Format for each code example:**
 
@@ -258,18 +272,6 @@ Why this fixes it:
 
 **Examples by dimension:**
 
-Keyboard navigation — missing Enter/Space activation:
-```
-Before:
-  <div className="button" onClick={handleClick}>Submit</div>
-
-After:
-  <button type="button" onClick={handleClick}>Submit</button>
-
-Why: Native <button> provides Enter and Space activation, focus management,
-and correct role announcement without additional ARIA. (WCAG 2.1.1)
-```
-
 Screen reader — missing accessible name on icon button:
 ```
 Before:
@@ -280,60 +282,6 @@ After:
 
 Why: aria-label provides the accessible name. aria-hidden on the icon prevents
 the icon name from being announced alongside the label. (WCAG 4.1.2)
-```
-
-Focus management — focus not returned on close:
-```
-Before:
-  const handleClose = () => {
-    setIsOpen(false);
-  };
-
-After:
-  const triggerRef = useRef(null);
-  const handleClose = () => {
-    setIsOpen(false);
-    triggerRef.current?.focus();
-  };
-  // On the trigger: ref={triggerRef}
-
-Why: Focus returns to the element that opened the overlay, maintaining
-the user's position in the page. (WCAG 2.4.3)
-```
-
-ARIA — missing required attributes on disclosure:
-```
-Before:
-  <button onClick={toggle}>FAQ Item</button>
-  <div className={isOpen ? 'visible' : 'hidden'}>Answer text</div>
-
-After:
-  <button
-    id="faq-trigger-1"
-    onClick={toggle}
-    aria-expanded={isOpen}
-    aria-controls="faq-answer-1"
-  >FAQ Item</button>
-  <div id="faq-answer-1" hidden={!isOpen}>
-    Answer text
-  </div>
-
-Why: aria-expanded communicates state; aria-controls links trigger to content.
-A disclosure needs nothing more. Don't add role="region" to every panel —
-a page full of landmarks is noise. (WCAG 4.1.2)
-```
-
-Colour contrast — insufficient text contrast:
-```
-Before:
-  .label { color: #999999; background: #FFFFFF; }
-  /* Contrast ratio: 2.85:1 — fails WCAG AA (4.5:1 required) */
-
-After:
-  .label { color: #595959; background: #FFFFFF; }
-  /* Contrast ratio: 7.0:1 — passes WCAG AA and AAA */
-
-Why: Darkening the text colour from #999 to #595959 exceeds the 4.5:1 minimum. (WCAG 1.4.3)
 ```
 
 Include the appropriate code example pattern for every FAIL finding. For WARN findings, include the example if the fix is clear; omit it if the finding requires contextual judgment that code alone cannot resolve.
@@ -359,7 +307,7 @@ Additional checks:
 - Does the month/year navigation wrap correctly at boundaries?
 - Are disabled dates announced as disabled, not just visually greyed?
 - Can the user type a date directly into the input field as an alternative to the calendar?
-- Does the date format match the aria-label pattern (e.g., "March 9, 2026" not "03/09/2026")?
+- Is each day's accessible name a spoken-form date in the user's locale (e.g. "Tuesday 9 March 2026"), not a numeric string that reads as digits?
 - Is the calendar grid marked with `role="grid"` with correct row/cell roles?
 
 ### Data table
@@ -384,7 +332,7 @@ Additional checks:
 - Are tabs navigable with arrow keys (not Tab)?
 - Does focus stay on the tab when it is activated? Per the APG, arrow keys move between tabs and Tab moves into the panel; activation should not move focus to the panel.
 - Is the `aria-selected` state correctly toggled between tabs?
-- Are disabled tabs announced as disabled but still focusable?
+- Disabled tabs: the APG allows either focusable-but-`aria-disabled` or removed from the arrow-key sequence; check the implementation picks one, applies it consistently, and announces the disabled state
 
 For any component matching these types, run both the standard five-dimension audit AND the extended protocol. The extended protocol findings should be interleaved into the main report by dimension, not presented as a separate section.
 
@@ -401,4 +349,5 @@ For any component matching these types, run both the standard five-dimension aud
 - Every FAIL finding has a specific, actionable remediation with a code example
 - The distinction between specification-level and implementation-level findings is clear
 - Complex components (Combobox, DatePicker, DataTable, Modal, Tabs) receive the extended protocol in addition to the standard audit
-- Code examples show both before (violation) and after (fix) with the specific WCAG criterion referenced
+- Code examples show both before (violation) and after (fix) with the specific WCAG criterion referenced, and preserve the consumer's existing handlers
+- Runtime evidence (test-runner, axe, a transcript, screenshots) was found or asked for before the audit, and its absence is stated in the first line
