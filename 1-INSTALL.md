@@ -289,22 +289,21 @@ This triggers the `full-system-diagnostic` agent, which chains: token-audit → 
 
 ## Every skill, with an example prompt
 
-### Audit (10 skills)
+### Audit (9 skills)
 
 | Skill | What to say | What you get |
 |-------|-------------|-------------|
 | `token-audit` | "Audit my tokens" | Naming violations, tier leakage, hardcoded values, DTCG alignment, orphan count, effort estimates |
 | `component-audit` | "Audit my component library" | Inventory with usage, duplication, coverage gaps, complexity distribution, stale components |
-| `system-health` | "How healthy is my design system?" | 7-dimension assessment with statuses, prioritised action list, maturity stage |
+| `system-health` | "How healthy is my design system?" | 7-dimension assessment with statuses, prioritised action list, inferred maturity stage, and sourced public-system reference points on request |
 | `drift-detection` | "Where are teams going off-system?" | Classified drift instances (intentional/accidental/version lag/gap), blast radius per instance |
-| `naming-audit` | "Are our naming conventions consistent?" | Component, token, and file naming violations with suggested renames |
+| `naming-audit` | "Are our component names consistent?" | Component and pattern naming violations with evidence and suggested renames; token names are token-audit's, prop names component-api-validator's |
 | `figma-variable-audit` | "Audit my Figma variables" | Variable naming, tier structure, mode consistency, code-vs-Figma mismatches |
 | `codebase-index` | "Build a component map of our system" | Machine-readable component index with file paths, exports, dependencies, and categories |
-| `system-benchmark` | "How does our system compare to industry standards?" | 12-dimension benchmark against comparable public systems |
-| `theme-audit` | "Audit our theme implementation" | Per-mode token coverage, component-tier propagation gaps, cross-theme consistency, DTCG resolver validation |
+| `theme-audit` | "Audit our theme implementation" | Per-theme token coverage, component-tier propagation gaps, contrast within each theme, resolver context coverage |
 | `docs-coverage` | "Which components are undocumented?" | Coverage by rung, git-based staleness, undocumented and orphaned docs — each finding with a join-confidence tier |
 
-### Govern (11 skills)
+### Govern (9 skills)
 
 | Skill | What to say | What you get |
 |-------|-------------|-------------|
@@ -315,10 +314,8 @@ This triggers the `full-system-diagnostic` agent, which chains: token-audit → 
 | `backlog-generator` | "Turn these audit findings into tickets" | Sprint-ready work items with acceptance criteria, effort estimates, priority order |
 | `version-bump-advisor` | "Should this be a major or minor bump?" | Semver recommendation with reasoning, breaking change analysis, changelog draft |
 | `release-retrospective` | "Review how the last release went" | Plan vs reality comparison, what went well, what to improve, process recommendations |
-| `governance-encoder` | "Encode our governance rules" | Machine-executable governance constraints (linting rules, CI checks, review policies) |
-| `session-memory` | "Track findings across skill runs" | Persistent finding store with trend tracking, cross-skill correlation, progress monitoring |
+| `governance-encoder` | "Encode our governance rules" | ESLint, Stylelint, dependency-cruiser and CODEOWNERS config traced to your written rules, plus GOVERNANCE.md for the rest |
 | `codemod-generator` | "Generate a codemod for renaming color-primary" | jscodeshift migration script with dry-run support, before/after examples, edge case handling |
-| `triage` | "Where should I start?" | A prioritised run plan of 3–5 skills based on a quick read of the system's state |
 
 ### Document (7 skills)
 
@@ -329,7 +326,7 @@ This triggers the `full-system-diagnostic` agent, which chains: token-audit → 
 | `token-documentation` | "Document our colour tokens" | Token reference docs with semantic intent, usage context, do/don't examples |
 | `usage-guidelines` | "Write usage guidelines for Card" | Do's, don'ts, edge cases, anti-patterns, quick-reference card |
 | `component-decision-tree` | "Help users choose between Dialog and Sheet" | Selection logic flowchart for choosing between similar components |
-| `context-engine-builder` | "Build a context engine for our system" | Seven-blueprint context engine for AI agent integration |
+| `agent-instructions` | "Write an AGENTS.md for our design system" | The file coding agents read first: where things live, sourced rules, how to check work, what not to do |
 | `metadata-schema-generator` | "Generate a JSON schema for our components" | JSON metadata schemas for tooling, CI, and AI agent consumption |
 
 ### Validate (6 skills)
@@ -343,15 +340,14 @@ This triggers the `full-system-diagnostic` agent, which chains: token-audit → 
 | `component-api-validator` | "Is our component API consistent?" | Cross-library API audit — prop naming, type patterns, default conventions |
 | `cicd-integration` | "Set up CI checks for our design system" | GitHub Actions / GitLab CI config files for automated token, accessibility, and compliance checks |
 
-### Communicate (6 skills)
+### Communicate (5 skills)
 
 | Skill | What to say | What you get |
 |-------|-------------|-------------|
 | `adoption-report` | "How widely is our system adopted?" | Coverage vs actual adoption, team-by-team breakdown, trend direction, risk flags |
 | `stakeholder-brief` | "Write a brief for leadership" | One-page executive brief in business language with a clear ask |
 | `system-pitch` | "Pitch the design system to leadership" | Investment case with cost quantification, ROI framing, competitive context |
-| `designer-onboarding` | "Create an onboarding guide for new designers" | Getting-started guide covering tools, workflows, system conventions |
-| `engineering-onboarding` | "Create an onboarding guide for new engineers" | Getting-started guide covering setup, component usage, contribution process |
+| `onboarding` | "Onboard a new engineer" or "Onboard a new designer" | Getting-started guide grounded in the repo and Figma library, with a shared core and a section for the role |
 | `visual-report` | "Create a dashboard of our system health" | Interactive HTML dashboard with charts, trend visualisations, and drill-down sections |
 
 ### Agents (4 chained workflows)
@@ -363,7 +359,7 @@ Run each one by its command. Claude Code prefixes plugin commands with the pack'
 | `full-system-diagnostic` | `/design-system-ops:full-diagnostic` | token-audit → naming-audit → component-audit → drift-detection → docs-coverage → system-health (plus theme-audit and figma-variable-audit when they apply) |
 | `component-to-release` | `/design-system-ops:release-check Dialog` | design-to-code → accessibility → token-compliance → description → guidelines → comms (plus a semver check for breaking changes) |
 | `governance-review` | `/design-system-ops:governance-review` | adoption-report → drift-detection → stakeholder-brief |
-| `migration` | `/design-system-ops:migration` | token-audit → naming-audit → migration plan → codemod-generator → deprecation-process → change-communication |
+| `token-migration` | `/design-system-ops:token-migration` | token-audit → transformation table → codemod-generator → deprecation-process → change-communication |
 
 ---
 
@@ -458,9 +454,9 @@ Your project-level config is not inside the skill pack, so it's never overwritte
 
 | Path | What it's for |
 |------|--------------|
-| `skills/` | 40 skills, each in its own folder with a `SKILL.md`, plus 4 agent definitions |
+| `skills/` | 36 skills, each in its own folder with a `SKILL.md`, plus 4 agent definitions |
 | `commands/` | 4 command definitions, one per chained agent workflow |
-| `knowledge-notes/` | 14 canonical reference documents that power the skills |
+| `knowledge-notes/` | 13 canonical reference documents that power the skills |
 | `sample-outputs/` | Sample skill outputs showing expected depth and format (anonymised examples, plus unedited runs against a public codebase and the test fixture) |
 | `ds-ops-config.example.yml` | Annotated configuration template (copy to your project root as `.ds-ops-config.yml`) |
 | `installable/` | Pre-packaged `.plugin` (Cowork) and `.zip` for quick installation |

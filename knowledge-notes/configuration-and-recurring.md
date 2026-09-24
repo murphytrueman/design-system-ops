@@ -55,3 +55,18 @@ A skill supports recurring runs when its Recurring section says so. The `recurri
 If no previous report exists, say "This is the baseline run. Trend analysis will be available from the next run." and save the report.
 
 `recurring.comparison_mode` sets the depth: `full` shows the side-by-side changes; `summary` shows only the deltas.
+
+There is no separate memory layer and nothing saves automatically. The saved reports in `recurring.output_directory` are the history; a skill reads them when its Recurring section says so, and a user can ask "what did we find last time?" and be pointed at them.
+
+---
+
+## Reading across skills
+
+When more than one skill's report exists for the same system (a full-diagnostic run, or several audits over a quarter), a skill or agent may be asked what persists across them. The rule for calling something a cross-skill pattern:
+
+- **It needs a shared subject.** Findings from different skills that name the same component, token, or an explicitly shared area (one token category, one product). Similar severities alone are not a pattern.
+- **Say how many skills surface it**, and name them: two skills is a possible pattern, three is probable, four or more is recurring. Use those words, not a score.
+- **Cite the finding IDs and report dates** for each contributing finding, so the reader can open them.
+- **Check scope first**, as with recurring runs: a skill that never inspected the area can't be counted as not finding anything there.
+
+The full-diagnostic agent does this in its synthesis phase for one run; the same rule applies when reading reports from different dates.

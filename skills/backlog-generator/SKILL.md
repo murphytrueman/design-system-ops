@@ -1,6 +1,6 @@
 ---
 name: backlog-generator
-description: "Turn existing audit findings into sprint-ready tickets with T-shirt estimates, acceptance criteria, dependencies and phases. Triggers: tickets from audit, backlog from findings, sprint planning from report. Not for the contribution process (contribution-workflow) or which skill to run (triage)."
+description: "Turn existing audit findings into sprint-ready tickets with T-shirt estimates, acceptance criteria, dependencies and phases. Triggers: tickets from audit, backlog from findings, sprint planning from report. Not for the contribution process (contribution-workflow)."
 references:
   - ../../knowledge-notes/component-governance.md
 ---

@@ -133,25 +133,25 @@
     },
     {
       "id": "route-engineering-onboarding",
-      "skill": "engineering-onboarding",
+      "skill": "onboarding",
       "expect": "route",
       "prompt": "Write a getting-started guide for a frontend engineer who joins our team next week.",
       "finds": [],
-      "why": "A plain request that doesn't name a skill must route to engineering-onboarding, not a neighbouring skill."
+      "why": "A plain request that doesn't name a skill must route to onboarding, not a neighbouring skill."
     },
     {
       "id": "route-designer-onboarding",
-      "skill": "designer-onboarding",
+      "skill": "onboarding",
       "expect": "route",
       "prompt": "Write a getting-started guide for a product designer who joins our team next week.",
       "finds": [],
-      "why": "A plain request that doesn't name a skill must route to designer-onboarding, not a neighbouring skill."
+      "why": "A plain request that doesn't name a skill must route to onboarding, not a neighbouring skill."
     },
     {
       "id": "release-chain",
       "skill": "release-check",
       "expect": "chain",
-      "prompt": "/design-system-ops:release-check Button — a new component release. Design spec: primary and secondary variants; padding var(--space-gap) by var(--space-inset); 6px corner radius; primary uses the action colour with on-action text; secondary is transparent with an action-coloured label and border.",
+      "prompt": "/design-system-ops:release-check Button \u2014 a new component release. Design spec: primary and secondary variants; padding var(--space-gap) by var(--space-inset); 6px corner radius; primary uses the action colour with on-action text; secondary is transparent with an action-coloured label and border.",
       "chain": [
         "design-to-code-check",
         "accessibility-per-component",
@@ -169,7 +169,7 @@
       "id": "release-gate-stop",
       "skill": "release-check",
       "expect": "chain",
-      "prompt": "/design-system-ops:release-check Tooltip — a new component release. Design spec: a small bubble with var(--space-gap) padding, a 4px corner radius, the default text colour as its background and the base surface colour as its text.",
+      "prompt": "/design-system-ops:release-check Tooltip \u2014 a new component release. Design spec: a small bubble with var(--space-gap) padding, a 4px corner radius, the default text colour as its background and the base surface colour as its text.",
       "chain": [
         "design-to-code-check"
       ],
@@ -182,7 +182,7 @@
       "finds": [
         "BLOCKED"
       ],
-      "why": "Tooltip isn't a working tooltip yet (the bubble is always visible, and its trigger isn't linked with aria-describedby), so a gate must block it: the release is BLOCKED and the documentation and announcement steps never run. Either gate may catch it — design-to-code checks focus and keyboard behaviour too."
+      "why": "Tooltip isn't a working tooltip yet (the bubble is always visible, and its trigger isn't linked with aria-describedby), so a gate must block it: the release is BLOCKED and the documentation and announcement steps never run. Either gate may catch it \u2014 design-to-code checks focus and keyboard behaviour too."
     },
     {
       "id": "route-design-to-code-2",

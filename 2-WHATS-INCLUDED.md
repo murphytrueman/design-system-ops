@@ -12,7 +12,7 @@ Design System Ops is a toolkit that gives Claude (the AI) deep expertise in desi
 
 Instead of starting from scratch every time you ask Claude for help with your design system, these skills give it the frameworks, mental models, and structured processes that a staff-level design systems practitioner would use.
 
-**What is in the pack:** 40 skills (individual tools that each do one thing well), 4 agents (chained workflows that run multiple skills in sequence), 14 knowledge notes (expert frameworks that power the skills), 13 sample outputs (anonymised examples and unedited fixture runs, so you know what to expect), and an optional configuration file.
+**What is in the pack:** 36 skills (individual tools that each do one thing well), 4 agents (chained workflows that run multiple skills in sequence), 13 knowledge notes (expert frameworks that power the skills), 13 sample outputs (anonymised examples and unedited fixture runs, so you know what to expect), and an optional configuration file.
 
 ---
 
@@ -44,7 +44,7 @@ Skills are instruction files that teach Claude how to do something specific. A s
 
 When you ask Claude to do something that matches a skill, Claude reads the skill file and follows its process. The result is output that is dramatically more thorough, specific, and production-ready than what you would get from a generic prompt.
 
-**In this pack, there are 40 skills** organised into five categories: Audit, Govern, Document, Validate, and Communicate.
+**In this pack, there are 36 skills** organised into five categories: Audit, Govern, Document, Validate, and Communicate.
 
 ### What are agents?
 
@@ -58,7 +58,7 @@ Knowledge notes are reference documents that contain expert frameworks and menta
 
 For example, the `ai-readiness` knowledge note contains the six dimensions of component AI readiness, the context cascade model, and the three pillars framework. When you run the `ai-component-description` skill, Claude reads that knowledge note first, which is why its output is informed by these frameworks rather than being generic advice.
 
-**In this pack, there are 14 knowledge notes** covering token architecture, component governance, AI readiness, design-to-code contracts, the Component Bestiary challenge rating system, agent orchestration patterns, human oversight frameworks, MCP setup guidance, context engine blueprint templates, adoption measurement principles, documentation coverage (the source-of-truth model behind the docs-coverage audit), executive communication (audience calibration and honest numbers for leadership-facing documents), configuration and recurring runs (how skills read your config, use integrations, and compare against previous runs), and output discipline (the shared quality standards that keep all audit and assessment output consistent, specific, and honest).
+**In this pack, there are 13 knowledge notes** covering token architecture, component governance, AI readiness, design-to-code contracts, the Component Bestiary challenge rating system, agent orchestration patterns, MCP setup guidance, public design systems as dated reference points, adoption measurement principles, documentation coverage (the source-of-truth model behind the docs-coverage audit), executive communication (audience calibration and honest numbers for leadership-facing documents), configuration and recurring runs (how skills read your config, use integrations, and compare against previous runs), and output discipline (the shared quality standards that keep all audit and assessment output consistent, specific, and honest).
 
 You never need to interact with knowledge notes directly. They load automatically when a skill needs them.
 
@@ -167,7 +167,6 @@ These skills work with your Figma design system library through the Figma MCP se
 | `figma-variable-audit` | Variable collections, alias chains, mode coverage |
 | `design-to-code-check` | Design specifications for comparison against code |
 | `component-audit` | Component inventory, detach rates |
-| `context-engine-builder` | Design token definitions, component metadata |
 
 **How to connect Figma:** Install and configure the Figma MCP server (see the Integrations section below). Once connected, these skills auto-pull data from your Figma file.
 
@@ -181,8 +180,7 @@ These skills work from your description of the situation. You do not need to pro
 | `stakeholder-brief` | Share health findings or describe the situation |
 | `system-pitch` | Describe the current state and what you need |
 | `adoption-report` | Share usage data or describe adoption patterns |
-| `designer-onboarding` | Describe your system and team setup |
-| `engineering-onboarding` | Describe your system's tech stack and patterns |
+| `onboarding` | Describe the role, the team and the contacts; the rest comes from the repo and Figma |
 | `decision-record` | Describe the decision that was made and why |
 | `change-communication` | Describe the change being released |
 | `deprecation-process` | Describe what is being deprecated and why |
@@ -194,10 +192,6 @@ These skills work from your description of the situation. You do not need to pro
 | `token-documentation` | Describe or share token values and intent |
 | `usage-guidelines` | Describe the component and how it should be used |
 | `component-decision-tree` | Describe competing components and selection criteria |
-| `context-engine-builder` | Describe your system's dimensions and rules |
-| `system-benchmark` | Describe your system size and maturity, or provide source files |
-| `triage` | Describe your system or share a repo path for a quick scan |
-| `session-memory` | Reference previous skill outputs (auto-saves and recalls) |
 | `visual-report` | Share audit findings or health statuses to visualise |
 
 ---
@@ -213,7 +207,6 @@ Design System Ops has deep Figma integration through the Figma MCP server. When 
 - `figma-variable-audit` audits your variable collections against token architecture best practices
 - `design-to-code-check` compares your Figma specs against code implementation
 - `component-audit` pulls your component inventory and detach rates
-- `context-engine-builder` extracts design token definitions and component metadata
 
 **How to set up:** See the Figma MCP integration section below.
 
@@ -269,9 +262,9 @@ When a tool is connected, skills pull data automatically. Without connections, y
 
 ---
 
-## The 40 skills — what each one does
+## The 36 skills — what each one does
 
-### Audit skills (10) — assess where you are
+### Audit skills (9) — assess where you are
 
 These skills look at what you have and tell you what is working, what is broken, and what to fix first.
 
@@ -339,7 +332,7 @@ These skills look at what you have and tell you what is working, what is broken,
 
 #### `naming-audit`
 
-**What it does:** Reviews naming conventions across your components, tokens, and patterns. Identifies inconsistencies, evaluates whether names communicate intent, and provides rename suggestions with migration sequencing.
+**What it does:** Reviews naming conventions across your components and documented patterns. Identifies inconsistencies, evaluates whether names communicate intent, and provides rename suggestions with evidence and sequencing. Token names are `token-audit`'s job and prop names `component-api-validator`'s; this skill cites their findings.
 
 **When to use it:** When naming has grown organically and you need to clean it up. Before publishing a system externally.
 
@@ -382,21 +375,6 @@ These skills look at what you have and tell you what is working, what is broken,
 
 ---
 
-#### `system-benchmark`
-
-**What it does:** Benchmarks your design system against industry standards and comparable public systems. Compares 12 dimensions across four pillars — foundation quality, documentation and discoverability, governance and process, and adoption and impact — with a status label per dimension and named, sourced reference points. No numeric scores or rankings.
-
-**When to use it:** When you need an evidence-backed comparison of where your system stands relative to the industry. When preparing a business case for investment. When setting maturity targets.
-
-**Example prompts:**
-- "Benchmark our design system against industry standards."
-- "How does our system compare to Material Design, Carbon, and Polaris?"
-- "Where are we ahead of or behind comparable public systems, dimension by dimension?"
-
-**Best used with:** Your codebase and Figma (for accurate data), conversation otherwise
-
----
-
 #### `theme-audit`
 
 **What it does:** Audits how themes are implemented across a design system — token coverage per theme, component-tier propagation, cross-theme visual consistency, and DTCG resolver validation.
@@ -427,7 +405,7 @@ These skills look at what you have and tell you what is working, what is broken,
 
 ---
 
-### Govern skills (11) — run the system as infrastructure
+### Govern skills (9) — run the system as infrastructure
 
 These skills help you set up and operate the processes that keep a design system healthy over time.
 
@@ -540,46 +518,16 @@ These skills help you set up and operate the processes that keep a design system
 
 #### `governance-encoder`
 
-**What it does:** Converts governance policies into machine-executable JSON constraint files that AI agents and CI pipelines can validate against automatically. Outputs go to `.ai/governance/`.
+**What it does:** Turns the governance rules your team has written down into enforcement that runs: ESLint, Stylelint, dependency-cruiser and CODEOWNERS configuration, each rule traced to the document it came from, plus a `GOVERNANCE.md` for rules with no executable form (design review, decision records) that says who checks them and when. Runs the linters in report mode to show how many violations each rule finds today.
 
-**When to use it:** When you want governance rules to be enforced automatically, not just documented.
-
-**Example prompts:**
-- "Encode our component contribution rules as machine-checkable constraints."
-- "Turn our accessibility requirements into rules that CI can validate."
-- "Create governance-as-code for our token naming conventions."
-
-**Best used with:** Your codebase (reads existing governance docs), conversation otherwise
-
----
-
-#### `session-memory`
-
-**What it does:** Persists findings across skill runs so patterns compound over time. Four modes: Save (store findings), Recall (retrieve previous results), Compare (show what changed between runs), and Correlate (identify systemic issues that appear across multiple skills).
-
-**When to use it:** When running multiple skills in sequence and you want findings to connect. When tracking trends across quarterly reviews. When you suspect the same root cause is appearing in different audits.
+**When to use it:** When rules live in a wiki and are enforced by whoever notices. When you want coding agents and CI to follow the same rules reviewers do. Before adding a rule to CI, to see what it would catch.
 
 **Example prompts:**
-- "Save this token audit so I can compare it next quarter."
-- "What changed since our last system health check?"
-- "Correlate findings across all the audits we've run this month."
+- "Encode our governance rules as lint config."
+- "Turn CONTRIBUTING.md into something CI can enforce."
+- "Which of our written rules could a linter check?"
 
-**Best used with:** Output from other skills (saves and recalls findings)
-
----
-
-#### `triage`
-
-**What it does:** Quickly assesses a design system's state and recommends which skills to run first, in what order, and why. Classifies systems into four states (new, growing, established, legacy) and produces a prioritised run plan of 3–5 skills.
-
-**When to use it:** When encountering a system for the first time. When a team does not know where to start. When deciding which audits to run first.
-
-**Example prompts:**
-- "Where should I start with this design system?"
-- "What should I run first?"
-- "Triage this system and tell me the priority order."
-
-**Best used with:** Your codebase (for a quick scan), conversation otherwise (describe your system size, maturity, and pain)
+**Best used with:** Your codebase (reads CONTRIBUTING, existing lint config, token names) and `cicd-integration` to run the result in CI
 
 ---
 
@@ -602,7 +550,7 @@ These skills help you set up and operate the processes that keep a design system
 
 These skills produce documentation that makes your system usable by other teams and by AI tools.
 
-**AI infrastructure cluster.** Five of these seven skills — `context-engine-builder`, `component-decision-tree`, `metadata-schema-generator`, plus `codebase-index` (in audit) and `governance-encoder` (in govern) — produce machine-readable YAML and JSON files, not practitioner-facing documents. They build the `.ai/` directory infrastructure that AI agents consume when working with your design system. If you are setting up AI tooling to generate, validate, or govern components automatically, these five skills are where to start.
+**For coding agents.** `agent-instructions` writes the `AGENTS.md` that agents read first and links everything else: the inventory and dependency graph from `codebase-index` (in audit), the per-component metadata from `metadata-schema-generator`, the choosing-between pages from `component-decision-tree`, and the lint configuration `governance-encoder` (in govern) writes so agents can check their own work. Start with `agent-instructions`; add the others as the system grows.
 
 ---
 
@@ -683,18 +631,18 @@ These skills produce documentation that makes your system usable by other teams 
 
 ---
 
-#### `context-engine-builder`
+#### `agent-instructions`
 
-**What it does:** Generates a context engine — seven structured blueprint files (UX, UI, content, accessibility, ethical, technical, business intelligence) that encode everything an AI agent needs to work with your design system. Outputs go to `.ai/context-engine/`.
+**What it does:** Writes the `AGENTS.md` coding agents read first: where components, tokens and docs live, the rules with a source for each, how to check work (the lint and test commands that exist), and what not to do. Links to `.ai/index/`, `.ai/metadata/`, the choosing-between pages and the token docs rather than copying them. Adds `CLAUDE.md`, Cursor or Copilot pointer files on request, each a one-liner that says "read AGENTS.md".
 
-**When to use it:** When you want AI agents to understand your system deeply, not just read component props.
+**When to use it:** When Claude, Cursor or Copilot keep picking the wrong component or typing raw values. When you have `.ai/` files nothing reads. When onboarding an agent the way you'd onboard an engineer.
 
 **Example prompts:**
-- "Build a context engine for our design system."
-- "Create the seven blueprints so AI agents understand our system's rules."
-- "Encode our design system knowledge for AI consumption."
+- "Write an AGENTS.md for our design system."
+- "Make our system navigable for coding agents."
+- "Add Cursor rules that point at our design system conventions."
 
-**Best used with:** Your codebase and Figma (scans existing docs and source), conversation otherwise
+**Best used with:** Your codebase; richer after `codebase-index` and `metadata-schema-generator` have run
 
 ---
 
@@ -809,7 +757,7 @@ These skills check specific quality dimensions before a component or update goes
 
 ---
 
-### Communicate skills (6) — move people and decisions
+### Communicate skills (5) — move people and decisions
 
 These skills produce documents for different audiences — leadership, engineers, designers, and new team members.
 
@@ -860,33 +808,18 @@ These skills produce documents for different audiences — leadership, engineers
 
 ---
 
-#### `designer-onboarding`
+#### `onboarding`
 
-**What it does:** Produces a getting-started guide a new team member can follow alone, with a two-week checklist covering tooling, orientation, first tasks, and contributing.
+**What it does:** Writes an onboarding guide for a designer, an engineer, or both, grounded in the repository and the Figma library: real package name and import paths, real token names, the library's pages and modes, the team's contacts and contribution route. Anything the files and the team don't confirm is marked `[confirm: …]` and listed at the top. Updates an existing guide in place rather than starting over.
 
-**When to use it:** When onboarding a new designer or developer.
-
-**Example prompts:**
-- "Create an onboarding guide for a designer joining our team."
-- "Write a getting-started guide for someone new to our design system."
-- "Our onboarding is 'ask Sarah.' Fix that."
-
-**Best used with:** Conversation (describe your system and team setup)
-
----
-
-#### `engineering-onboarding`
-
-**What it does:** Produces a getting-started guide for engineers consuming the design system — installation, API patterns, token usage, testing, anti-patterns, and a two-week checklist.
-
-**When to use it:** When onboarding a new engineer.
+**When to use it:** When someone joins next week. When the existing guide was written from a template and nobody trusts it. When drift keeps starting in week one.
 
 **Example prompts:**
-- "Create onboarding docs for engineers using our component library."
-- "Write a developer getting-started guide covering tokens, components, and testing."
-- "What anti-patterns should new engineers avoid with our system?"
+- "Write a getting-started guide for a frontend engineer joining next week."
+- "Onboard a new product designer to our design system."
+- "Update our onboarding doc; it's out of date."
 
-**Best used with:** Conversation (describe your tech stack)
+**Best used with:** Your codebase and Figma (for facts), conversation for contacts and policies
 
 ---
 
@@ -945,9 +878,9 @@ Agents chain multiple skills together and synthesise the combined results. All a
 
 ---
 
-### `migration`
+### `token-migration`
 
-**What it chains:** token-audit, naming-audit, migration plan, change-communication
+**What it chains:** token-audit, a transformation table, codemod-generator, deprecation-process, change-communication. New names ship with the old ones aliased and deprecated in one minor; consumers migrate; removal waits for the next major.
 
 **When to use it:** When executing an end-to-end token migration.
 
@@ -957,7 +890,7 @@ Agents chain multiple skills together and synthesise the combined results. All a
 
 ---
 
-## The 14 knowledge notes — what powers the skills
+## The 13 knowledge notes — what powers the skills
 
 You do not need to read these to use the skills. They load automatically.
 
@@ -969,14 +902,13 @@ You do not need to read these to use the skills. They load automatically.
 | `ai-readiness` | Six dimensions of AI readiness, context cascade, three pillars framework | AI component description, pattern docs, usage guidelines, system health, codebase index, and more |
 | `design-to-code-contract` | Design, build, documentation, release, and API contracts | Design-to-code check, contribution workflow, drift detection, system health, and more |
 | `component-bestiary-reference` | Challenge Rating system for documentation depth calibration | Pattern docs, usage guidelines, AI component description, component audit |
-| `agent-orchestration-guide` | Multi-agent coordination patterns, context management, and the chained-run rules the four agents follow | Governance encoder, context engine builder, session memory, and all four agents |
-| `human-oversight-framework` | Human-in-the-loop validation patterns for AI agent workflows | Governance encoder, session memory |
-| `mcp-setup-guide` | Three-layer MCP architecture for design system tooling | AI component description, context engine builder |
-| `context-engine-blueprints` | YAML output templates for all seven context engine blueprints | Context engine builder |
+| `agent-orchestration-guide` | The chained-run rules the four agents follow: one inventory, hand-off cards, one report | All four agents |
+| `mcp-setup-guide` | What Figma MCP servers can and can't read, what the pack writes for agents, and graceful fallback when Figma isn't connected | AI component description |
+| `public-systems-reference` | Named public design systems (Carbon, GOV.UK, USWDS, Primer, Paste, Atlassian, Material, Spectrum) with what each documents publicly, its status, the URL and the date it was checked; the only source for external comparisons | System health |
 | `adoption-measurement` | Coverage vs adoption distinction, four adoption signals, leading vs lagging indicators, team-level vs system-level metrics, adoption maturity stages | Adoption report, system health, docs coverage |
-| `output-discipline` | Shared quality standards for all audit and assessment output — scoping claims to what was inspected, respecting intentional deviations, cutting process while keeping substance, consistent severity and status indicators, proof for empty results, and a source for every figure | Every audit and validate skill, most document and communicate skills, and triage |
+| `output-discipline` | Shared quality standards for all audit and assessment output — scoping claims to what was inspected, respecting intentional deviations, cutting process while keeping substance, consistent severity and status indicators, proof for empty results, and a source for every figure | Every audit and validate skill and most document and communicate skills |
 | `executive-communication` | Audience calibration, framing, metric translation, anti-patterns, and numbers honesty (every figure measured, estimated, or assumed; derived figures recalculated) | Stakeholder brief, system pitch |
-| `configuration-and-recurring` | How skills load `.ds-ops-config.yml`, fall back when an integration fails, integration cautions (GitHub, npm, Figma, Storybook, Chromatic), and the recurring-run procedure (compare, save, propose pruning) | Session memory, and every configurable skill when a config file exists |
+| `configuration-and-recurring` | How skills load `.ds-ops-config.yml`, fall back when an integration fails, integration cautions (GitHub, npm, Figma, Storybook, Chromatic), and the recurring-run procedure (compare, save, propose pruning) | Every configurable skill when a config file exists |
 
 ---
 
@@ -1072,10 +1004,12 @@ design-system-ops/
 ├── CONTRIBUTING.md           ← Contribution guide
 ├── LICENSE                   ← MIT license
 │
-├── skills/                   ← 40 skills, each in its own directory, plus 4 agent chains
+├── skills/                   ← 36 skills, each in its own directory, plus 4 agent chains
 │   ├── accessibility-per-component/
 │   │   └── SKILL.md
 │   ├── adoption-report/
+│   │   └── SKILL.md
+│   ├── agent-instructions/
 │   │   └── SKILL.md
 │   ├── ai-component-description/
 │   │   └── SKILL.md
@@ -1095,8 +1029,6 @@ design-system-ops/
 │   │   └── SKILL.md
 │   ├── component-decision-tree/
 │   │   └── SKILL.md
-│   ├── context-engine-builder/
-│   │   └── SKILL.md
 │   ├── contribution-workflow/
 │   │   └── SKILL.md
 │   ├── decision-record/
@@ -1105,13 +1037,9 @@ design-system-ops/
 │   │   └── SKILL.md
 │   ├── design-to-code-check/
 │   │   └── SKILL.md
-│   ├── designer-onboarding/
-│   │   └── SKILL.md
 │   ├── docs-coverage/
 │   │   └── SKILL.md
 │   ├── drift-detection/
-│   │   └── SKILL.md
-│   ├── engineering-onboarding/
 │   │   └── SKILL.md
 │   ├── figma-variable-audit/
 │   │   └── SKILL.md
@@ -1121,17 +1049,15 @@ design-system-ops/
 │   │   └── SKILL.md
 │   ├── naming-audit/
 │   │   └── SKILL.md
+│   ├── onboarding/
+│   │   └── SKILL.md
 │   ├── pattern-documentation/
 │   │   └── SKILL.md
 │   ├── release-retrospective/
 │   │   └── SKILL.md
 │   ├── schema-validator/
 │   │   └── SKILL.md
-│   ├── session-memory/
-│   │   └── SKILL.md
 │   ├── stakeholder-brief/
-│   │   └── SKILL.md
-│   ├── system-benchmark/
 │   │   └── SKILL.md
 │   ├── system-health/
 │   │   └── SKILL.md
@@ -1145,8 +1071,6 @@ design-system-ops/
 │   │   └── SKILL.md
 │   ├── token-documentation/
 │   │   └── SKILL.md
-│   ├── triage/
-│   │   └── SKILL.md
 │   ├── usage-guidelines/
 │   │   └── SKILL.md
 │   ├── version-bump-advisor/
@@ -1156,28 +1080,27 @@ design-system-ops/
 │   ├── component-to-release-agent.md      ← Agent chain
 │   ├── full-system-diagnostic-agent.md    ← Agent chain
 │   ├── governance-review-agent.md         ← Agent chain
-│   └── migration-agent.md                 ← Agent chain
+│   └── token-migration-agent.md           ← Agent chain
 │
 ├── commands/                 ← 4 slash commands
 │   ├── full-diagnostic.md
 │   ├── governance-review.md
-│   ├── migration.md
-│   └── release-check.md
+│   ├── release-check.md
+│   └── token-migration.md
 │
-├── knowledge-notes/          ← 14 reference documents (single canonical source)
+├── knowledge-notes/          ← 13 reference documents (single canonical source)
 │   ├── adoption-measurement.md
 │   ├── agent-orchestration-guide.md
 │   ├── ai-readiness.md
 │   ├── component-bestiary-reference.md
 │   ├── component-governance.md
 │   ├── configuration-and-recurring.md
-│   ├── context-engine-blueprints.md
 │   ├── design-to-code-contract.md
 │   ├── documentation-coverage.md
 │   ├── executive-communication.md
-│   ├── human-oversight-framework.md
 │   ├── mcp-setup-guide.md
 │   ├── output-discipline.md
+│   ├── public-systems-reference.md
 │   └── token-architecture.md
 │
 ├── sample-outputs/           ← 13 sample outputs

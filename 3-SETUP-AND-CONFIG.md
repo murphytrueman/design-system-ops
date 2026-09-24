@@ -43,9 +43,9 @@ After cloning, the directory structure should look like:
 
 ```
 design-system-ops/
-├── skills/              40 skills organised by category
+├── skills/              36 skills organised by category
 ├── commands/            4 command definitions
-├── knowledge-notes/     14 reference documents (canonical)
+├── knowledge-notes/     13 reference documents (canonical)
 ├── sample-outputs/      example outputs for reference
 ├── .claude-plugin/      plugin manifest for Cowork
 └── ds-ops-config.example.yml   annotated config template (copy to your project root as .ds-ops-config.yml)
@@ -350,9 +350,8 @@ The knowledge notes are the canonical source in `knowledge-notes/`. Skills refer
 | `design-to-code-contract` | Design, build, documentation, and release contract definitions |
 | `component-bestiary-reference` | Challenge Rating system for documentation depth calibration |
 | `agent-orchestration-guide` | Multi-agent coordination patterns and context management |
-| `human-oversight-framework` | Human-in-the-loop validation for AI agent workflows |
 | `mcp-setup-guide` | Three-layer MCP architecture for design system tooling |
-| `context-engine-blueprints` | YAML output templates for all seven context engine blueprints |
+| `public-systems-reference` | Named public design systems with what each documents publicly, status, URL and check date; the only source for external comparisons |
 | `adoption-measurement` | Coverage vs adoption distinction, four adoption signals, leading vs lagging indicators, adoption maturity stages |
 | `documentation-coverage` | Source-of-truth model, the three rungs of "documented", join-key reliability hierarchy, git-based staleness, per-platform signal matrix |
 | `output-discipline` | Shared quality standards for all skill output — scoping claims to what was inspected, proof for empty results, a source for every figure, no numeric scores, consistent severity and status indicators, respecting intentional deviations |

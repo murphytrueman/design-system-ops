@@ -422,9 +422,6 @@ When change-communication writes release notes, include the codemod usage instru
 ### From cicd-integration
 Add a CI step that verifies codemods pass their tests before release. Include codemod tests in the design system's test suite.
 
-### From session-memory
-After running codemods, save the results (files changed, manual items flagged) to session memory so future runs can track migration completion.
-
 ---
 
 ## Step 6: Two-sided migration (when Figma Console MCP is available)

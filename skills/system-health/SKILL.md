@@ -1,7 +1,7 @@
 ---
 name: system-health
-description: "Holistic health check across tokens, components, docs, adoption, governance, AI readiness, platform maturity, with status labels. Triggers: how healthy is my system, system health check, big picture. Not for one area (use its audit) or external comparison (system-benchmark)."
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
+description: "Holistic health check across tokens, components, docs, adoption, governance, AI readiness, platform maturity, with status labels and an inferred maturity stage. Triggers: how healthy is my system, health check, big picture, how do we compare with public systems. Not for one area (use its audit)."
+allowed-tools: Read, Write, Grep, Glob, WebFetch, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 references:
   - ../../knowledge-notes/component-governance.md
   - ../../knowledge-notes/ai-readiness.md
@@ -9,6 +9,7 @@ references:
   - ../../knowledge-notes/token-architecture.md
   - ../../knowledge-notes/adoption-measurement.md
   - ../../knowledge-notes/documentation-coverage.md
+  - ../../knowledge-notes/public-systems-reference.md
   - ../../knowledge-notes/output-discipline.md
 ---
 
@@ -215,6 +216,10 @@ Key questions:
 - When was the last breaking change? How was it communicated? Did it include a migration path?
 - Do consuming teams have a way to pin to a specific version?
 
+## Step 2b: External reference points (only when asked)
+
+If the user asks how their system compares with public design systems ("are we behind?", "what does good look like?"), add a short section after the dimension findings. The only source is the public-systems-reference note: quote a practice, the system that does it, the URL and the check date. Compare practices, never maturity: "GOV.UK Frontend publishes a WCAG 2.2 AA claim and a browser-support grading; your system publishes neither" is a reference point; "you are two stages behind Carbon" is not, and the note explains why. If the note doesn't cover what the user wants to compare, offer to fetch the system's current docs and say what you checked and when; don't fill the gap from memory. Never state adoption, team size or component counts for another system. Skip this step entirely when the user hasn't asked.
+
 ## Step 3: Produce the health report
 
 Open with a headline sentence that tells the reader how worried they should be and where to focus — before any tables or structure. Example: "Your system is strong on components and tokens, but governance and documentation are the bottleneck. Here's the dimension-by-dimension picture."
@@ -261,6 +266,12 @@ For each dimension: the status emoji, two to four specific findings with evidenc
 
 ---
 
+#### External reference points (only if the user asked)
+
+Three to five practices from the public-systems-reference note that bear on this system's weakest dimensions, each as: practice, which public system does it, URL, check date, and what the user's system does instead.
+
+---
+
 #### Prioritised action list
 
 Group recommendations into three tiers:
@@ -300,4 +311,5 @@ End the report with:
 - If the assessment was conducted without direct system access, this is clearly noted throughout
 - Dimension findings are specific: named problems, not categories of problems
 - The maturity stage is inferred from the evidence, not taken from the user's self-placement
+- Any external reference point cites the public-systems-reference note's URL and check date, compares a practice rather than a maturity, and appears only because the user asked
 - The Scope block and the closing note about intentional deviations are present

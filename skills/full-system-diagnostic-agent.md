@@ -302,7 +302,7 @@ One combined Scope block covering every step (per output-discipline), including 
 
 ## Recurring workflow
 
-Loading, saving and pruning follow the chained-run rules; if session memory is enabled, save the combined report once at the end. When a previous full diagnostic exists:
+Loading, saving and pruning follow the chained-run rules. When a previous full diagnostic exists:
 
 1. **Compare the full reports:**
    - System health status changes (overall and per-dimension)

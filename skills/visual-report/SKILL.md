@@ -1,6 +1,6 @@
 ---
 name: visual-report
-description: "Turns existing audit, health or session-memory output into an HTML dashboard, SVG charts or Mermaid diagrams. Triggers: visualise the findings, dashboard, chart, graph the trends. Does not run audits (run one first); for a written brief use stakeholder-brief."
+description: "Turns existing audit or health output, or saved recurring runs, into an HTML dashboard, SVG charts or Mermaid diagrams. Triggers: visualise the findings, dashboard, chart, graph the trends. Does not run audits (run one first); for a written brief use stakeholder-brief."
 allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
 references:
   - ../../knowledge-notes/output-discipline.md
@@ -8,7 +8,7 @@ references:
 
 # Visual Report
 
-A skill for transforming audit findings, system health statuses, and session history into visual outputs — interactive HTML dashboards, SVG charts, and Mermaid diagrams — that make design system health visible at a glance.
+A skill for transforming audit findings, system health statuses, and saved recurring runs into visual outputs — interactive HTML dashboards, SVG charts, and Mermaid diagrams — that make design system health visible at a glance.
 
 **Output type:** File creation. This skill produces HTML dashboard files, SVG chart files, or Mermaid diagram blocks that can be embedded in documentation, presentations, or shared directly.
 
@@ -59,9 +59,9 @@ If no configuration exists, use these defaults:
 This skill accepts any of these as input:
 
 1. **Raw skill output** — Copy-pasted or referenced output from any audit skill
-2. **Session memory files** — Files from the session-memory skill's directory
+2. **Saved reports** — previous runs in `recurring.output_directory`, for trend lines
 3. **System health statuses** — The dimension statuses from system-health
-4. **Comparison data** — Before/after data from session-memory comparisons
+4. **Comparison data** — the trend section a recurring run adds to its report
 5. **Manual data** — User-provided metrics in any format (will be normalised)
 
 ---
@@ -102,11 +102,11 @@ Extract:
 - Component names (for dependency graphs)
 - Token tiers (for coverage heatmaps)
 
-### From session memory
+### From saved recurring runs
 Extract:
 - Dates and skill names
-- Key metrics per session (aligned for trend lines)
-- Deltas between sessions
+- Key metrics per run (aligned for trend lines)
+- Deltas between runs, from each report's trend section
 
 ### From system health
 Extract:
@@ -348,8 +348,8 @@ The diagnostic agent can chain visual-report after Phase 4 to auto-generate a da
 ### As a companion to stakeholder-brief
 When generating a stakeholder brief, suggest: "Run `visual-report` first and attach the dashboard to the brief."
 
-### With session-memory
-Load session history from memory files to produce trend lines across multiple runs.
+### With recurring runs
+Load the saved reports in `recurring.output_directory` to produce trend lines across runs; the configuration-and-recurring note says how they're matched.
 
 ---
 

@@ -275,9 +275,8 @@ Keep each step's full findings available so the user can ask for them, but don't
 **Configuration**
 - If `.ds-ops-config.yml` exists in the project root, read it once. Configured integrations and `severity.*` settings apply to every chained skill, so severity is consistent across the run. Don't re-configure per skill.
 
-**Recurring runs and session memory**
+**Recurring runs**
 - If `recurring` is configured, the agent as a whole loads the previous run of the same agent from `recurring.output_directory`, compares against it, saves the new output there, and prunes per `recurring.retain_count`. Individual skills in the chain don't save or compare.
-- If session memory is enabled, save the combined output once, at the end of the run.
 
 ### Adding orchestration to new skills
 

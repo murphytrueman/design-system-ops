@@ -136,6 +136,16 @@ class TestSkillReferences(unittest.TestCase):
                 referenced.add(
                     os.path.basename(os.path.normpath(reference))
                 )
+        # The chained agents load notes by path in their body
+        # (`${CLAUDE_PLUGIN_ROOT}/knowledge-notes/<note>.md`), not via
+        # frontmatter; a note only they read is still read.
+        # Skills load configuration-and-recurring by path in their body, only
+        # when a config file exists.
+        for path in dsops.agent_files() + dsops.skill_files():
+            _, body = dsops.load_document(path)
+            referenced.update(
+                re.findall(r"knowledge-notes/([A-Za-z0-9_-]+\.md)", body)
+            )
         orphans = sorted(
             note
             for note in os.listdir(dsops.KNOWLEDGE_DIR)

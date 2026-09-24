@@ -197,7 +197,7 @@ One combined Scope block covering all three steps (per output-discipline), marki
 
 ## Recurring workflow
 
-Loading, saving and pruning follow the chained-run rules; if session memory is enabled, save the combined package once at the end. When a previous governance package exists:
+Loading, saving and pruning follow the chained-run rules. When a previous governance package exists:
 
 1. **Auto-populate trend fields** in the adoption summary table (This period vs. Last period).
 2. **Compare internal assessments:**

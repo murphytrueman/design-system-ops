@@ -6,8 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+This is a breaking release: three skills are removed, two are merged and one is renamed, so requests that named them by skill name will need the new names. The table maps each old name to where its job went.
+
+| Was | Now |
+|---|---|
+| `system-benchmark` | Removed. `system-health` adds an "External reference points" section when asked, sourced only from the new `public-systems-reference` note. |
+| `session-memory` | Removed. Saved recurring runs are the history; the comparison and cross-skill rules moved into `configuration-and-recurring`. |
+| `triage` | Removed. Describe what you need and the right skill loads; the README's usage section covers "where do I start". |
+| `designer-onboarding`, `engineering-onboarding` | Merged into `onboarding`, with a shared repo-grounded core and a section per role. |
+| `context-engine-builder` | Replaced by `agent-instructions`, which writes `AGENTS.md`. |
+| `/migration` | Renamed `/token-migration`; its stage order changed (below). |
+
+### Removed
+
+- **`system-benchmark`.** It promised comparisons against named public systems but had no way to source them: no fetch tools, no reference file, and "typical maturity profiles" that cited no case study. Checking its reference list against the live sites found that Shopify's Polaris repository was archived on 2026-09-11 and the Australian Government Design System domain no longer resolves; the skill still called both mature reference points. The useful part survives as an optional section of `system-health` that quotes a practice, the system, the URL and the check date from `knowledge-notes/public-systems-reference.md`, which was written from the sites on 2026-09-24 and says what it deliberately doesn't claim (adoption, team size, maturity).
+- **`session-memory`.** It advertised `auto_save: true` with nothing behind it (the plugin has no hooks), duplicated the recurring-runs procedure with a second persistence directory, and its own examples broke its rules. The recurring-runs mechanism is the one history; its cross-skill correlation rule (a shared subject, named skills, cited IDs) moved into the `configuration-and-recurring` note.
+- **`triage`.** It asked seven questions before scanning the repo, invented time estimates, and duplicated the routing that plain-language requests already do.
+- **`human-oversight-framework` and `context-engine-blueprints` notes.** Nothing loads them any more; the blueprint templates carried one `source:` field in 1,259 words and opinionated defaults that would have been written into a team's files as policy.
+
+### Added
+
+- **`onboarding`** replaces the two onboarding skills. The designer guide was a placeholder template; the engineering guide was grounded in the repo but told readers to `jest.mock` the design system (which strips the roles and labels tests query) and stated "update monthly" as if it were the team's policy. The merged skill reads config, `package.json`, tokens, tests and the Figma library before asking anything, writes one guide with a shared core and a section per role, tells engineers to render real components in tests, and leaves every policy as `[confirm: …]` until the team answers.
+- **`agent-instructions`** replaces `context-engine-builder`. Five skills wrote files to `.ai/` that nothing read, and no skill emitted `AGENTS.md`, `CLAUDE.md`, `.cursor/rules` or Copilot instructions, which is what coding agents actually read. The new skill writes one `AGENTS.md` under about 150 lines with a source on every rule, links the `.ai/` files and docs instead of copying them, updates an existing instructions file in place, and writes tool-specific pointer files only on request.
+- **`public-systems-reference` note:** what Carbon, GOV.UK Frontend, USWDS, Primer, Paste, Atlassian, Material 3 and Spectrum document publicly, each system's status, the URL and the check date, with rules for citing it.
+
 ### Changed
 
+- **`governance-encoder` writes enforcement that runs.** It produced JSON rule files in `.ai/governance/` that no tool executed, with an invented three-level exception framework, and called the result "enforced automatically". It now edits the team's ESLint, Stylelint, dependency-cruiser and CODEOWNERS configuration, maps each written rule to a real rule id (`@typescript-eslint/naming-convention`, `stylelint-declaration-strict-value`, `no-restricted-imports`, `eslint-plugin-jsx-a11y`, `@typescript-eslint/no-deprecated`), traces every rule to its source in a comment, writes `GOVERNANCE.md` for rules with no executable form, and runs each tool in report mode to say how many violations it finds today. `cicd-integration` wires the result into CI.
+- **`/token-migration` deprecates the old tokens in the same release as the new ones.** The `/migration` agent added deprecation warnings only after every consumer had migrated, which warns nobody while they still use the old names. Stage 1 now ships the new tokens with the old ones aliased to them and marked `$deprecated` (a DTCG 2025.10 property), so values can't diverge and the build warns; consumers migrate in Stage 2 with codemods and per-consumer counts; removal is Stage 3, in the next major. Stage durations are gone; exit criteria are commands. `naming-audit` left the chain because token naming is `token-audit`'s job, and the agent read a config key (`token_sources`) that never existed.
+- **`mcp-setup-guide` no longer describes a server the pack doesn't ship.** Its "Layer 2" said the design system's own MCP server reads the `.ai/` files; there is no such server. It now says agents read the repository, lists what the pack writes for them, and names Adobe's `@adobe/spectrum-design-data-mcp` as the shape to copy if a team builds one.
+- **The knowledge notes were checked against their sources.**
 - **The knowledge notes were checked against their sources.** A full review of the pack (every skill, note, sample and doc, read against the DTCG 2025.10 spec, npm and the Figma plugin docs) found that errors in the shared notes had spread into every skill that loads them. The notes are fixed first so the skills inherit the corrections:
   - **DTCG resolvers.** `token-architecture` described resolvers as defining "modes" and called a token with no mode-specific value a coverage gap. The Resolver module has `sets`, `modifiers` with `contexts`, and a `resolutionOrder`; a context that doesn't redefine a token inherits the earlier value by design. The note now describes the real structure and draws the line the skills need: a theme-dependent token that silently inherits is a gap, a spacing token that inherits is not. The skills that repeated the old model (`token-audit`, `theme-audit`, `figma-variable-audit`) are corrected in the next pass.
   - **Six composite types, not five.** `strokeStyle` is composite. The note also now states the spec's name rules (no leading `$`, no `{`, `}` or `.` in a name) and that Style Dictionary is on 5.x, with Terrazzo as the DTCG-native alternative.

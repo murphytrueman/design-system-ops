@@ -152,9 +152,9 @@ gates:
 decision_tree:                          # component-decision-tree
   output_format: "yaml"                 # yaml (.yml files) or json (.json files)
 
-context_engine:                         # context-engine-builder
-  blueprints: []                        # Which blueprints to generate. Empty = Technical and UI, then ask before the rest.
-  output_format: "yaml"                 # yaml (.yml files) or json (.json files)
+agent_instructions:                     # agent-instructions
+  path: "AGENTS.md"                     # Where the agent instructions file is written (repo root by convention)
+  pointers: []                          # Extra entry points to write, e.g. ["CLAUDE.md", ".cursor/rules/design-system.mdc", ".github/copilot-instructions.md"]
 
 cicd:                                   # cicd-integration
   platform: ""                          # github-actions | gitlab-ci | circleci | bitbucket
@@ -175,27 +175,13 @@ codemods:                               # codemod-generator
   css_custom_properties: true           # Tokens are consumed as CSS custom properties
 
 governance:                             # governance-encoder
-  rule_format: "json"                   # json | yaml
-  severity_model: []                    # Custom severity levels. Empty = error / warning / info.
-  categories: []                        # Override the default rule categories. Empty = defaults.
+  severity_model: ""                    # How rule weight maps to linter levels. Empty = block-on-merge rules are error, review-prompting rules are warn.
+  categories: []                        # Which rule categories to look for. Empty = all.
 
 metadata:                               # metadata-schema-generator
   schema_version: ""                    # Lock the output schema version. Blank = current.
   output_directory: ".ai/metadata/"
   include_business_context: false       # Only enable when you can supply the metrics and their sources
-
-memory:                                 # session-memory
-  directory: ".ds-ops/sessions"         # Where session files are stored
-  retain_count: 12                      # Older files beyond this are proposed for deletion, never deleted without confirmation
-  auto_save: true                       # Save after every skill run (saving only; pruning always asks)
-  comparison_window: 3                  # How many previous sessions to compare against
-
-benchmark:                              # system-benchmark
-  system_type: ""                       # enterprise | product | agency | government
-  team_size: null                       # Full-time design system team members
-  system_age_months: null               # How long the system has been in active development
-  consumer_count: null                  # Teams or products consuming the system
-  comparison_targets: []                # Optional, e.g. ["Material Design", "Polaris", "Carbon"]
 
 visuals:                                # visual-report
   brand_primary: "#2563EB"              # Primary chart colour

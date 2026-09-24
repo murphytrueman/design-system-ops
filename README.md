@@ -70,11 +70,11 @@ See [1-INSTALL.md](1-INSTALL.md) for the full guide with entry points by use cas
 
 | Category | Skills | What they do |
 |----------|--------|-------------|
-| **Audit** | token-audit, component-audit, system-health, drift-detection, naming-audit, figma-variable-audit, codebase-index, system-benchmark, theme-audit, docs-coverage | Understand what you actually have |
-| **Govern** | contribution-workflow, deprecation-process, decision-record, change-communication, backlog-generator, version-bump-advisor, release-retrospective, governance-encoder, session-memory, codemod-generator, triage | Run the system as infrastructure |
-| **Document** | ai-component-description, pattern-documentation, token-documentation, usage-guidelines, component-decision-tree, context-engine-builder, metadata-schema-generator | Make the system legible to humans and machines |
+| **Audit** | token-audit, component-audit, system-health, drift-detection, naming-audit, figma-variable-audit, codebase-index, theme-audit, docs-coverage | Understand what you actually have |
+| **Govern** | contribution-workflow, deprecation-process, decision-record, change-communication, backlog-generator, version-bump-advisor, release-retrospective, governance-encoder, codemod-generator | Run the system as infrastructure |
+| **Document** | ai-component-description, pattern-documentation, token-documentation, usage-guidelines, component-decision-tree, agent-instructions, metadata-schema-generator | Make the system legible to humans and machines |
 | **Validate** | design-to-code-check, accessibility-per-component, token-compliance, schema-validator, component-api-validator, cicd-integration | Verify quality before it ships |
-| **Communicate** | adoption-report, stakeholder-brief, system-pitch, designer-onboarding, engineering-onboarding, visual-report | Move people and decisions |
+| **Communicate** | adoption-report, stakeholder-brief, system-pitch, onboarding, visual-report | Move people and decisions |
 
 ### Agents
 
@@ -85,11 +85,11 @@ Run these as slash commands. Claude Code prefixes plugin commands with the pack'
 | `/design-system-ops:full-diagnostic` | 6 audit skills (+ conditional theme/Figma) with cross-skill synthesis | Quarterly review or inheriting a system |
 | `/design-system-ops:release-check` | Design-to-code, accessibility, token compliance, AI description, usage guidelines, change communication (plus a semver check for breaking changes) | Before shipping any component |
 | `/design-system-ops:governance-review` | Adoption report, drift detection, stakeholder brief | Monthly or quarterly governance cadence |
-| `/design-system-ops:migration` | Token audit, naming audit, migration plan, codemod generation, deprecation plan, communication | Planning a token migration (format, tool, naming or tier) |
+| `/design-system-ops:token-migration` | Token audit, transformation table, codemods, a three-stage rollout (ship new names with the old ones aliased and deprecated, consumers migrate, remove in the next major), communication | Planning a token migration (format, tool, naming or tier) |
 
-### AI infrastructure skills
+### For coding agents
 
-Five skills produce machine-readable files that AI agents and tooling consume directly: `context-engine-builder`, `governance-encoder`, `codebase-index`, `component-decision-tree`, and `metadata-schema-generator`. If you're building AI-native design system infrastructure, these are the files your agents need.
+`agent-instructions` writes the `AGENTS.md` that Claude, Cursor and Copilot read first, with a source for every rule, and links the rest: the inventory and dependency graph from `codebase-index`, per-component metadata from `metadata-schema-generator`, choosing-between pages from `component-decision-tree`, and the lint configuration `governance-encoder` writes so agents can check their own work.
 
 ---
 
