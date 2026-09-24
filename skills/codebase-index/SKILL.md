@@ -5,6 +5,7 @@ allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*),
 references:
   - ../../knowledge-notes/ai-readiness.md
   - ../../knowledge-notes/component-governance.md
+  - ../../knowledge-notes/output-discipline.md
 ---
 
 # Codebase index
@@ -17,13 +18,7 @@ Confirm that every path in this skill's frontmatter `references:` exists relativ
 
 ## Context
 
-When an AI agent needs to work with a design system codebase, it has two options: explore or navigate. Exploration means scanning directories, grepping for imports, reading files one by one. Navigation means loading a pre-computed index and reasoning over cached data.
-
-The difference matters. Exploration is slow, incomplete, and non-deterministic. An agent scanning `src/components` might miss components in `src/layouts`, `src/pages`, or utility directories that don't follow naming conventions. It might report a deeply-nested component as "unused" because it can't trace the dependency chain. It might recreate an existing component because it didn't find it.
-
-A pre-computed index front-loads this cost. The agent loads the index once — typically a few thousand tokens — and gets a complete picture of what exists, where things live, and how they relate. Follow-up questions become cheap because the agent reasons over cached data instead of triggering new file reads.
-
-This skill generates that index. Run it after adding or removing components, and commit the output alongside the code.
+An agent exploring a codebase from scratch is slow and misses things; an agent loading a pre-computed index gets the whole picture in a few thousand tokens. This skill writes that index, and it is the pack's single producer of the component inventory and dependency graph: `token-audit`, `component-audit`, `docs-coverage`, `component-decision-tree` and `agent-instructions` read `.ai/index/` rather than building their own. Run it after adding or removing components, and commit the output alongside the code.
 
 ---
 
@@ -61,6 +56,8 @@ Scan the project root to determine:
 - **Category model**: How components are organised — atomic design (`atoms/`, `molecules/`, `organisms/`), functional (`forms/`, `navigation/`, `feedback/`), flat, or monorepo packages
 - **Styling approach**: CSS modules, CSS-in-JS, Tailwind, SCSS, or design tokens — this determines how to trace token dependencies
 
+If no component files are found under any candidate root, stop and ask where they live; don't write an empty index.
+
 Ask for or confirm (skip questions already answered by config or detection):
 - The component source root if auto-detection finds multiple candidates
 - Whether there are components in non-standard locations (e.g., a shared `utils/` directory with reusable UI primitives)
@@ -87,6 +84,7 @@ For every component file found, extract:
 - **Category**: Based on the category model (atom, molecule, organism, etc.) or functional category (navigation, form, feedback, layout, data display)
 - **Metadata status**: Whether the component has structured metadata (a `.metadata.ts`, `.metadata.json`, description in Storybook, JSDoc/TSDoc block, or Figma description)
 - **Export type**: Default export, named export, or re-exported through a barrel file
+- **Token bindings**: the design tokens the component's styles reference (`var(--color-action-primary)`, `$space-gap`, `theme.colors.primary`, Tailwind utilities that map to configured tokens). Record the token names as the codebase writes them. This is the token-to-component edge that `token-audit` and `component-audit` read for blast radius, so they don't each build a second graph
 
 **What counts as a component:**
 - Files that export a renderable element (JSX, template, render function)
@@ -108,6 +106,7 @@ components:
     path: src/components/atoms/Button/Button.tsx
     category: atoms
     metadata: true
+    tokens: [--color-action-primary, --color-on-action, --space-inset-md]
   Card:
     path: src/components/molecules/Card/Card.tsx
     category: molecules
@@ -270,9 +269,15 @@ When answering questions about the design system codebase:
   still has no in-repo consumers, say exactly that: product repos outside
   meta.scannedPaths weren't checked, so it isn't evidence of "unused".
 
-### "What atoms appear on [Page]?"
-→ Trace the dependency chain: Page → imports → their imports → ...
-  until you reach components with uses: []. Those are the atoms.
+### "What atoms appear on [Page]?" (application repos only)
+→ Pages and layouts exist in application repos, not in a design system
+  package. If meta.scannedPaths holds an app, trace Page → imports → their
+  imports → ... until you reach components with uses: []. In a system repo,
+  say there are no pages to trace.
+
+### "Which components bind [token]?"
+→ Search component-inventory.yml for the token name under tokens:. The
+  list is the in-repo blast radius of a token change.
 
 ### "If I change [Component], what breaks?"
 → Follow the usedBy chain recursively. Direct consumers are in usedBy.
@@ -301,7 +306,7 @@ When answering questions about the design system codebase:
 - Commit these files to version control alongside the code
 - Re-run the index after adding, removing, or significantly restructuring components
 - Add an npm script or CI step to regenerate the index on changes to the component directories
-- Reference the query-protocols.md in any AI agent configuration or system prompt that interacts with the codebase
+- Link `.ai/index/` from `AGENTS.md` (`agent-instructions` does this) so agents find the index before exploring
 
 ## Recurring workflow
 
@@ -327,4 +332,5 @@ This delta is valuable for tracking system evolution over time and catching unin
 - Nothing is labelled "unused" or "orphan"; empty usedBy is reported as "no in-repo consumers", with the positive control passed
 - Category assignment is based on the detected or configured model, not assumed
 - Internal/private components are either included or excluded consistently based on user preference
-- The query-protocols.md is tailored to the specific project's structure, not generic
+- The query-protocols.md is tailored to the specific project's structure, not generic, and page-level queries appear only when an application was scanned
+- Every component carries its token bindings, so downstream skills can read the token graph from the index

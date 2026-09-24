@@ -150,7 +150,7 @@ gates:
 # that skill's defaults.
 
 decision_tree:                          # component-decision-tree
-  output_format: "yaml"                 # yaml (.yml files) or json (.json files)
+  output_format: "markdown"             # markdown (pages in docs/choosing/, the default) | yaml | json (trees in .ai/decision-trees/ as well)
 
 agent_instructions:                     # agent-instructions
   path: "AGENTS.md"                     # Where the agent instructions file is written (repo root by convention)

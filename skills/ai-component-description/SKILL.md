@@ -34,10 +34,11 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 
 Use every source that is available:
 
-1. **Figma** (MCP connected, or `integrations.figma` with a `file_key`): the component node, its variants, layer structure (for composition) and existing description. The official Figma MCP reads the current selection, so if it returns nothing, ask the user to select the component.
-2. **Storybook** (`integrations.storybook`): prop types, defaults and arg types from the story metadata.
-3. **Source** (repo access or `integrations.github`): prop definitions from TypeScript interfaces or PropTypes, the rendered element, ARIA attributes, key handlers and focus calls. Where Figma, Storybook and source disagree on the API, say so rather than picking one silently.
-4. **None of the above:** ask the user. The description can still be written, under the provenance rule below.
+1. **`.ai/metadata/<Component>.metadata.json`** (from `metadata-schema-generator`), if present: the props and the accessibility contract, each with a provenance marker. This is the extraction; the description renders from it and carries the markers through. Don't re-derive what it holds.
+2. **Figma** (MCP connected, or `integrations.figma` with a `file_key`): the component node, its variants, layer structure (for composition) and existing description. The official Figma MCP reads the current selection or a node URL, so if it returns nothing, ask the user to select the component or paste the node link.
+3. **Storybook** (`integrations.storybook`): prop types, defaults and arg types from the story metadata.
+4. **Source** (repo access or `integrations.github`): prop definitions from TypeScript interfaces or PropTypes, the rendered element, ARIA attributes, key handlers and focus calls. Where Figma, Storybook and source disagree on the API, say so rather than picking one silently.
+5. **None of the above:** stop and ask for one. A description written from the user's memory of the component will be wrong in the places that matter (defaults, ARIA, keys), and an agent will trust it.
 
 If a source is configured but fails (connection error, invalid node, nothing selected), note the error and carry on with what you have. Do not retry in a loop.
 
@@ -106,18 +107,7 @@ Do not place more than one primary variant button in the same visual context.
 Do not use size lg in dense form layouts. It creates disproportionate vertical rhythm. (anticipated)
 ```
 
-#### Anti-pattern inference guide
-
-If observed misuse patterns are not available from production data, infer likely anti-patterns from the component's API structure:
-
-- **Components with a `variant` prop that includes "destructive" or "danger":** Likely misuse — using the destructive variant for reversible actions, or using it as a visual emphasis tool rather than a semantic signal.
-- **Components with a `size` prop:** Likely misuse — using large sizes in dense layouts, or mixing sizes inconsistently within the same context.
-- **Components with a boolean `disabled` prop:** Likely misuse — using disabled state to hide functionality rather than communicating why it is unavailable (missing `aria-disabled` with explanation).
-- **Container components (Card, Modal, Drawer):** Likely misuse — nesting containers inside other containers without semantic justification, or using a container for visual grouping when a simpler layout element would suffice.
-- **Components with an `icon` or `iconOnly` prop:** Likely misuse — using icon-only variants without providing an accessible label, or choosing icons based on aesthetics rather than meaning.
-- **Components with `onClick` or action props:** Likely misuse — using a button-like component for navigation (should be a link), or attaching actions to non-interactive elements.
-
-Use these inferences as starting points. Mark inferred anti-patterns as "anticipated" in the description — they should be validated against real usage and upgraded to "observed" once confirmed.
+Where no observed misuse is available, infer at most three from the API (a destructive variant used for reversible actions, a size used in dense layouts, an icon-only variant without a label, an action prop used for navigation) and mark each "anticipated". They get upgraded to observed once the team confirms them.
 
 ### Section 4: Composition rules
 
@@ -140,7 +130,7 @@ Document the accessibility contract for this component:
 
 This is not a WCAG checklist. It is the specific accessibility behaviour of this specific component, so take it from what the source actually renders and handles (element, ARIA attributes, key handlers, focus calls) or from the user. Anything you expect but can't confirm is marked "unverified", as anti-patterns are marked "anticipated". An unverified keyboard contract is still useful to the team; one stated as fact is how an agent ships a broken component.
 
-**Why this section requires extra rigour.** Accessibility is where AI-generated components fail most often. LLMs understand accessibility theory but routinely produce code that fails basic testing — missing keyboard handlers, incomplete ARIA attributes, focus management that traps or loses focus. The description must be prescriptive enough that an AI agent generating from it produces accessible output without additional guidance.
+**Why this section requires extra rigour.** Accessibility is the one section an agent can't infer from a screenshot or a prop list: the element, the key handlers and the focus moves are invisible in both. The description has to be prescriptive enough that an agent generating from it produces the same element, keys and focus behaviour the component has.
 
 Specific requirements:
 - Specify semantic HTML elements, not just ARIA roles. If the component should render as a `<button>`, say so — an LLM may default to a `<div>` with role="button" which loses native keyboard behaviour.
@@ -202,8 +192,6 @@ Expected DOM output:
 
 The expected DOM output does not need to be exhaustive — it should include the elements, attributes, and structure an AI agent would need to validate correctness. Include: semantic HTML elements, ARIA attributes, class names (if predictable), and any accessibility-critical attributes. Omit: internal implementation details, event handlers, and styling properties.
 
-**Deduplication rule:** If information in the examples section repeats what was already stated in the Props or Accessibility sections, reference it rather than restating it. The examples section adds contextual usage — it should not be a third place where prop defaults or ARIA roles are listed. If an example uses `variant="primary"`, do not re-explain what the primary variant does — the Props section already covered that.
-
 ---
 
 ## Step 2b: Prose tightness review
@@ -242,7 +230,7 @@ If the answer to any of these is no, revise the relevant section before deliveri
 
 ## Step 5: Write back to Figma (when a write-capable MCP is available)
 
-If a Figma MCP with write access is connected, write the completed description directly into the Figma component's description field. This closes the loop — the description goes from generation to Figma in a single session, visible in Dev Mode immediately.
+If a Figma MCP with write access is connected, offer to write the completed description into the Figma component's description field. Show the exact text first, say what it will replace (quote the existing description again if there is one), and write only after the user says yes. This closes the loop — the description goes from generation to Figma in a single session, visible in Dev Mode immediately.
 
 **How to write back:**
 1. **Figma Console MCP** (Southleft; check for `figma_set_description`): pass the component's `nodeId` and the full six-section text as `description`. For rich formatting in Dev Mode, also pass the markdown-formatted version as `descriptionMarkdown`.
@@ -274,4 +262,5 @@ End with a short chat summary:
 - Final output is a single text block formatted for Figma's description field
 - Description passes the seven-question self-test
 - Every prop, default, role and key binding traces to source, Storybook, Figma or the user; the rest is marked "unverified" or left out
-- If written back to Figma, the description was verified by reading it back from the component
+- If written back to Figma, the user confirmed the exact text first and the description was verified by reading it back from the component
+- Where `.ai/metadata/` exists, props and the accessibility contract came from it with their provenance markers

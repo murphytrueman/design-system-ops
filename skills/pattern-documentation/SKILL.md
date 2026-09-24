@@ -1,6 +1,7 @@
 ---
 name: pattern-documentation
 description: "Document a multi-component pattern (form validation, empty states, error handling): when to use, composition, states, a11y, anti-patterns. Triggers: document this pattern, write the pattern page. One named component: use usage-guidelines. Choosing a component: component-decision-tree."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(grep:*), Bash(rg:*)
 references:
   - ../../knowledge-notes/ai-readiness.md
   - ../../knowledge-notes/component-bestiary-reference.md
@@ -38,6 +39,8 @@ Before documenting a pattern, confirm it is worth documenting. Not every recurri
 - It appears in only one product context (it is a local convention)
 - It is a single component used in a standard way (that belongs in the component's usage guidelines)
 - It varies so much between instances that no shared structure can be extracted
+
+**If the bar isn't met**, say which criteria failed and what to write instead: a single component used in a standard way belongs in `usage-guidelines`; a one-product solution is a local convention note in that product's docs; instances too varied to share a structure need a conversation, not a page. Then stop; don't write a pattern page for something that isn't one.
 
 **Where to find undocumented patterns:**
 1. Look at drift-detection findings classified as E (system gap) — these often reveal patterns teams are building independently
@@ -114,9 +117,15 @@ If the pattern has multiple variants (e.g. an inline form validation and a summa
 
 ---
 
+#### How it works
+
+The interaction, step by step, from the user's side: what they see first, what they do, what the system does in response, where it ends. Five to eight numbered steps. This is the section a new designer reads to understand the pattern before the composition or the states make sense; the public pattern libraries that people trust (GOV.UK, USWDS) all have one.
+
+---
+
 #### State coverage
 
-Document every state the pattern can be in. AI agents cannot build what they do not understand, and patterns fail most often at state boundaries — the transitions between states, not the states themselves.
+Document every state the pattern can be in. Patterns fail most often at state boundaries — the transitions between states, not the states themselves — and a reader (or an agent) building from the page needs each transition spelled out.
 
 For each state the pattern can occupy:
 - Name the state clearly (e.g. Empty, Loading, Populated, Error, Submitting, Success)
@@ -125,6 +134,13 @@ For each state the pattern can occupy:
 - Identify which components are visible, hidden, or change variant in this state
 
 Common states to check for: default/resting, loading/pending, empty/no data, populated/active, error/invalid, success/complete, disabled/locked, partially complete.
+
+Put the transitions in a table so nothing is implied:
+
+| From | Trigger | To | What changes |
+|---|---|---|---|
+| Populated | user submits with an invalid field | Error | field gets `aria-invalid`, message appears below it, focus moves to the first invalid field |
+| Error | user corrects the field and blurs | Populated | message removed, `aria-invalid` cleared |
 
 If a state is not applicable, say so explicitly — "This pattern does not have an error state because [reason]." Silence is ambiguity. Ambiguity is drift.
 
@@ -141,6 +157,12 @@ Cover:
 - Focus management: where focus goes when the pattern opens, changes state, or resolves
 - Screen reader announcements: what gets announced and when
 - Any ARIA attributes that the pattern adds at the composition level (not the component level)
+
+---
+
+#### Content
+
+If the pattern carries copy that product teams write (validation messages, empty-state text, confirmation wording), give the shape of it with one real example each, in the system's voice and tone if a guide exists: what an error message must say (what went wrong, what to do), what an empty state offers (the next action), what a destructive confirmation names (the thing being deleted). Skip this section for patterns with no copy.
 
 ---
 
@@ -165,6 +187,18 @@ Cross-references to other patterns that are closely related, commonly confused w
 Two to three instances of the pattern in use, each cited by file path or Figma URL, or named by the user. This grounds the pattern in reality and gives teams a reference point for correct application.
 
 If none were found or supplied, say so, and invite consuming teams to contribute examples after the documentation is published. Do not fill this section with plausible product names.
+
+---
+
+#### Reference implementation
+
+A link to the story, sandbox or code path that shows the pattern assembled correctly, if one exists; if not, "none yet" and a note that one is the pattern's most useful next artefact. Don't write the implementation here.
+
+---
+
+#### Evidence
+
+What is known about how this pattern performs: usability research, analytics, support-ticket themes, an accessibility audit, each cited (a doc path, a ticket link, `user`). If nothing is known, write "no evidence gathered yet" rather than leaving the section out; a pattern page that admits it is unresearched is more trustworthy than one that implies it isn't.
 
 ---
 
@@ -200,3 +234,5 @@ End with a short chat summary:
 - Related patterns include disambiguation for commonly confused alternatives
 - Document works as a standalone reference — does not require additional context to follow
 - Every production instance is cited by path, URL or the user; no invented product names
+- The page has "How it works", a transition table, and Evidence and Reference implementation sections that say "none yet" rather than being omitted
+- If the Step 0 bar wasn't met, the run stopped and said what to write instead

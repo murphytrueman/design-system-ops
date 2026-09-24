@@ -1,6 +1,7 @@
 ---
 name: component-decision-tree
-description: "Build YAML decision trees (.ai/decision-trees/) that route an intent to the right component via narrowing questions. Triggers: which component should I use, choose between X and Y, modal vs dialog, selection guide. Guidance for one chosen component: use usage-guidelines."
+description: "Write \"choosing between\" pages (docs/choosing/) that route an intent to the right component via narrowing questions; YAML trees on request. Triggers: which component should I use, choose between X and Y, dialog vs drawer, selection guide. One chosen component: usage-guidelines."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*)
 references:
   - ../../knowledge-notes/ai-readiness.md
   - ../../knowledge-notes/component-bestiary-reference.md
@@ -9,7 +10,7 @@ references:
 
 # Component decision tree
 
-A skill for building structured decision trees that map user intents and requirements to specific component selections. The output is a queryable framework that AI agents traverse to select the right component for a given need — eliminating the guesswork that leads to component misuse, duplication, and inconsistency.
+A skill for building decision trees that map user intents and requirements to specific component selections. The primary output is a set of "Choosing between…" pages in the docs, one per cluster of confusable components, written as the questions a senior designer would ask; the same trees can be written as YAML for tooling when something will read it. Both reduce the guesswork that leads to component misuse, duplication, and inconsistency.
 
 ## Before you begin: verify references
 
@@ -23,7 +24,7 @@ These errors have the same root cause: the agent does not have a decision framew
 
 Decision trees encode the judgment. Instead of relying on an agent's ability to infer the right component from a description, the tree asks a structured sequence of questions that narrow the selection to the correct component. The questions are the same ones a senior designer or developer would ask when advising a junior team member.
 
-The practical output is a structured file that agents load alongside component metadata. When an agent receives a request, it traverses the decision tree first to identify the component, then loads the component's metadata for configuration details.
+The practical output is a page a human reads and an agent is pointed at from `AGENTS.md` (`agent-instructions` links the choosing pages). A YAML form of the same tree is useful only when a tool will traverse it; write it on request, not by default, so there is one thing to keep current.
 
 ## Boundaries
 
@@ -37,7 +38,7 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 - `system.component_paths` — directs scanning to component directories
 - `system.category_model` — determines top-level decision tree branches (atomic, functional, custom)
 - `integrations.*` — component data sources (see below)
-- `decision_tree.output_format` — `yaml` (default, `.yml` files) or `json` (same structure, `.json` files)
+- `decision_tree.output_format` — `markdown` (default: pages in `docs/choosing/`), `yaml` or `json` (machine-readable trees in `.ai/decision-trees/` as well as the pages)
 
 ## Auto-pull integrations
 
@@ -77,7 +78,7 @@ Before building decision trees, understand what components exist and how they cl
 
 | Component A | Component B | Distinguishing factor |
 |---|---|---|
-| Modal | Dialog | Modal presents content; Dialog is for focused tasks with a specific outcome (if the system's docs say so) |
+| Dialog | Drawer | Dialog interrupts for a focused decision and closes; Drawer keeps the page in view for a task alongside it (if the system's docs say so). "Modal" is a property either can have, not a component, per the ARIA Authoring Practices; a system with both `Modal` and `Dialog` components has a naming finding for `naming-audit` |
 | Toast | Banner | Toast is transient and non-blocking; Banner persists until dismissed |
 | Select | Combobox | Select has a fixed option list; Combobox allows search/filter |
 
@@ -163,11 +164,11 @@ decision_trees:
           question: "Does the user need to take action based on the notification?"
           options:
             "yes":
-              resolve: "Toast"
+              resolve: "Alert"
               confidence: "medium"
-              rationale: "Toasts with action buttons for transient but actionable feedback"
+              rationale: "An action the user must be able to take shouldn't live in something that disappears"
               basis: "proposed"
-              notes: "If the action is critical, consider a persistent Alert instead"
+              notes: "A Toast with an action fails keyboard and screen-reader users who can't reach it before it times out (WCAG 2.2.1 Timing Adjustable); use a persistent Alert, or a Toast only if it never auto-dismisses"
             "no":
               resolve: "Toast"
               confidence: "high"
@@ -198,23 +199,23 @@ Every leaf node must:
 
 ## Step 4: Add disambiguation nodes
 
-For component pairs that are frequently confused, add explicit disambiguation. Illustrative example: the Modal/Dialog split and the option-count threshold are one system's conventions, not general rules, so take yours from the system's docs or mark them `proposed`.
+For component pairs that are frequently confused, add explicit disambiguation. Illustrative example: the Dialog/Drawer split and the option-count threshold are one system's conventions, not general rules, so take yours from the system's docs or mark them `proposed`.
 
 ```yaml
 disambiguation:
-  modal_vs_dialog:
-    trigger: "Agent or user is uncertain between Modal and Dialog"
-    question: "What is the user doing in this overlay?"
+  dialog_vs_drawer:
+    trigger: "Agent or user is uncertain between Dialog and Drawer"
+    question: "Does the user need to see the page behind while they work?"
     options:
-      completing_a_focused_task:
-        description: "The user is filling a form, making a selection, or completing a workflow step"
+      decision_then_return:
+        description: "A focused decision or short form; the page is irrelevant until it's done"
         resolve: "Dialog"
-        rationale: "Dialogs are task-oriented — they have a clear completion action"
+        rationale: "Dialogs interrupt, take focus, and close on completion"
         basis: "docs/overlays.md"
-      viewing_content:
-        description: "The user is reading information, viewing details, or previewing content"
-        resolve: "Modal"
-        rationale: "Modals present content without a specific task completion flow"
+      task_alongside_page:
+        description: "Editing or browsing something that relates to what's on the page"
+        resolve: "Drawer"
+        rationale: "Drawers keep the page visible and can stay open while the user works"
         basis: "docs/overlays.md"
       confirming_an_action:
         description: "The user is confirming or cancelling a specific action"
@@ -249,65 +250,54 @@ Set `[threshold]` from the system's docs; if they don't give one, ask, or leave 
 
 ## Step 5: Generate the output
 
-### File structure
+### The pages (always)
+
+One markdown page per functional cluster in `docs/choosing/` (or the docs platform's equivalent), plus an index:
+
+```
+docs/choosing/
+  README.md              index: one line per cluster, and the confusable pairs
+  notifications.md
+  input.md
+  overlays.md
+  ...
+```
+
+Each page renders its tree as the questions in order, with the answer that resolves and why, and ends with a "Confusable pairs" table for its disambiguation nodes:
+
+```markdown
+# Choosing a notification component
+
+Start here if you need to tell the user something happened.
+
+1. **Does it need to persist until the user dismisses it?**
+   - Yes, and it concerns the current section → **InlineMessage** if it sits in the content flow, **Alert** if it's a distinct block. [docs/components/alert.md]
+   - Yes, and it concerns the whole application → **Banner**. [user]
+   - No → next question.
+2. **Does the user need to act on it?**
+   - Yes → **Alert** (persistent). A Toast with an action fails users who can't reach it before it times out. [proposed]
+   - No → **Toast**. [docs/components/toast.md]
+
+## Confusable pairs
+| If you're torn between | Ask | Choose |
+|---|---|---|
+| Toast and Banner | Does it need to persist? | Banner if yes, Toast if no |
+```
+
+Every resolution carries its basis in brackets, and `[proposed]` marks the ones the team hasn't confirmed. If `agent-instructions` has written `AGENTS.md`, add the `docs/choosing/` link to it (or tell the user to).
+
+### The trees (on request, or when `decision_tree.output_format` is `yaml` or `json`)
 
 ```
 .ai/decision-trees/
-  trees/
-    notification.yml
-    input.yml
-    navigation.yml
-    layout.yml
-    action.yml
-    overlay.yml
-  disambiguation/
-    modal-vs-dialog.yml
-    select-vs-combobox.yml
-    ...
+  trees/<cluster>.yml
+  disambiguation/<pair>.yml
   intent-taxonomy.yml
   decision-tree-manifest.yml
   query-guide.md
 ```
 
-### Manifest
-
-Illustrative values; coverage figures are counted from the trees actually written.
-
-```yaml
-decision_tree_manifest:
-  version: "1.0"
-  generated: "[date]"
-  system: "[design system name]"
-  trees:
-    - id: notification
-      file: trees/notification.yml
-      components_covered: ["Toast", "Banner", "Alert", "InlineMessage"]
-      depth: 3
-    - id: input
-      file: trees/input.yml
-      components_covered: ["Input", "TextArea", "Select", "Combobox", "DatePicker"]
-      depth: 4
-  disambiguation:
-    - id: modal_vs_dialog
-      file: disambiguation/modal-vs-dialog.yml
-      components: ["Modal", "Dialog", "ConfirmationDialog"]
-  coverage:
-    components_in_trees: 45
-    components_total: 55
-    coverage_percentage: "82%"
-    uncovered: ["Spacer", "Divider", "VisuallyHidden", "Portal"]
-    uncovered_reason: "Utility components that do not require selection logic"
-```
-
-### Query guide
-
-Write `query-guide.md` for agents, covering:
-- **Traversal:** map the request to an intent via `intent-taxonomy.yml`, pick the tree, answer each question from the user's requirements, and ask for clarification rather than guessing when a question can't be answered
-- **Confidence:** for medium or low resolutions, present the suggestion with the alternative from `notes`
-- **Ambiguity:** if two paths look equally valid, check the disambiguation files; if none applies, present both with rationale. Never silently pick one
-- **Basis:** treat `basis: proposed` resolutions as suggestions, not system policy
-- **Uncovered components:** direct name matching is enough for unambiguous or utility components listed under `uncovered`
-- **Maintenance:** update the trees when a component is added, deprecated, or reported as a source of confusion
+The manifest lists each tree with its file, the components it covers and its depth, and the components deliberately left uncovered with the reason (utility components don't need selection logic). Coverage figures are counted from the files written. `query-guide.md` tells an agent how to traverse: map the request to an intent, answer each question from the requirements and ask rather than guess, treat `basis: proposed` as a suggestion, present both paths when two look equally valid, and fall back to name matching for uncovered components. The pages and the trees must say the same thing; generate the YAML from the same decisions, not separately.
 
 ---
 
@@ -315,7 +305,7 @@ Write `query-guide.md` for agents, covering:
 
 End with a short chat summary:
 - **Headline:** how many trees and disambiguation files were written, and which clusters they cover
-- **Files written:** paths under `.ai/decision-trees/`
+- **Files written:** the pages under `docs/choosing/`, and any trees under `.ai/decision-trees/`
 - **Proposed:** every node with `basis: proposed`, every open placeholder such as `[threshold]`, and any intent the inventory has no component for
 - **Scope:** the block from the output-discipline knowledge note, naming the inventory source and anything not scanned
 
@@ -341,5 +331,6 @@ End with a short chat summary:
 - The query guide provides clear instructions for handling ambiguity
 - Every `resolve:` names a component in the scanned inventory, and every rationale has a `basis`
 - Answer keys `"yes"`/`"no"` are quoted (or replaced with descriptive keys) and the files parse as YAML
-- Coverage percentage in the manifest is accurate and uncovered components have documented reasons for exclusion
+- The pages are the primary output and read as questions a person can answer; YAML, if written, says the same thing
+- Manifest coverage counts are accurate and uncovered components have documented reasons for exclusion
 - Decision trees are traversable from user requirements alone — no question requires implementation knowledge or system internals to answer

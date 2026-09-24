@@ -1,6 +1,7 @@
 ---
 name: metadata-schema-generator
 description: "Generate per-component JSON metadata files (.ai/metadata/) from source: props, behaviour, composition, a11y contract, prohibited prop combinations. Triggers: component metadata schema, machine-readable component JSON, manifest for MCP/codegen. Prose for Figma: use ai-component-description."
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(npx react-docgen-typescript:*), Bash(npx custom-elements-manifest:*), Bash(npx vue-component-meta:*), Bash(npx ajv:*)
 references:
   - ../../knowledge-notes/ai-readiness.md
   - ../../knowledge-notes/component-bestiary-reference.md
@@ -29,7 +30,7 @@ The `ai-component-description` skill produces text descriptions optimised for LL
 
 ## Boundaries
 
-This skill generates structured JSON metadata schemas for tooling consumption — not human-readable documentation (use `usage-guidelines` or `pattern-documentation` for that) or LLM-facing descriptions (use `ai-component-description`). If the system has no component inventory yet, run `component-audit` or `codebase-index` first. If the team has no current need for machine-readable metadata (no MCP server, no code generation, no linting integration), this skill adds overhead without value — discuss the use case before generating.
+This skill is the pack's one extraction of component facts. It generates structured JSON metadata for tooling — not human-readable documentation (`usage-guidelines`, `pattern-documentation`) or LLM-facing prose (`ai-component-description`); those two read `.ai/metadata/` when it exists and render from it, so the props and accessibility contract are derived once. If the system has no component inventory yet, run `codebase-index` first. If no component source is in reach, stop and ask for it: metadata can't be extracted from a description. If the team has no consumer for the files yet (no `AGENTS.md` pointing at them, no MCP server, no lint integration), say so and suggest `agent-instructions` as the first consumer rather than generating files nothing reads.
 
 ---
 
@@ -55,10 +56,11 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 - Extract documented states and control definitions
 - Pull interaction test definitions if available
 
-**TypeScript/Source** (always attempted):
-- Parse TypeScript interfaces or PropTypes from component source files
-- Extract JSDoc/TSDoc annotations for prop descriptions
-- Identify generic type parameters for polymorphic components
+**Source** (always attempted, with the tool that fits):
+- **React with TypeScript:** `react-docgen-typescript` gives name, type, required, default and description per prop; hand-read only what it can't resolve (complex generics), and say so
+- **Vue:** `vue-component-meta`
+- **Web Components:** the Custom Elements Manifest (`npx custom-elements-manifest analyze`, or an existing `custom-elements.json`)
+- **Anything else:** read the interfaces, PropTypes and JSDoc by hand, and note under Scope that extraction was manual
 
 ---
 
@@ -149,9 +151,11 @@ Illustrative Button (a real run uses the component's actual source):
 }
 ```
 
+**Build on the standard, don't invent one.** For Web Components the metadata file *is* the Custom Elements Manifest with a `dsops` object added to each declaration for the semantic layers (CEM allows additional properties, and every CEM consumer keeps reading it). For React and Vue, the `props` array keeps docgen's field names (`name`, `type`, `required`, `defaultValue`, `description`) so anything that reads docgen output reads this too, and the semantic layers sit beside it.
+
 **Extraction rules:**
 - Every prop in the TypeScript interface must appear in the schema
-- Types should be normalised to a standard set: `string`, `number`, `boolean`, `enum`, `ReactNode`, `function`, `object`, `array`
+- Keep the raw type string in `type.raw`; add `type.kind` normalised to `string`, `number`, `boolean`, `enum`, `ReactNode`, `function`, `object`, `array`, so generics and non-literal unions aren't lost
 - Enum values must be listed explicitly, not as a type reference
 - Take `default` from the source's declared default. Omit `default` when source declares none
 - If a prop has JSDoc, use it as the description. If not, flag the prop for manual description.
@@ -296,7 +300,7 @@ Encode prop combinations that are technically valid but semantically wrong. Each
       "combination": { "disabled": true, "loading": true },
       "reason": "Redundant states — loading already prevents interaction. Use loading alone.",
       "severity": "error",
-      "provenance": "source"
+      "provenance": "docs"
     }
   ]
 }
@@ -413,21 +417,21 @@ Run validation checks on the generated schemas:
 
 **Structural validation:**
 - Every schema is valid JSON
-- Every schema conforms to `schema.json`
+- Every schema conforms to `schema.json`: run `npx ajv validate -s .ai/metadata/schema.json -d ".ai/metadata/*.metadata.json"` (ajv-cli) and report its output. If ajv isn't available and can't be installed, say validation wasn't run; don't report the files as valid
 - Every `behaviour`, `composition` and `accessibility` block, and every prohibited combination, has a `provenance` value
 - Every prop in the TypeScript interface appears in the schema (no missing props)
 - Every enum value listed in the schema exists in the TypeScript type (no phantom values)
 
 **Semantic validation:**
 - Every prop has a description (not just a type)
-- Every enum prop has per-value semantic descriptions (not just a list of values)
+- Every enum prop either has per-value semantic descriptions from a source, or is listed under "Needs a human" (never filled with plausible guidance)
 - Composition rules reference components that exist in the system (no broken references)
 - Accessibility contracts are complete for all interactive components
 
 **Cross-reference validation:**
 - Component names in metadata match component names in code
 - Prop names and types match TypeScript interfaces
-- Composition references are bidirectional (if Card lists Button as valid_child, Button lists Card as valid_parent)
+- Where both sides declare composition, they agree (Card lists Button as a child and Button lists Card as a parent); a one-sided declaration is listed for review, not treated as an error
 - Status fields are consistent with the component's actual lifecycle status
 
 **Coverage reporting:**
@@ -461,8 +465,8 @@ End with a short chat summary:
 
 ## Quality checks
 
-- Every generated schema is valid JSON and parseable by standard JSON parsers
-- Prop types are normalised to the standard type set, not raw TypeScript types
+- Every generated schema is valid JSON and was validated with ajv, or the summary says validation didn't run
+- Props came from docgen, component-meta or a Custom Elements Manifest where one applies, keep the raw type alongside the normalised kind, and the Scope block names the extraction method
 - Semantic descriptions add information beyond what the prop name and type convey
 - Composition rules form a consistent graph (no contradictions between parent and child declarations)
 - Accessibility contracts cover all interactive components, not just the most common ones

@@ -1,7 +1,7 @@
 ---
 name: visual-report
 description: "Turns existing audit or health output, or saved recurring runs, into an HTML dashboard, SVG charts or Mermaid diagrams. Triggers: visualise the findings, dashboard, chart, graph the trends. Does not run audits (run one first); for a written brief use stakeholder-brief."
-allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*)
+allowed-tools: Read, Write, Grep, Glob, Bash(cat:*), Bash(find:*), Bash(head:*), Bash(ls:*), Bash(sort:*), Bash(tail:*), Bash(wc:*), Bash(npm view:*)
 references:
   - ../../knowledge-notes/output-discipline.md
 ---
@@ -50,7 +50,7 @@ If no configuration exists, use these defaults:
 - Success: `#16A34A` (green)
 - Neutral: `#6B7280` (grey)
 - Output format: `html`
-- Output directory: current working directory
+- Output directory: `.ds-ops/visuals` (the same as the config default, so a run with and without a config file lands in the same place)
 
 ---
 
@@ -74,7 +74,7 @@ Based on the input data and the request, select one or more visual types:
 
 | Type | Best for | Format |
 |---|---|---|
-| **Health radar** | System health dimension statuses | Radar/spider chart |
+| **Status strip** | System health dimension statuses | One tile per dimension, coloured by status |
 | **Severity distribution** | Audit findings by severity | Donut chart |
 | **Trend line** | Metric changes over time | Line chart |
 | **Coverage heatmap** | Token or component coverage | Grid heatmap |
@@ -85,7 +85,7 @@ Based on the input data and the request, select one or more visual types:
 
 If the request is vague ("make this visual"), choose the visual type that best fits the data:
 
-- System health statuses → Health radar
+- System health statuses → Status strip
 - Audit findings → Severity distribution + action priority matrix
 - Session history → Trend line
 - Before/after data → Comparison bar
@@ -110,7 +110,7 @@ Extract:
 
 ### From system health
 Extract:
-- Seven dimension statuses (tokens, components, documentation, adoption, governance, AI readiness, platform maturity)
+- The dimension statuses the report has (system-health has seven; don't assume, read them)
 - Overall health status
 - Maturity stage
 
@@ -119,7 +119,7 @@ Extract:
 ```
 metrics: [{ label, value, max, category }]
 timeseries: [{ date, metric, value }]
-findings: [{ id, severity, category, effort, impact }]
+findings: [{ id, severity, category, effort?, impact? }]   # effort and impact only when the source report carries them
 relationships: [{ source, target, weight }]
 ```
 
@@ -127,19 +127,11 @@ relationships: [{ source, target, weight }]
 
 ## Step 2: Generate the visuals
 
-### Health radar chart
+### Status strip
 
-Produce a radar chart with seven axes (one per system health dimension). Map statuses to numeric values for charting: 🟢 Strong = 3, 🟡 Functional = 2, 🟠 Weak = 1, 🔴 Absent = 0.
+Produce one tile per dimension, in the report's order, each carrying the dimension name, the status word and the status colour (🟢 Strong, 🟡 Functional, 🟠 Weak, 🔴 Absent), plus the key finding as a one-line caption. Statuses are ordinal labels, so a strip reads honestly; a radar chart over them implies a magnitude and an area that the labels don't have. If the user asks for a radar anyway, produce it with the status words on the axes and say in the caption that the shape is illustrative.
 
-Display axis labels using the status names, not numbers. The numeric mapping is internal for chart rendering only.
-
-Colour coding:
-- 0 (Absent): Red zone
-- 1 (Weak): Amber zone
-- 2 (Functional): Yellow-green zone
-- 3 (Strong): Green zone
-
-Implementation: Use Chart.js radar chart in HTML, or SVG polygon construction.
+Implementation: an HTML flex row of cards, or an SVG row of rectangles.
 
 ### Severity distribution chart
 
@@ -149,7 +141,7 @@ Ring segments use the four severities from output-discipline only, ordered darke
 - Critical: Dark red (`#991B1B`)
 - High: Orange (`#C2410C`)
 - Medium: Amber (`#C27C0E`)
-- Low: Grey (`#8F959E`)
+- Low: Grey (`#6B7280`)
 
 Use the same four colours wherever severity appears (bubble charts, stacked bars, badges). Brand colours from configuration apply to non-severity series only.
 
@@ -210,7 +202,9 @@ Include delta labels above each bar group: "↓ 33%" or "↑ 5%"
 
 Implementation: Chart.js grouped bar chart in HTML.
 
-### Action priority matrix
+### Action priority matrix (only with sourced effort and impact)
+
+Plot it only when every finding it would show carries an effort value and an impact value from the source report: effort from an estimates table the audit produced with its assumptions (token-audit's, for example), impact from the finding's severity. If the source has no effort figures, skip the matrix and say so in the text summary. Never assign effort to a finding to make the chart possible; an invented "8–12 hrs" on a dashboard becomes a sprint commitment.
 
 Produce a scatter plot where:
 - X axis = Effort (Low → High)
@@ -228,10 +222,10 @@ Combine multiple charts into a single HTML page with:
 - A grid layout (2 columns on desktop, 1 column on mobile)
 - Charts sized proportionally
 - A summary section at the top with 3–5 key metric cards
-- An interactive filter (if session history data is present): dropdown to switch between sessions
+- An interactive filter (if saved recurring runs are present): dropdown to switch between runs
 - A Scope block at the foot: what the source findings inspected, what they did not ("Not inspected"), and which figures were reported rather than measured — carried over from the source report
 
-Implementation: Single self-contained HTML file with Chart.js 4 loaded from a pinned CDN URL. No external dependencies beyond Chart.js. All data embedded inline.
+Implementation: a single HTML file with all data inline. Chart.js is the one dependency; `chart.js@4` on a CDN floats to the latest 4.x and fails offline or under a strict content-security policy, so either inline the library (read `node_modules/chart.js/dist/chart.umd.js` if the project has it) or pin the exact version (`npm view chart.js version`) with an `integrity` attribute, and say which in the footer.
 
 ---
 
@@ -246,7 +240,8 @@ The dashboard is a single HTML file. Structure:
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>[System Name] — Design System Health Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@[exact version]/dist/chart.umd.min.js" integrity="[sri hash]" crossorigin="anonymous"></script>
+  <!-- or inline the library so the file works offline -->
   <style>
     /* Inline styles — no external CSS */
     /* Use CSS Grid for layout */
@@ -328,11 +323,11 @@ Also output a text-based summary of what the visuals show, so the findings are a
 Dashboard generated: agds-dashboard-2026-03-09.html
 
 What the visuals show:
-- Health radar: Strongest in Tokens (🟢 Strong), weakest in Documentation (🟠 Weak)
+- Status strip: Strongest in Tokens (🟢 Strong), weakest in Documentation (🟠 Weak)
 - Severity distribution: 12 findings — 2 Critical, 4 High, 4 Medium, 2 Low
 - Trend: Violations decreased 33% since January
 - Coverage: Feedback token category has zero coverage across all tiers
-- Priority: 3 findings in the "Quick wins" quadrant — TA-04, NA-02, CA-11
+- Priority matrix: skipped, the source report carries no effort figures
 ```
 
 ---
@@ -359,7 +354,8 @@ Load the saved reports in `recurring.output_directory` to produce trend lines ac
 - The dashboard opens with a headline sentence and ends with a Scope block that includes "Not inspected"
 - Severity uses the four output-discipline levels only, in the colours above
 - Uses only widely supported HTML, CSS and JavaScript
-- No external dependencies beyond Chart.js, loaded from a pinned major version (`chart.js@4`)
+- No external dependencies beyond Chart.js, inlined or pinned to an exact version with an integrity hash
+- The priority matrix appears only when the source report supplied effort and impact for every plotted finding
 - Colours pass WCAG AA contrast ratios
 - Text summaries accompany every visual
 - Dashboard is responsive across desktop, tablet, and mobile

@@ -43,6 +43,7 @@ If `.ds-ops-config.yml` exists, follow the configuration-and-recurring knowledge
 **Storybook — the primary surface (`integrations.storybook.enabled: true` or a local build):**
 - Prefer a local static build: read the index from `integrations.storybook.static_path` (default `storybook-static/index.json`). No server, no auth.
 - If only a URL is configured, fetch `<url>/index.json`.
+- **No build and no URL:** read the CSF files directly. `*.stories.*` grouped by their `title` (or the default export's `component`) give rung 1; a `tags: ['autodocs']` entry or a sibling MDX file gives a docs page. Say under Scope that the inventory came from story source, not an index, and that `componentPath` joins weren't available.
 - Branch on the top-level `v` field, which tracks the Storybook version: `v: 3` is the SB 6 `stories.json` (entries under the `stories` key); `v: 4` and `v: 5` are the SB 7+ `index.json` (entries under `entries`), and `v: 5` (SB 8.1+) adds `componentPath`. `componentPath` is opt-in and not guaranteed even on recent Storybook — use it for the Tier A join when present, and **fall back to the Tier B name join whenever it is absent, regardless of `v`**. A `v: 3` `stories.json` has no `type: 'docs'` entries at all, so it can't show rung 2: mark rung 2 **unknown** for v3, unless you read the MDX files or each story's `parameters.docs` directly.
 - The official Storybook MCP (`@storybook/addon-mcp`) is **optional** — at the time of writing it needs a running server and is React-only/experimental. Use it only if the tools are already available; never make it a dependency.
 
@@ -66,7 +67,8 @@ Produce a brief inventory line before continuing: `N components found across M d
 
 For each available surface, list what is documented.
 
-- **Storybook:** parse `index.json`. Group entries by `title`. For each component, record: has a `type: 'story'` entry (rung 1, *exists*), has a `type: 'docs'` entry — autodocs or MDX via `tags` (rung 2, *described*; unknown for a v3 `stories.json`, see above), and the resolved `componentPath` and `importPath`. Optionally parse the CSF file for `argTypes`/`args` and `play` presence (documented controls, interaction tests).
+- **Storybook:** parse `index.json`. Group entries by `title`. For each component, record: has a `type: 'story'` entry (rung 1, *exists*); has a docs page — autodocs or MDX via `tags` (unknown for a v3 `stories.json`, see above); and the resolved `componentPath` and `importPath`. A docs page alone doesn't make a component *described*: the `autodocs` tag generates a page even when no prop has a description. Rung 2 needs the page **and** descriptions on most props, from `argTypes` in the CSF file or JSDoc on the props interface. Record the prop-description ratio per component (described props of total) and report it; a page with 0 of 12 props described is rung 1 with a docs page, not rung 2. Also note `play` presence (interaction tests) where the CSF is read.
+- **Figma component descriptions** (Console MCP `figma_get_component`, or the official MCP's `get_design_context` on the library node): a documentation surface for designers. Record which components have a non-empty description and report it as its own column, not merged into the Storybook rungs.
 - **Hosted platform (if configured):** list documented pages and, where exposed, their `updated_at`/last-modified timestamp.
 - **Usage guidance (rung 3):** if the system documents usage separately (a `usage-guidelines` output, MDX "When to use" sections, a Zeroheight guideline page), record which components reach rung 3.
 
@@ -124,7 +126,7 @@ List each finding with:
 - Finding ID (e.g. DC-01)
 - Severity: 🔴 Critical / 🟠 High / 🟡 Medium / ⚪ Low
   - 🔴 Critical — a foundational component (Button, Input, Text, Icon, or anything with high fan-in) with no documentation on any surface (rung 0)
-  - 🟠 High — any other public component at rung 0, or a foundational component stale on a high-confidence timestamp
+  - 🟠 High — any other public component at rung 0; a foundational component stale on a high-confidence timestamp; any component stale on a high-confidence timestamp where the code change touched its props interface or rendered element (the doc is now wrong, not just old)
   - 🟡 Medium — a public component stuck at rung 1 (a story but no docs page), or a stale doc on a lower-confidence timestamp
   - ⚪ Low — orphaned docs, internal components, and Tier C gaps awaiting confirmation
   - Only weight by traffic or usage if adoption data exists (see the adoption-measurement note); otherwise use foundational status, which the code can show
@@ -167,7 +169,7 @@ End the report with:
 
 - Every coverage finding carries a join confidence tier; no Tier C result is stated as fact
 - Staleness findings show both change dates and name the timestamp source; unavailable timestamps are marked unknown, not assumed fresh
-- The report distinguishes the rungs (exists / described / guided, plus the undocumented rung-0 bucket), counted at highest-attained — not a single coverage percentage
+- The report distinguishes the rungs (exists / described / guided, plus the undocumented rung-0 bucket), counted at highest-attained — not a single coverage percentage; "described" rests on prop descriptions, not on the presence of a docs page
 - Orphaned docs are reported separately from coverage gaps — they point the opposite direction
 - The summary states which signals were measured vs estimated or unavailable
 - The audit ran on whatever was available and did not block on a missing integration
