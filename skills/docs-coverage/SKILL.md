@@ -132,6 +132,7 @@ List each finding with:
   - Only weight by traffic or usage if adoption data exists (see the adoption-measurement note); otherwise use foundational status, which the code can show
 - Category: Coverage gap / Staleness / Orphan
 - Confidence: Tier A / B / C (and timestamp source for staleness)
+- Evidence: the component's file path and the docs entry it was joined to (story id, docs page URL) or the surfaces searched when none was found; for staleness, both change dates with their sources
 - Description, affected component(s), and recommended action
 
 **Orphaned documentation**
