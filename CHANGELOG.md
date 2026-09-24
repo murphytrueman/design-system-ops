@@ -4,7 +4,7 @@ All notable changes to Design System Ops will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2026-09-24
 
 This is a breaking release: three skills are removed, two are merged and one is renamed, so requests that named them by skill name will need the new names. The table maps each old name to where its job went.
 
